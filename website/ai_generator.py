@@ -144,7 +144,8 @@ def generate_article(
     }
     
     prompt_filename = prompt_file_map.get(template_name, 'standard_post_prompt.md')
-    prompt_path = os.path.join('/Users/aziz/Desktop/blog-cms/seo_prompts', prompt_filename)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    prompt_path = os.path.join(project_root, 'seo_prompts', prompt_filename)
     
     try:
         with open(prompt_path, 'r', encoding='utf-8') as f:
