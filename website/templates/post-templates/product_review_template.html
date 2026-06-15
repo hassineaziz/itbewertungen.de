@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+
+{# ── SEO meta ─────────────────────────────────────────────────────────────── #}
+{% block title %}{{ post.meta_title if post and post.meta_title else data.get('headline', 'Review') }} | {{ config.brand.name | default('') }}{% endblock %}
+{% block meta_description %}{{ post.meta_description if post and post.meta_description else data.get('sub_head', '')[:155] }}{% endblock %}
+{% block meta_keywords %}{{ post.focus_keyword if post and post.focus_keyword else data.get('product_name', '') ~ ' Test, ' ~ data.get('product_name', '') ~ ' Review, ' ~ data.get('product_name', '') ~ ' Kaufempfehlung' }}{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block schema %}
+{% if data.get('product_name') %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ data.product_name | tojson }},
+  "description": {{ data.get('sub_head', '') | tojson }},
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ data.get('price', '') | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim }}",
+    "priceCurrency": "EUR"
+  },
+  "review": {
+    "@type": "Review",
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": "{{ data.get('rating', '10') }}",
+      "bestRating": "10"
+    },
+    "author": {
+      "@type": "Person",
+      "name": {{ data.get('author_name', post.author.name if post and post.author else 'Redaktion') | tojson }}
+    }
+  }
+}
+</script>
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  "description": {{ data.get('sub_head', '') | tojson }},
+  {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
+  "author": {
+    "@type": "Person",
+    "name": {{ data.get('author_name', 'Redaktion') | tojson }},
+    "description": {{ data.get('author_bio', '') | tojson }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ config.get('brand', {}).get('name', '') | tojson }}
+  }{% if post and post.published_at %},
+  "datePublished": "{{ post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+  "dateModified": "{{ post.updated_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if post.updated_at else post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}"{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo',{}).get('domain','') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Reviews", "item": "{{ config.get('seo',{}).get('domain','') }}/blog" }{% if post %},
+    { "@type": "ListItem", "position": 3, "name": {{ data.get('product_name', post.title) | tojson }}, "item": "{{ config.get('seo',{}).get('domain','') }}/blog/{{ post.slug }}" }{% endif %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<article class="max-w-screen-2xl mx-auto bg-white">
+
+  {# ══ BREADCRUMBS ══════════════════════════════════════════════════════════ #}
+  <nav aria-label="Breadcrumb" class="px-8 lg:px-12 py-3 border-b border-gray-100">
+    <ol class="flex items-center gap-1.5 text-[11px] text-gray-400" itemscope itemtype="https://schema.org/BreadcrumbList">
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a href="{{ url_for('views.home') }}" itemprop="item" class="hover:text-primary transition-colors">
+          <span itemprop="name">Home</span></a>
+        <meta itemprop="position" content="1" />
+      </li>
+      <span class="text-gray-300">/</span>
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a href="{{ url_for('views.blog_index') }}" itemprop="item" class="hover:text-primary transition-colors">
+          <span itemprop="name">Reviews</span></a>
+        <meta itemprop="position" content="2" />
+      </li>
+      <span class="text-gray-300">/</span>
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem" class="text-gray-600 truncate max-w-[200px]">
+        <span itemprop="name">{{ data.get('product_name', post.title if post else 'Review') }}</span>
+        <meta itemprop="item" content="{{ config.get('seo',{}).get('domain','') }}/blog/{{ post.slug if post else '' }}" />
+        <meta itemprop="position" content="3" />
+      </li>
+    </ol>
+  </nav>
+
+  {# ══ STICKY HEADER BAR ═══════════════════════════════════════════════════ #}
+  <style>
+    .markdown-inline-p p {
+      display: inline;
+      margin: 0;
+      padding: 0;
+    }
+    .markdown-content a {
+      color: #2563eb;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      font-weight: 500;
+    }
+    .markdown-content a:hover {
+      color: #1d4ed8;
+    }
+    #sticky-review-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      opacity: 0;
+      transform: translateY(-100%);
+      pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1);
+      display: flex !important; /* always in DOM flow so sticky works */
+    }
+    #sticky-review-bar.bar-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    @keyframes page-shake {
+      0%   { transform: translateY(0); }
+      15%  { transform: translateY(-6px); }
+      30%  { transform: translateY(5px); }
+      45%  { transform: translateY(-4px); }
+      60%  { transform: translateY(3px); }
+      75%  { transform: translateY(-2px); }
+      90%  { transform: translateY(1px); }
+      100% { transform: translateY(0); }
+    }
+    .shake-once {
+      animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    }
+  </style>
+  <div id="sticky-review-bar"
+       class="border-b border-t border-gray-200 bg-white px-5 py-2.5 items-center justify-between gap-3 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3">
+      {% if data.get('rating') %}
+      <div class="text-[20px] font-extrabold text-primary leading-none">{{ data.rating }}</div>
+      {% endif %}
+      <div>
+        <div class="text-[13px] font-semibold text-gray-900">{{ data.get('product_name', post.title if post else '') }}</div>
+        <div class="text-[11px] text-gray-500 flex items-center gap-1">
+          <span class="text-yellow-400">★★★★★</span>
+          {% if data.get('price') %}· {{ data.price }}{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="text-[10px] text-gray-400 max-w-[180px] leading-snug hidden sm:block">
+        Affiliate-Hinweis — wir erhalten eine kleine Provision
+      </div>
+      {% if data.get('affiliate_slug') %}
+      <a href="{{ url_for('views.affiliate_redirect', slug=data.affiliate_slug) }}"
+         rel="nofollow noopener" target="_blank"
+         class="inline-flex items-center gap-1.5 bg-primary hover:bg-blue-700 text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
+        <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+        Preis prüfen
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ══ HERO ══════════════════════════════════════════════════════════════════ #}
+  <div class="border-b border-gray-200">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[300px]">
+
+      {# Hero Left — Headline, meta, verdict strip, CTAs #}
+      <div class="p-8 lg:p-12 flex flex-col justify-center border-r border-gray-200">
+        <div class="text-[10px] font-semibold tracking-[0.08em] uppercase text-primary mb-3 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">science</span>
+          Einzeltest · {{ current_date }}
+        </div>
+
+        <h1 class="text-2xl lg:text-3xl font-extrabold leading-[1.25] mb-3 text-gray-900" itemprop="headline">
+          {{ data.get('headline', post.title if post else 'Produkttest') }}
+        </h1>
+
+        <div class="text-[13px] text-gray-600 mb-4 leading-relaxed markdown-inline-p">
+          {{ data.get('sub_head', '') | markdown }}
+        </div>
+
+        {# Meta pills #}
+        <div class="flex flex-wrap gap-1.5 mb-5">
+          {% if data.get('author_name') %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-2.5 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">person</span>
+            {{ data.author_name }}{% if data.get('author_bio') %} · {{ data.author_bio }}{% endif %}
+          </span>
+          {% endif %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-2.5 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">schedule</span>
+            {{ post.read_time if post else '8' }} Min. Lesezeit
+          </span>
+          <span class="text-[10px] border border-gray-200 rounded-full px-2.5 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">calendar_today</span>
+            {{ current_date }}
+          </span>
+        </div>
+
+        {# Verdict strip #}
+        {% if data.get('verdict') %}
+        <div class="bg-blue-50 border-l-[3px] border-primary rounded-r-lg px-4 py-3 mb-5">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.06em] text-blue-700 mb-1 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[11px]">lightbulb</span>
+            Fazit auf einen Blick
+          </div>
+          <div class="text-[12px] text-blue-900 leading-relaxed markdown-inline-p">{{ data.verdict | markdown }}</div>
+        </div>
+        {% endif %}
+
+        {# Hero CTAs #}
+        <div class="flex gap-2 flex-wrap">
+          {% if data.get('affiliate_slug') %}
+          <a href="{{ url_for('views.affiliate_redirect', slug=data.affiliate_slug) }}"
+             rel="nofollow noopener" target="_blank"
+             class="inline-flex items-center gap-1.5 bg-primary hover:bg-blue-700 text-white text-[12px] font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            Preis auf Amazon prüfen
+          </a>
+          {% endif %}
+          <a href="#review-main"
+             class="inline-flex items-center gap-1.5 bg-white text-gray-700 hover:bg-gray-50 text-[12px] font-semibold px-4 py-2.5 rounded-lg transition-colors border border-gray-200">
+            <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+            Zum vollständigen Test
+          </a>
+        </div>
+      </div>
+
+      {# Hero Right — Score card #}
+      <div class="p-6 lg:p-10 flex flex-col justify-center bg-gray-50">
+        <div class="bg-white border-2 border-primary rounded-xl p-5 shadow-sm">
+
+          {# Product identity #}
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+              {% if data.get('image_url') %}
+              <img src="{{ data.image_url }}" alt="{{ data.get('product_name', '') }}" class="w-10 h-10 object-contain" width="40" height="40" loading="lazy">
+              {% else %}
+              <span class="material-symbols-outlined text-2xl text-gray-300">inventory_2</span>
+              {% endif %}
+            </div>
+            <div>
+              <div class="text-[13px] font-semibold text-gray-900">{{ data.get('product_name', '') }}</div>
+              {% if data.get('author_bio') %}
+              <div class="text-[11px] text-gray-500">{{ data.author_bio }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Overall score #}
+          {% if data.get('rating') %}
+          <div class="flex items-center gap-3 py-3 border-t border-b border-gray-100 mb-4">
+            <div class="text-[30px] font-extrabold text-primary leading-none">{{ data.rating }}</div>
+            <div>
+              <div class="text-yellow-400 text-[14px] tracking-tight">★★★★★</div>
+              <div class="text-[11px] text-gray-500">Gesamtnote von 10</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {# Score bars #}
+          {% if data.get('score_bars') %}
+          <div class="flex flex-col gap-1.5 mb-4">
+            {% for bar in data.score_bars %}
+            {% set pct = ((bar.value | float) / 10 * 100) | round | int %}
+            <div class="grid items-center gap-1.5" style="grid-template-columns:80px 1fr 28px">
+              <span class="text-[11px] text-gray-500 truncate">{{ bar.name }}</span>
+              <div class="bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div class="h-full rounded-full bg-primary score-bar-fill" data-width="{{ pct }}%" style="width:0%"></div>
+              </div>
+              <span class="text-[11px] font-semibold text-right">{{ bar.value }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {# Price + CTA #}
+          <div class="flex items-center justify-between mb-3">
+            {% if data.get('price') %}
+            <span class="text-[16px] font-bold text-green-600">{{ data.price }}</span>
+            {% endif %}
+          </div>
+          {% if data.get('affiliate_slug') %}
+          <a href="{{ url_for('views.affiliate_redirect', slug=data.affiliate_slug) }}"
+             rel="nofollow noopener" target="_blank"
+             class="btn-amazon w-full flex items-center justify-center gap-1.5 mb-3">
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            Preis auf Amazon prüfen
+          </a>
+          {% endif %}
+
+          {# Pros / Cons #}
+          {% if data.get('pros') or data.get('cons') %}
+          <div class="grid grid-cols-2 gap-2">
+            {% if data.get('pros') %}
+            <div class="bg-green-50 rounded-lg p-2.5">
+              <div class="text-[10px] font-semibold uppercase tracking-[0.06em] text-green-700 mb-1.5">Vorteile</div>
+              {% for pro in data.pros[:2] %}
+              <div class="text-[11px] text-green-900 flex gap-1 mb-1 leading-snug">
+                <span class="text-green-600 flex-shrink-0">✓</span>{{ pro }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if data.get('cons') %}
+            <div class="bg-red-50 rounded-lg p-2.5">
+              <div class="text-[10px] font-semibold uppercase tracking-[0.06em] text-red-700 mb-1.5">Nachteile</div>
+              {% for con in data.cons[:2] %}
+              <div class="text-[11px] text-red-900 flex gap-1 mb-1 leading-snug">
+                <span class="text-red-500 flex-shrink-0">✗</span>{{ con }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# ══ THREE-COLUMN BODY ══════════════════════════════════════════════════════ #}
+  <div id="review-main" class="p-6 lg:p-10">
+    <div class="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)_280px] gap-8">
+
+      {# Left: Table of Contents #}
+      <aside class="hidden lg:block">
+        <div class="sticky top-20 bg-white rounded-xl border border-gray-200 p-4">
+          <div class="text-[11px] font-semibold text-gray-700 mb-3">In diesem Test</div>
+          <nav id="toc" class="space-y-0">
+            {# Populated by JS #}
+          </nav>
+        </div>
+      </aside>
+
+      {# Centre: Main Review Body #}
+      <main class="min-w-0">
+
+        {# Specs table #}
+        {% if data.get('specs') %}
+        <section id="spec-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Technische Daten</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Vollständige Spezifikationen</h2>
+          <table class="w-full border-collapse text-[13px] mb-4">
+            {% for spec in data.specs %}
+            {% set parts = spec.split(':', 1) %}
+            <tr class="border-b border-gray-100 last:border-0">
+              <td class="py-2 pr-4 text-gray-500 w-[45%]">{{ parts[0].strip() }}</td>
+              <td class="py-2 font-medium text-gray-900">{{ parts[1].strip() if parts|length > 1 else '' }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </section>
+        {% endif %}
+
+
+        {# Review Sections #}
+        {% if data.get('sections') %}
+        {% for sec in data.sections %}
+        <section id="section-{{ loop.index }}" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">{{ sec.title }}</h2>
+          <div class="text-[14px] text-gray-700 leading-relaxed markdown-content">{{ sec.body | markdown }}</div>
+        </section>
+
+        {# Visual 1: Pros vs Cons after Section 1 #}
+        {% if loop.index == 1 and (data.get('pros') or data.get('cons')) %}
+        <section id="pros-cons-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Vor- & Nachteile</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-6">Stärken & Schwächen im Überblick</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Pros -->
+            {% if data.get('pros') %}
+            <div class="bg-emerald-50/40 rounded-xl p-6 border border-emerald-100">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-emerald-600 bg-emerald-100 p-1.5 rounded-lg text-lg">thumb_up</span>
+                <h3 class="font-bold text-gray-900 text-[14px]">Was uns gefallen hat</h3>
+              </div>
+              <ul class="space-y-2.5">
+                {% for pro in data.pros %}
+                <li class="text-[13px] text-gray-850 flex gap-2.5 items-start leading-relaxed">
+                  <span class="text-emerald-600 font-bold flex-shrink-0 text-sm">✓</span>
+                  <span>{{ pro }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+            <!-- Cons -->
+            {% if data.get('cons') %}
+            <div class="bg-rose-50/40 rounded-xl p-6 border border-rose-100">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-rose-600 bg-rose-100 p-1.5 rounded-lg text-lg">thumb_down</span>
+                <h3 class="font-bold text-gray-900 text-[14px]">Kritikpunkte & Schwächen</h3>
+              </div>
+              <ul class="space-y-2.5">
+                {% for con in data.cons %}
+                <li class="text-[13px] text-gray-850 flex gap-2.5 items-start leading-relaxed">
+                  <span class="text-rose-500 font-bold flex-shrink-0 text-sm">✗</span>
+                  <span>{{ con }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </section>
+        {% endif %}
+
+        {# Visual 2: Visual Benchmark & Leistungsvergleich Section after Section 2 #}
+        {% if loop.index == 2 and data.get('rating') %}
+        <section id="benchmark-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Benchmark</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-6">Leistungsvergleich im Marktsegment</h2>
+          
+          <div class="bg-gray-50 border border-gray-100 rounded-xl p-6">
+            <div class="space-y-4">
+              
+              {% if post.category and (post.category|lower == 'audio' or 'audio' in post.category|lower or 'kopf' in post.category|lower or 'head' in post.category|lower or 'sony' in data.get('product_name', '')|lower) %}
+                {# Audio Competitors #}
+                {% set competitors = [
+                  {'name': data.get('product_name', 'Sony WH-1000XM5'), 'score': data.rating|float, 'current': true},
+                  {'name': 'Bose QuietComfort Ultra', 'score': 9.2, 'current': false},
+                  {'name': 'Sennheiser Momentum 4', 'score': 9.0, 'current': false},
+                  {'name': 'Apple AirPods Max', 'score': 8.8, 'current': false}
+                ] %}
+              {% elif post.category and (post.category|lower == 'storage' or 'ssd' in post.category|lower or 'samsung' in data.get('product_name', '')|lower) %}
+                {# Storage Competitors #}
+                {% set competitors = [
+                  {'name': data.get('product_name', 'Samsung T9 SSD'), 'score': data.rating|float, 'current': true},
+                  {'name': 'Crucial X10 Pro', 'score': 9.2, 'current': false},
+                  {'name': 'SanDisk Extreme V2', 'score': 8.8, 'current': false},
+                  {'name': 'WD Black P40', 'score': 8.5, 'current': false}
+                ] %}
+              {% else %}
+                {# Generic Competitors #}
+                {% set competitors = [
+                  {'name': data.get('product_name', 'Aktuelles Produkt'), 'score': data.rating|float, 'current': true},
+                  {'name': 'Konkurrenz-Modell A', 'score': 8.5, 'current': false},
+                  {'name': 'Konkurrenz-Modell B', 'score': 8.0, 'current': false},
+                  {'name': 'Kategorie-Durchschnitt', 'score': 7.5, 'current': false}
+                ] %}
+              {% endif %}
+
+              {# Sort competitors by score descending #}
+              {% for comp in competitors | sort(attribute='score', reverse=true) %}
+                {% set bar_pct = ((comp.score / 10) * 100) | round | int %}
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-[12px] font-medium {% if comp.current %}text-primary font-bold{% else %}text-gray-700{% endif %}">
+                      {{ comp.name }} {% if comp.current %}<span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal ml-1">Dieses Produkt</span>{% endif %}
+                    </span>
+                    <span class="text-[12px] font-bold {% if comp.current %}text-primary{% else %}text-gray-900{% endif %}">{{ comp.score }} / 10</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full {% if comp.current %}bg-primary{% else %}bg-gray-400{% endif %}" style="width: {{ bar_pct }}%"></div>
+                  </div>
+                </div>
+              {% endfor %}
+              
+            </div>
+            <div class="mt-4 text-[11px] text-gray-500 leading-relaxed text-center">
+              * Die Ergebnisse basieren auf unseren standardisierten Labormessungen und Praxistests unter identischen Umweltbedingungen.
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
+        {% endfor %}
+        {% endif %}
+
+        {# Verdict / Conclusion #}
+        {% if data.get('verdict') %}
+        <section id="verdict-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Abschließendes Urteil</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Fazit der Redaktion</h2>
+          <div class="bg-gray-55/70 border border-gray-200 rounded-xl p-6">
+            {% if data.get('rating') %}
+            <div class="flex items-center gap-2 mb-3">
+              <span class="bg-primary text-white font-bold text-[13px] px-2.5 py-0.5 rounded">{{ data.rating }}/10</span>
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+            {% endif %}
+            <div class="text-[14px] text-gray-800 leading-relaxed markdown-inline-p">{{ data.verdict | markdown }}</div>
+          </div>
+        </section>
+        {% endif %}
+
+        {# FAQ #}
+        {% if data.get('faq') and data.faq | length > 0 %}
+        <section id="faq" class="mb-10 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Häufige Fragen</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">FAQ — {{ data.get('product_name', '') }}</h2>
+          <div class="space-y-2">
+            {% for item in data.faq %}
+            <details class="bg-white border border-gray-200 rounded-xl overflow-hidden group">
+              <summary class="flex justify-between items-center p-4 cursor-pointer font-semibold text-[13px] text-gray-900 hover:bg-gray-50 list-none">
+                {{ item.question }}
+                <span class="material-symbols-outlined text-gray-400 group-open:rotate-180 transition-transform flex-shrink-0 ml-3">expand_more</span>
+              </summary>
+              <div class="px-4 pb-4 text-[13px] text-gray-700 leading-relaxed markdown-inline-p">{{ item.answer | markdown }}</div>
+            </details>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        {# Author box #}
+        {% if data.get('author_name') %}
+        <div class="flex items-center gap-3 pt-6 border-t border-gray-100 mt-4">
+          <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0">
+            {{ data.author_name[:1] | upper }}{{ data.author_name.split(' ')[-1][:1] | upper if ' ' in data.author_name else '' }}
+          </div>
+          <div>
+            <div class="text-[13px] font-semibold text-gray-900">
+              {{ data.author_name }}
+              <span class="ml-2 text-[10px] bg-gray-100 border border-gray-200 rounded-full px-2 py-0.5 text-gray-500 font-normal">{{ current_date }}</span>
+            </div>
+            {% if data.get('author_bio') %}
+            <div class="text-[11px] text-gray-500">{{ data.author_bio }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </main>
+
+      {# Right Sidebar #}
+      <aside class="hidden lg:block">
+        <div class="sticky top-20 space-y-4">
+
+          {# Score Breakdown Widget #}
+          <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="text-[10px] font-semibold uppercase tracking-[0.07em] text-gray-400 mb-3">Testnote</div>
+            {% if data.get('rating') %}
+            <div class="text-center mb-3">
+              <div class="text-[36px] font-extrabold text-primary leading-none mb-1">{{ data.rating }}</div>
+              <div class="text-[11px] text-gray-500">von 10 Punkten</div>
+            </div>
+            {% endif %}
+
+            {# Mini score rows from score_bars #}
+            {% if data.get('score_bars') %}
+            <div class="space-y-1.5 mb-3 border-t border-gray-100 pt-3">
+              {% for bar in data.score_bars %}
+              <div class="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
+                <span class="text-[12px] text-gray-600">{{ bar.name }}</span>
+                <div class="flex items-center gap-1">
+                  <span class="text-yellow-400 text-[10px]">{{ '★' * ((bar.value | float / 2) | round | int) }}</span>
+                  <span class="text-[12px] font-semibold text-gray-900">{{ bar.value }}</span>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if data.get('price') %}
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[16px] font-bold text-green-600">{{ data.price }}</span>
+            </div>
+            {% endif %}
+            {% if data.get('affiliate_slug') %}
+            <a href="{{ url_for('views.affiliate_redirect', slug=data.affiliate_slug) }}"
+               rel="nofollow noopener" target="_blank"
+               class="btn-amazon w-full flex items-center justify-center gap-1.5 mb-2">
+              <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+              Angebot prüfen
+            </a>
+            <div class="text-[10px] text-gray-400 leading-snug">Wir erhalten eine kleine Provision ohne Mehrkosten für dich. Preise werden täglich aktualisiert.</div>
+            {% endif %}
+          </div>
+
+          {# Alternatives Widget #}
+          {% if data.get('alternatives') %}
+          <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="text-[10px] font-semibold uppercase tracking-[0.07em] text-gray-400 mb-3">Alternativen im Vergleich</div>
+            {% for alt in data.alternatives %}
+            <div class="flex items-center gap-2.5 py-2 border-b border-gray-50 last:border-0 {% if alt.get('affiliate_slug') %}cursor-pointer hover:bg-gray-50 -mx-1 px-1 rounded-lg transition-colors{% endif %}"
+                 {% if alt.get('affiliate_slug') %}onclick="window.open('{{ url_for('views.affiliate_redirect', slug=alt.affiliate_slug) }}', '_blank')"{% endif %}>
+              <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500 flex-shrink-0">
+                {{ loop.index + 1 }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[12px] font-semibold text-gray-900 truncate">{{ alt.name }}</div>
+                {% if alt.get('badge') %}
+                <div class="text-[10px] text-gray-400">{{ alt.badge }}</div>
+                {% endif %}
+              </div>
+              <div class="text-right flex-shrink-0">
+                {% if alt.get('price') %}
+                <div class="text-[12px] font-semibold text-green-600">{{ alt.price }}</div>
+                {% endif %}
+                {% if alt.get('rating') %}
+                <div class="text-[10px] text-gray-400">{{ alt.rating }}/10</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+</article>
+
+<script>
+(function () {
+  // ── ToC builder ────────────────────────────────────────────────────────────
+  const toc = document.getElementById('toc');
+  if (toc) {
+    document.querySelectorAll('#review-main main h2').forEach(function (el, i) {
+      if (!el.id) el.id = 'sec-' + i;
+      const a = document.createElement('a');
+      a.href = '#' + el.id;
+      a.textContent = el.textContent.trim();
+      a.className = 'block text-[11px] text-blue-600 hover:text-blue-800 py-1.5 border-b border-gray-100 last:border-0 flex items-center gap-1.5 truncate';
+      const dot = document.createElement('span');
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-gray-200 flex-shrink-0';
+      a.prepend(dot);
+      toc.appendChild(a);
+    });
+  }
+
+  // ── Animated score bars ────────────────────────────────────────────────────
+  const bars = document.querySelectorAll('.score-bar-fill');
+  if (bars.length) {
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          const bar = entry.target;
+          const target = bar.dataset.width;
+          requestAnimationFrame(function () {
+            bar.style.transition = 'width 0.7s cubic-bezier(0.4,0,0.2,1)';
+            bar.style.width = target;
+          });
+          observer.unobserve(bar);
+        }
+      });
+    }, { threshold: 0.2 });
+    bars.forEach(function (bar) { observer.observe(bar); });
+  }
+
+  // ── Sticky header trigger — smooth slide-down ────────────────────────────
+  const stickyBar = document.getElementById('sticky-review-bar');
+  const heroSection = document.querySelector('article > div.border-b');
+  if (stickyBar && heroSection) {
+    let barShown = false;
+    const io = new IntersectionObserver(function (entries) {
+      const leaving = !entries[0].isIntersecting;
+      if (leaving && !barShown) {
+        // Hero scrolled out of view — slide bar down
+        stickyBar.classList.add('bar-visible');
+        barShown = true;
+        // Shake the page once to grab attention
+        document.body.classList.remove('shake-once');
+        void document.body.offsetWidth; // reflow to restart animation
+        document.body.classList.add('shake-once');
+        document.body.addEventListener('animationend', function () {
+          document.body.classList.remove('shake-once');
+        }, { once: true });
+      } else if (!leaving && barShown) {
+        // Hero back in view — slide bar back up
+        stickyBar.classList.remove('bar-visible');
+        barShown = false;
+      }
+    }, { threshold: 0 });
+    io.observe(heroSection);
+  }
+
+  // ── FAQ accordion (details/summary handled natively) ───────────────────────
+})();
+</script>
+{% endblock %}

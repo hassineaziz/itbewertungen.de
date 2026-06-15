@@ -1,0 +1,477 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-06-10 13:06+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: website/templates/about.html:3 website/templates/about.html:9
+#: website/templates/base.html:171
+msgid "About Us"
+msgstr ""
+
+#: website/templates/about.html:4
+msgid "Learn more about"
+msgstr ""
+
+#: website/templates/about.html:4
+msgid "and our mission."
+msgstr ""
+
+#: website/templates/about.html:13
+msgid "Welcome to"
+msgstr ""
+
+#: website/templates/about.html:16
+msgid "Our Mission"
+msgstr ""
+
+#: website/templates/about.html:17
+msgid "Our goal is to help you find the best"
+msgstr ""
+
+#: website/templates/about.html:17
+msgid ""
+"on the market. We understand that choosing the right product can be "
+"overwhelming, which is why we dedicate our time to thoroughly test and "
+"review each item we recommend."
+msgstr ""
+
+#: website/templates/about.html:19
+msgid "Why Trust Us?"
+msgstr ""
+
+#: website/templates/about.html:30
+msgid "Our Independence"
+msgstr ""
+
+#: website/templates/about.html:31
+msgid ""
+"We are completely independent and our recommendations are purely based on"
+" our own lab testing and real-world usage. We never accept payment for "
+"favorable reviews."
+msgstr ""
+
+#: website/templates/base.html:72
+msgid "100% Independent & Reader-Supported"
+msgstr ""
+
+#: website/templates/base.html:76
+msgid "Real Lab Testing"
+msgstr ""
+
+#: website/templates/base.html:80
+msgid "Zero Sponsored Placements"
+msgstr ""
+
+#: website/templates/base.html:84
+msgid "Updated"
+msgstr ""
+
+#: website/templates/base.html:97 website/templates/base.html:121
+msgid "Best picks"
+msgstr ""
+
+#: website/templates/base.html:98 website/templates/base.html:122
+msgid "Reviews"
+msgstr ""
+
+#: website/templates/base.html:99 website/templates/base.html:123
+msgid "About"
+msgstr ""
+
+#: website/templates/base.html:101 website/templates/base.html:125
+msgid "Dashboard"
+msgstr ""
+
+#: website/templates/base.html:102 website/templates/base.html:126
+msgid "Logout"
+msgstr ""
+
+#: website/templates/base.html:160 website/templates/privacy.html:26
+msgid "Affiliate Disclosure"
+msgstr ""
+
+#: website/templates/base.html:167
+msgid "Navigation"
+msgstr ""
+
+#: website/templates/base.html:169
+msgid "Best Picks"
+msgstr ""
+
+#: website/templates/base.html:170
+msgid "All Reviews"
+msgstr ""
+
+#: website/templates/base.html:172 website/templates/how_we_test.html:3
+#: website/templates/how_we_test.html:9
+msgid "How We Test"
+msgstr ""
+
+#: website/templates/base.html:176
+msgid "Legal"
+msgstr ""
+
+#: website/templates/base.html:178 website/templates/privacy.html:3
+#: website/templates/privacy.html:11
+msgid "Privacy Policy"
+msgstr ""
+
+#: website/templates/base.html:179 website/templates/terms.html:3
+#: website/templates/terms.html:11
+msgid "Terms of Service"
+msgstr ""
+
+#: website/templates/base.html:185
+msgid "All rights reserved."
+msgstr ""
+
+#: website/templates/how_we_test.html:4
+msgid "Discover the rigorous testing methodology we use to rank the best"
+msgstr ""
+
+#: website/templates/how_we_test.html:10
+msgid "Our rigorous, data-driven approach to reviewing"
+msgstr ""
+
+#: website/templates/how_we_test.html:14 website/templates/privacy.html:16
+msgid "At"
+msgstr ""
+
+#: website/templates/how_we_test.html:14
+msgid ""
+"we believe that real-world testing is the only way to truly evaluate a "
+"product. We don't just read spec sheets; we put every product through its"
+" paces in our testing lab."
+msgstr ""
+
+#: website/templates/how_we_test.html:19
+msgid "Products Tested"
+msgstr ""
+
+#: website/templates/how_we_test.html:23
+msgid "Hours of Testing"
+msgstr ""
+
+#: website/templates/how_we_test.html:27
+msgid "1. Product Selection"
+msgstr ""
+
+#: website/templates/how_we_test.html:28
+msgid ""
+"We start by researching the market to find the most popular, highly-"
+"rated, and promising new"
+msgstr ""
+
+#: website/templates/how_we_test.html:28
+msgid ""
+"We purchase all the units we test at retail prices to ensure we are "
+"getting the exact same product that you would receive."
+msgstr ""
+
+#: website/templates/how_we_test.html:30
+msgid "2. Synthetic Benchmarks"
+msgstr ""
+
+#: website/templates/how_we_test.html:31
+msgid ""
+"We run a suite of standardized synthetic tests to establish a baseline of"
+" performance. This allows us to compare raw capabilities across different"
+" brands and models objectively."
+msgstr ""
+
+#: website/templates/how_we_test.html:33
+msgid "3. Real-World Usage"
+msgstr ""
+
+#: website/templates/how_we_test.html:34
+msgid ""
+"Synthetic numbers don't tell the whole story. We spend days using each "
+"product in real-world scenarios to evaluate ease of use, durability, and "
+"practical performance."
+msgstr ""
+
+#: website/templates/how_we_test.html:36
+msgid "4. Value Assessment"
+msgstr ""
+
+#: website/templates/how_we_test.html:37
+msgid ""
+"Finally, we weigh the performance and features against the retail price. "
+"A great product isn't truly great unless it offers good value for your "
+"hard-earned money."
+msgstr ""
+
+#: website/templates/landing.html:60
+msgid "Our #1 Pick"
+msgstr ""
+
+#: website/templates/landing.html:93
+msgid "Check price"
+msgstr ""
+
+#: website/templates/landing.html:96
+msgid "Read full review"
+msgstr ""
+
+#: website/templates/landing.html:118
+msgid "Great alternative"
+msgstr ""
+
+#: website/templates/landing.html:133
+msgid "Top picks for"
+msgstr ""
+
+#: website/templates/landing.html:224
+msgid "Browse"
+msgstr ""
+
+#: website/templates/landing.html:224
+msgid "by type"
+msgstr ""
+
+#: website/templates/landing.html:231
+msgid "View reviews"
+msgstr ""
+
+#: website/templates/privacy.html:5
+msgid "Read the privacy policy of"
+msgstr ""
+
+#: website/templates/privacy.html:5
+msgid "to understand how we collect, use, and protect your data."
+msgstr ""
+
+#: website/templates/privacy.html:6
+msgid "privacy policy, data protection, privacy"
+msgstr ""
+
+#: website/templates/privacy.html:12 website/templates/terms.html:12
+msgid "Last updated:"
+msgstr ""
+
+#: website/templates/privacy.html:16
+msgid "accessible from"
+msgstr ""
+
+#: website/templates/privacy.html:16
+msgid ""
+"one of our main priorities is the privacy of our visitors. This Privacy "
+"Policy document contains types of information that is collected and "
+"recorded by"
+msgstr ""
+
+#: website/templates/privacy.html:16
+msgid "and how we use it."
+msgstr ""
+
+#: website/templates/privacy.html:18
+msgid ""
+"If you have additional questions or require more information about our "
+"Privacy Policy, do not hesitate to contact us."
+msgstr ""
+
+#: website/templates/privacy.html:20
+msgid "Log Files"
+msgstr ""
+
+#: website/templates/privacy.html:21
+msgid ""
+"follows a standard procedure of using log files. These files log visitors"
+" when they visit websites. All hosting companies do this and a part of "
+"hosting services' analytics. The information collected by log files "
+"include internet protocol (IP) addresses, browser type, Internet Service "
+"Provider (ISP), date and time stamp, referring/exit pages, and possibly "
+"the number of clicks."
+msgstr ""
+
+#: website/templates/privacy.html:23
+msgid "Cookies and Web Beacons"
+msgstr ""
+
+#: website/templates/privacy.html:24
+msgid "Like any other website,"
+msgstr ""
+
+#: website/templates/privacy.html:24
+msgid ""
+"uses \"cookies\". These cookies are used to store information including "
+"visitors' preferences, and the pages on the website that the visitor "
+"accessed or visited. The information is used to optimize the users' "
+"experience by customizing our web page content based on visitors' browser"
+" type and/or other information."
+msgstr ""
+
+#: website/templates/privacy.html:27
+msgid ""
+"This means that we may use affiliate tracking cookies to see which "
+"outbound links are clicked and to attribute any resulting purchases. "
+"These tracking links do not collect personally identifiable information."
+msgstr ""
+
+#: website/templates/privacy.html:29
+msgid "Third Party Privacy Policies"
+msgstr ""
+
+#: website/templates/privacy.html:30
+msgid ""
+"'s Privacy Policy does not apply to other advertisers or websites. Thus, "
+"we are advising you to consult the respective Privacy Policies of these "
+"third-party ad servers for more detailed information."
+msgstr ""
+
+#: website/templates/privacy.html:32
+msgid "Consent"
+msgstr ""
+
+#: website/templates/privacy.html:33
+msgid ""
+"By using our website, you hereby consent to our Privacy Policy and agree "
+"to its Terms and Conditions."
+msgstr ""
+
+#: website/templates/terms.html:5
+msgid "Review the terms of service for using"
+msgstr ""
+
+#: website/templates/terms.html:5
+msgid "and our affiliate links."
+msgstr ""
+
+#: website/templates/terms.html:6
+msgid "terms of service, legal, conditions"
+msgstr ""
+
+#: website/templates/terms.html:16
+msgid "1. Terms"
+msgstr ""
+
+#: website/templates/terms.html:17
+msgid "By accessing this Website, accessible from"
+msgstr ""
+
+#: website/templates/terms.html:17
+msgid ""
+"you are agreeing to be bound by these Website Terms and Conditions of Use"
+" and agree that you are responsible for the agreement with any applicable"
+" local laws. If you disagree with any of these terms, you are prohibited "
+"from accessing this site."
+msgstr ""
+
+#: website/templates/terms.html:19
+msgid "2. Use License"
+msgstr ""
+
+#: website/templates/terms.html:20
+msgid "Permission is granted to temporarily download one copy of the materials on"
+msgstr ""
+
+#: website/templates/terms.html:20
+msgid "'s Website for personal, non-commercial transitory viewing only."
+msgstr ""
+
+#: website/templates/terms.html:21
+msgid "This will let"
+msgstr ""
+
+#: website/templates/terms.html:21
+msgid ""
+"to terminate upon violations of any of these restrictions. Upon "
+"termination, your viewing right will also be terminated and you should "
+"destroy any downloaded materials in your possession whether it is printed"
+" or electronic format."
+msgstr ""
+
+#: website/templates/terms.html:23
+msgid "3. Disclaimer"
+msgstr ""
+
+#: website/templates/terms.html:24
+msgid "All the materials on"
+msgstr ""
+
+#: website/templates/terms.html:24
+msgid "'s Website are provided \"as is\"."
+msgstr ""
+
+#: website/templates/terms.html:24
+msgid ""
+"makes no warranties, may it be expressed or implied, therefore negates "
+"all other warranties. Furthermore,"
+msgstr ""
+
+#: website/templates/terms.html:24
+msgid ""
+"does not make any representations concerning the accuracy or reliability "
+"of the use of the materials on its Website or otherwise relating to such "
+"materials or any sites linked to this Website."
+msgstr ""
+
+#: website/templates/terms.html:26
+msgid "4. Limitations"
+msgstr ""
+
+#: website/templates/terms.html:27
+msgid ""
+"or its suppliers will not be hold accountable for any damages that will "
+"arise with the use or inability to use the materials on"
+msgstr ""
+
+#: website/templates/terms.html:27
+msgid "'s Website, even if"
+msgstr ""
+
+#: website/templates/terms.html:27
+msgid ""
+"or an authorize representative of this Website has been notified, orally "
+"or written, of the possibility of such damage."
+msgstr ""
+
+#: website/templates/terms.html:29
+msgid "5. Affiliate Links"
+msgstr ""
+
+#: website/templates/terms.html:30
+msgid ""
+"This means that if you click on a product link and purchase the item, we "
+"will receive an affiliate commission. We only recommend products we "
+"believe will add value to our readers."
+msgstr ""
+
+#: website/templates/terms.html:32
+msgid "6. Revisions and Errata"
+msgstr ""
+
+#: website/templates/terms.html:33
+msgid "The materials appearing on"
+msgstr ""
+
+#: website/templates/terms.html:33
+msgid "'s Website may include technical, typographical, or photographic errors."
+msgstr ""
+
+#: website/templates/terms.html:33
+msgid ""
+"will not promise that any of the materials in this Website are accurate, "
+"complete, or current."
+msgstr ""
+
+#: website/templates/terms.html:33
+msgid ""
+"may change the materials contained on its Website at any time without "
+"notice."
+msgstr ""
+

@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.niche.home_title | default('') }} | {{ config.brand.name | default('') }}{% endblock %}
+{% block meta_description %}{{ config.niche.home_description | default('') }}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{{ seo_utils.itemlist_schema(top_picks, config) | tojson | safe }}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.blog_index') }}?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-[2200px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-32">
+    
+    <!-- Hero Section (Section 3) -->
+    <div class="flex flex-col lg:flex-row gap-12 mt-12 mb-20" id="hero">
+        
+        <!-- Left Column: Value Prop -->
+        <div class="lg:w-1/2 flex flex-col justify-center">
+            <span class="inline-block text-xs font-medium text-gray-500 tracking-widest uppercase mb-4">
+                {{ _('Expert-tested') }} · {{ config.niche.year | default('2026') }}
+            </span>
+            <h1 class="text-4xl md:text-5xl font-medium text-gray-900 leading-tight mb-6">
+                {{ _('The best') }} {{ config.niche.category | default('Products') }} {{ _('— ranked by real testing') }}
+            </h1>
+            <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                {{ config.niche.home_description | default('We tested everything to find the right one for you.') }}
+            </p>
+            
+            <div class="flex flex-wrap gap-6 mb-10 text-sm text-gray-700">
+                <div class="flex flex-col">
+                    <span class="text-2xl font-medium text-gray-900">{{ config.niche.products_tested | default('10') }}</span>
+                    <span class="text-xs uppercase tracking-wide text-gray-500">{{ _('Products tested') }}</span>
+                </div>
+                <div class="flex flex-col border-l border-gray-200 pl-6">
+                    <span class="text-2xl font-medium text-gray-900">{{ config.niche.test_hours | default('100') }}</span>
+                    <span class="text-xs uppercase tracking-wide text-gray-500">{{ _('Hours testing') }}</span>
+                </div>
+                <div class="flex flex-col border-l border-gray-200 pl-6">
+                    <span class="text-2xl font-medium text-gray-900">{{ config.niche.readers | default('10k') }}</span>
+                    <span class="text-xs uppercase tracking-wide text-gray-500">{{ _('Monthly readers') }}</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <a href="#best-picks" class="bg-primary text-white text-base font-medium px-8 py-3 rounded hover:opacity-90 transition-opacity">
+                    {{ _('See best picks') }}
+                </a>
+                <a href="{{ url_for('views.blog_index') }}" class="text-gray-600 font-medium px-4 py-3 hover:text-gray-900">
+                    {{ _('Browse all reviews') }}
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Winner Card Panel -->
+        <div class="lg:w-1/2">
+            <div class="bg-gray-50 rounded-3xl p-6 md:p-8 border border-gray-100 h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                    <span class="text-[13px] font-bold text-gray-900 uppercase tracking-wider">{{ _('Our #1 Pick') }}</span>
+                </div>
+                
+                {% if featured_post %}
+                <div class="border-[2px] border-primary rounded-2xl p-6 bg-white relative shadow-sm mb-6">
+                    <div class="flex flex-col sm:flex-row gap-6 mb-6">
+                        <div class="w-full sm:w-1/3 aspect-video sm:aspect-square bg-gray-50 rounded-xl border-[1px] border-gray-100 flex items-center justify-center overflow-hidden">
+                            {% if featured_post.cover_image_url %}
+                            <img src="{{ featured_post.cover_image_url }}" alt="{{ featured_post.title }}" class="object-cover w-full h-full" width="400" height="400" loading="eager" fetchpriority="high">
+                            {% else %}
+                            <span class="material-symbols-outlined text-4xl text-gray-300">inventory_2</span>
+                            {% endif %}
+                        </div>
+                        <div class="sm:w-2/3 flex flex-col">
+                            <h3 class="text-xl font-medium text-gray-900 mb-1">{{ featured_post.title }}</h3>
+                            <div class="text-sm text-gray-500 mb-3">{{ featured_post.excerpt | truncate(60) }}</div>
+                            <div class="flex items-center gap-2 text-sm mb-auto">
+                                <span class="bg-primary text-white font-medium px-2 py-0.5 rounded text-xs">{{ featured_post.rating | default('9.5') }}</span>
+                                <span class="flex text-star"><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star_half</span></span>
+                                <span class="text-gray-400 text-xs">({{ featured_post.rating_count | default('0') }})</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 pt-4 gap-4">
+                        <div class="text-center sm:text-left">
+                            <div class="text-2xl font-medium text-success">{{ featured_post.price_from | default('Check Price') }}</div>
+                            {% if featured_post.price_drop %}
+                            <div class="text-[11px] font-bold text-success mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">trending_down</span> {{ featured_post.price_drop }}% price drop</div>
+                            {% endif %}
+                        </div>
+                        <div class="flex flex-col gap-2 w-full sm:w-auto">
+                            <a href="{{ url_for('views.affiliate_redirect', slug=featured_post.affiliate_slug) if featured_post.affiliate_slug else '#' }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full whitespace-nowrap">
+                                {{ config.affiliate.default_cta | default(_('Check price')) }}
+                            </a>
+                            <a href="{{ url_for('views.blog_post', slug=featured_post.slug) }}" class="text-center text-[13px] font-medium text-gray-500 hover:text-gray-900">
+                                {{ _('Read full review') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="border-[2px] border-dashed border-gray-300 rounded-2xl p-12 text-center bg-white mb-6">
+                    <span class="material-symbols-outlined text-4xl text-gray-300 mb-2">add_circle</span>
+                    <p class="text-[13px] text-gray-500">No featured post set for {{ config.niche.category | default('Category') }}.<br>Set <code>featured_rank=1</code> in Admin.</p>
+                </div>
+                {% endif %}
+
+                <!-- Runner up list -->
+                {% if runner_up_posts %}
+                <div class="flex flex-col gap-3 mt-auto">
+                    {% for post in runner_up_posts %}
+                    {% if post.featured_rank and post.featured_rank > 1 %}
+                    <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="flex items-center justify-between p-4 border-[1px] border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all group bg-white">
+                        <div class="flex items-center gap-4">
+                            <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 font-bold text-[11px] flex items-center justify-center">#{{ post.featured_rank }}</span>
+                            <div>
+                                <div class="text-[14px] font-medium text-gray-900 group-hover:text-primary transition-colors">{{ post.title }}</div>
+                                <div class="text-[11px] text-gray-500">{{ post.best_for_label | default(_('Great alternative')) }} · {{ post.rating | default('9.0') }}/10</div>
+                            </div>
+                        </div>
+                        <div class="text-[13px] font-bold text-success">{{ post.price_from | default('') }}</div>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Top Picks -->
+    <div id="best-picks" class="mt-16 border-t border-gray-100 pt-8">
+        <h2 class="text-2xl font-medium text-gray-900 mb-10">{{ _('Top picks for') }} {{ config.niche.year | default('2026') }}</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% if top_picks %}
+                {% for post in top_picks %}
+                <div class="flex flex-col border {% if loop.index == 1 %}border-[2px] border-primary{% else %}border-[1px] border-gray-200{% endif %} rounded p-6 bg-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-medium px-2.5 py-1 rounded-sm uppercase tracking-wider
+                            {% if loop.index == 1 %}bg-blue-100 text-blue-800{% elif loop.index == 2 %}bg-green-100 text-green-800{% else %}bg-purple-100 text-purple-800{% endif %}">
+                            {{ post.best_for_label | default('Top Pick') }}
+                        </span>
+                        <span class="material-symbols-outlined text-gray-300">{{ post.category_icon | default('inventory_2') }}</span>
+                    </div>
+                    
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">{{ post.title }}</h3>
+                    <div class="text-sm text-gray-500 mb-4 h-10 overflow-hidden">{{ post.excerpt | truncate(60) }}</div>
+                    
+                    <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-gray-900 text-white font-medium px-2 py-0.5 rounded text-xs">{{ post.rating | default('9.0') }}</span>
+                            <span class="text-xs text-gray-500">/10</span>
+                        </div>
+                        <div class="text-lg font-medium text-success">{{ post.price_from | default('') }}</div>
+                    </div>
+                    
+                    <ul class="text-sm text-gray-600 space-y-2 mb-8 flex-grow">
+                        {% for pro in post.pros_list[:3] %}
+                        <li class="flex items-start"><span class="material-symbols-outlined text-[16px] text-success mr-2 shrink-0">check</span>{{ pro }}</li>
+                        {% else %}
+                        <li class="flex items-start"><span class="material-symbols-outlined text-[16px] text-success mr-2 shrink-0">check</span>Excellent build quality</li>
+                        <li class="flex items-start"><span class="material-symbols-outlined text-[16px] text-success mr-2 shrink-0">check</span>Great performance</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <div class="mt-auto space-y-3">
+                        <a href="{{ url_for('views.affiliate_redirect', slug=post.affiliate_slug) if post.affiliate_slug else '#' }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
+                            {{ config.affiliate.default_cta | default('Check price') }}
+                        </a>
+                        <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="block w-full text-center text-sm font-medium text-gray-500 border border-gray-200 px-4 py-2.5 rounded hover:bg-gray-50 transition-colors">
+                            Full review
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Placeholder cards if empty -->
+                {% for i in range(3) %}
+                <div class="flex flex-col border-[1px] border-dashed border-gray-300 rounded p-6 bg-gray-50 text-center justify-center items-center h-80">
+                    <span class="material-symbols-outlined text-gray-300 mb-2">hourglass_empty</span>
+                    <div class="text-gray-500 text-sm">Review coming soon</div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 5: Latest Reviews -->
+    <div class="mt-16 border-t border-gray-100 pt-8">
+        <div class="flex justify-between items-end mb-10">
+            <h2 class="text-2xl font-medium text-gray-900">Latest {{ config.niche.category | default('') }} reviews</h2>
+            <a href="{{ url_for('views.blog_index') }}" class="text-primary text-sm font-medium hover:underline">All reviews &rarr;</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for post in latest_posts %}
+            <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="flex flex-col sm:flex-row gap-6 border-[1px] border-gray-200 rounded p-4 hover:border-primary transition-colors group bg-white">
+                <div class="w-full sm:w-1/3 aspect-video bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                    {% if post.cover_image_url %}
+                    <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" width="300" height="169">
+                    {% endif %}
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-xs font-medium text-accent uppercase tracking-wider mb-2">{{ post.category.name if post.category and not post.category is string else post.category | default('Review') }}</span>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 group-hover:text-primary transition-colors">{{ post.title }}</h3>
+                    <p class="text-sm text-gray-500 mb-4">{{ post.excerpt | truncate(120) }}</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-400 mt-auto">
+                        <span>{{ post.updated_at.strftime('%b %d, %Y') if post.updated_at else '' }}</span>
+                        <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-medium">{{ post.rating | default('N/A') }}</span>
+                        <span>{{ post.read_time | default('5') }} min read</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Trust & Discovery Section (Subtle Break) -->
+    <div class="mt-16 bg-gray-50 rounded-2xl p-8 md:p-12 border border-gray-100">
+        
+        <!-- Section 6: Browse by Category -->
+        <div class="mb-16">
+            <h2 class="text-2xl font-medium text-gray-900 mb-8 text-center">{{ _('Browse') }} {{ config.niche.category | default('Reviews') }} {{ _('by type') }}</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for cat in categories %}
+                <a href="{{ url_for('views.blog_index', category=cat.slug) }}" class="flex flex-col items-center justify-center p-6 md:p-8 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50/50 transition-colors group bg-white shadow-sm hover:shadow">
+                    <span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors mb-3">{{ cat.icon | default('folder') }}</span>
+                    <h3 class="text-base font-medium text-gray-900 group-hover:text-primary transition-colors mb-1">{{ cat.name }}</h3>
+                    <span class="text-[12px] text-gray-500">{{ _('View reviews') }} &rarr;</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Section 7: Why trust us -->
+        <div id="about" class="pt-12 border-t border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                {% for point in config.get('niche', {}).get('trust_points', []) %}
+                <div class="flex flex-col text-center items-center">
+                    <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center mb-5 text-primary">
+                        <span class="material-symbols-outlined text-[26px]">{{ point.icon | default('verified') }}</span>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ point.title }}</h3>
+                    <p class="text-[14px] text-gray-600 leading-relaxed">{{ point.text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 8: Newsletter -->
+    <section id="newsletter" class="mt-16 bg-gray-50 rounded-lg p-12 text-center border-[1px] border-gray-200">
+        <h2 class="text-3xl font-medium text-gray-900 mb-4">{{ _('Get the best') }} {{ config.niche.category | default('') }} {{ _('picks before everyone else') }}</h2>
+        <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">{{ config.get('email', {}).get('subscribe_sub', '') }}</p>
+        
+        <div class="flex flex-wrap justify-center gap-6 mb-10">
+            {% for perk in config.get('email', {}).get('perks', []) %}
+            <div class="flex items-center text-sm font-medium text-gray-700 bg-white px-4 py-2 rounded-full border-[1px] border-gray-200 shadow-sm">
+                <span class="material-symbols-outlined text-[16px] text-accent mr-2">{{ perk.icon | default('check') }}</span>
+                {{ perk.label }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <form action="{{ url_for('views.subscribe') }}" method="POST" class="max-w-md mx-auto flex gap-2">
+            <!-- Dummy CSRF -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="email" placeholder="Your email address" required class="flex-grow px-4 py-3 rounded border-[1px] border-gray-300 focus:outline-none focus:border-primary text-sm">
+            <button type="submit" class="bg-gray-900 text-white font-medium px-8 py-3 rounded hover:bg-black transition-colors">
+                {{ config.get('email', {}).get('cta_label', 'Subscribe') }}
+            </button>
+        </form>
+        
+        <div class="mt-6 text-xs text-gray-500">
+            {{ config.get('email', {}).get('subscriber_count', '1.000') }}+ Abonnenten · Jederzeit abbestellbar · Keine bezahlten Platzierungen
+        </div>
+    </section>
+
+</div>
+{% endblock %}

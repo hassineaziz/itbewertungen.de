@@ -1,0 +1,1129 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Neuer Beitrag' if not post else 'Beitrag bearbeiten' }}{% endblock %}
+
+{% block head %}
+<style>
+  /* ── CMS Form Styles ─────────────────────────────────── */
+  .field-card        { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-bottom:16px; }
+  .field-label       { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+  .field-input       { width:100%; padding:10px 14px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; transition:border .15s; }
+  .field-input:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+  .field-required    { color:#ef4444; margin-left:3px; }
+  .field-hint        { font-size:12px; color:#9ca3af; margin-top:4px; }
+
+  /* Array / group blocks */
+  .array-block       { border:1px solid #e5e7eb; border-radius:10px; background:#f9fafb; padding:16px; margin-bottom:12px; position:relative; }
+  .array-block-title { font-size:13px; font-weight:700; color:#6b7280; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .btn-add-item      { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#2563eb; background:#eff6ff; border:1px dashed #93c5fd; border-radius:8px; padding:8px 16px; cursor:pointer; margin-top:8px; transition:all .15s; }
+  .btn-add-item:hover{ background:#dbeafe; }
+  .btn-remove        { position:absolute; top:12px; right:12px; background:none; border:none; color:#9ca3af; cursor:pointer; font-size:18px; line-height:1; }
+  .btn-remove:hover  { color:#ef4444; }
+
+  /* List field */
+  .list-item-row     { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .list-item-row input { flex:1; }
+
+  /* Table field */
+  .table-grid        { width:100%; border-collapse:collapse; font-size:13px; }
+  .table-grid th     { background:#f3f4f6; font-weight:600; padding:8px 12px; border:1px solid #e5e7eb; text-align:left; white-space:nowrap; }
+  .table-grid td     { padding:4px 8px; border:1px solid #e5e7eb; }
+  .table-grid td input { width:100%; border:none; background:transparent; padding:6px; font-size:13px; outline:none; }
+  .table-grid td input:focus { background:#eff6ff; }
+  .btn-add-row       { font-size:12px; color:#2563eb; background:none; border:none; cursor:pointer; margin-top:8px; font-weight:600; }
+
+  /* Template picker */
+  .tmpl-card         { border:2px solid #e5e7eb; border-radius:12px; padding:16px; cursor:pointer; transition:all .15s; }
+  .tmpl-card:hover   { border-color:#93c5fd; background:#eff6ff; }
+  .tmpl-card.active  { border-color:#2563eb; background:#eff6ff; }
+  .tmpl-card h3      { font-size:14px; font-weight:700; color:#111827; margin:0 0 4px; }
+  .tmpl-card p       { font-size:12px; color:#6b7280; margin:0; }
+
+  /* Sidebar sticky */
+  @media (min-width:1024px) { .sidebar-sticky { position:sticky; top:80px; } }
+
+  /* Tab pills */
+  .tab-btn           { padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all .15s; }
+  .tab-btn.active    { background:#2563eb; color:#fff; }
+  .tab-btn:not(.active){ color:#6b7280; }
+  .tab-btn:not(.active):hover{ background:#f3f4f6; }
+  .tab-panel         { display:none; }
+  .tab-panel.active  { display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ 'Neuer Beitrag' if not post else 'Beitrag bearbeiten' }}</h1>
+    </div>
+    <a href="{{ url_for('views.blog_dashboard') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">
+      ← Dashboard
+    </a>
+  </div>
+
+  <!-- Main form -->
+  <form id="cms-form" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <!-- Hidden field: serialised structured JSON submitted by JS -->
+    <input type="hidden" name="structured_content_json" id="structured_content_json" value="" />
+    <script id="structured-content-data" type="application/json">
+      {{ (post.structured_content if post and post.structured_content else {}) | tojson | safe }}
+    </script>
+
+    <!-- ════════ LEFT: Main editor ════════ -->
+    <div class="lg:col-span-2 space-y-6">
+
+      <!-- ① Title -->
+      <div class="field-card">
+        <label class="field-label">Titel <span class="field-required">*</span></label>
+        <input name="title" id="post-title" type="text" required
+               value="{{ post.title if post else '' }}"
+               class="field-input" placeholder="Beitragstitel eingeben…"
+               oninput="autoFillSlug(this.value)">
+        <div class="mt-3">
+          <label class="field-label" for="post-slug">
+            URL / Slug
+            <span class="ml-1 text-[10px] font-normal text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">Wie der Link aussieht: /mein-beitrag</span>
+          </label>
+          <div class="flex items-center gap-0">
+            <span class="inline-flex items-center px-3 h-[42px] border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-lg">/</span>
+            <input name="slug" id="post-slug" type="text"
+                   value="{{ post.slug if post else '' }}"
+                   class="field-input rounded-l-none flex-1"
+                   placeholder="mein-beitrag-url"
+                   oninput="slugManuallyEdited=true">
+          </div>
+          <p class="field-hint">Nur Kleinbuchstaben, Zahlen und Bindestriche. Wird automatisch aus dem Titel generiert, wenn leer gelassen.</p>
+        </div>
+      </div>
+
+      <!-- ② Template selector -->
+      <div class="field-card" id="template-selector-card">
+        <label class="field-label">Template wählen</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" id="tmpl-cards">
+          <!-- Standard -->
+          <div class="tmpl-card {% if not post or post.template == 'standard' %}active{% endif %}"
+               data-tmpl="standard" onclick="selectTemplate('standard', this)">
+            <h3>📝 Standard (HTML)</h3>
+            <p>Freier HTML-Editor – für generische Beiträge</p>
+          </div>
+          {% for key, label in template_names.items() %}
+          <div class="tmpl-card {% if post and post.template == key %}active{% endif %}"
+               data-tmpl="{{ key }}" onclick="selectTemplate('{{ key }}', this)">
+            <h3>🗂 {{ label }}</h3>
+            <p>Strukturiertes Template</p>
+          </div>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="template" id="selected-template"
+               value="{{ post.template if post else 'standard' }}">
+      </div>
+
+      <!-- ③ Dynamic structured form (injected by JS) -->
+      <div id="structured-form-container"></div>
+
+      <!-- ④ Legacy HTML textarea (shown only for 'standard' template) -->
+      <div id="standard-content-card" class="field-card" {% if post and post.template != 'standard' %}style="display:none"{% endif %}>
+        <label class="field-label">Inhalt (HTML) <span class="field-required">*</span></label>
+        <textarea name="content" id="standard-content"
+                  class="field-input" style="min-height:360px;font-family:monospace;font-size:13px;"
+        >{{ post.content_html if post and post.content_html else '' }}</textarea>
+        <div class="mt-3 flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <div class="text-xs text-gray-500">Bilder hochladen und an Cursor-Position einfügen:</div>
+          <label class="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg cursor-pointer text-xs font-semibold border border-blue-200 transition-colors">
+            <span class="material-symbols-outlined text-[16px]">upload_file</span>
+            <span>Bild in Inhalt einfügen</span>
+            <input type="file" class="hidden" accept="image/*" onchange="uploadImageToContent(this, 'standard-content')">
+          </label>
+        </div>
+      </div>
+
+      <!-- ⑤ Excerpt -->
+      <div class="field-card">
+        <label class="field-label">Auszug / Vorschau</label>
+        <textarea name="excerpt" rows="3" class="field-input"
+                  placeholder="Kurze Beschreibung…">{{ post.excerpt if post else '' }}</textarea>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- ════════ RIGHT: Sidebar ════════ -->
+    <div class="space-y-6 sidebar-sticky">
+
+      <!-- Publish -->
+      <div class="field-card">
+        <h3 class="text-sm font-bold text-gray-900 mb-4">Veröffentlichen</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="field-label">Status</label>
+            <select name="status" class="field-input">
+              <option value="draft"     {% if not post or post.status=='draft'      %}selected{% endif %}>Entwurf</option>
+              <option value="published" {% if post and post.status=='published'     %}selected{% endif %}>Veröffentlicht</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm">
+            {{ 'Erstellen' if not post else 'Speichern' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- SEO -->
+      <div class="field-card">
+        <h3 class="text-sm font-bold text-gray-900 mb-4">SEO</h3>
+        <div class="space-y-3">
+
+          <!-- Focus Keyword -->
+          <div>
+            <label class="field-label">Focus Keyword
+              <span class="ml-1 text-[10px] font-normal text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">→ wird als meta keywords Tag verwendet</span>
+            </label>
+            <input name="focus_keyword" id="seo_focus_keyword" type="text"
+                   value="{{ post.focus_keyword if post else '' }}"
+                   class="field-input"
+                   placeholder="z.B. Sony WH-1000XM5 Test, ANC Kopfhörer Review">
+            <p class="field-hint">Dieser Wert wird direkt als <code class="bg-gray-100 px-1 rounded text-[10px]">&lt;meta name=&quot;keywords&quot;&gt;</code> und für SEO-Targeting verwendet.</p>
+          </div>
+
+          <!-- Meta Title -->
+          <div>
+            <label class="field-label" for="seo_meta_title">
+              Meta Title
+              <span id="mt-counter" class="ml-2 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">0 / 60</span>
+              <span id="mt-hint" class="ml-1 text-[10px] hidden"></span>
+            </label>
+            <input name="meta_title" id="seo_meta_title" type="text"
+                   value="{{ post.meta_title if post else '' }}"
+                   class="field-input"
+                   placeholder="Kurzer, prägnanter Seitentitel (50–60 Zeichen)"
+                   oninput="seoCount(this,'mt-counter','mt-hint',50,60)">
+            <p class="field-hint">Ziel: <strong>50–60</strong> Zeichen · Wird im Google-Suchergebnis angezeigt</p>
+          </div>
+
+          <!-- Meta Description -->
+          <div>
+            <label class="field-label" for="seo_meta_desc">
+              Meta Description
+              <span id="md-counter" class="ml-2 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">0 / 160</span>
+              <span id="md-hint" class="ml-1 text-[10px] hidden"></span>
+            </label>
+            <textarea name="meta_description" id="seo_meta_desc" rows="2"
+                      class="field-input"
+                      placeholder="Kurze Beschreibung der Seite (150–160 Zeichen)"
+                      oninput="seoCount(this,'md-counter','md-hint',150,160)">{{ post.meta_description if post else '' }}</textarea>
+            <p class="field-hint">Ziel: <strong>150–160</strong> Zeichen · Erscheint als Snippet in den Suchergebnissen</p>
+          </div>
+
+        </div>
+      </div>
+
+      <script>
+        // Run counters on page load so existing values are shown immediately
+        (function() {
+          function seoCount(el, counterId, hintId, min, max) {
+            var len = el.value.length;
+            var counter = document.getElementById(counterId);
+            var hint    = document.getElementById(hintId);
+            var limit   = (counterId === 'mt-counter') ? 60 : 160;
+            counter.textContent = len + ' / ' + limit;
+            // Reset classes
+            counter.className = 'ml-2 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded';
+            hint.className    = 'ml-1 text-[10px]';
+            if (len === 0) {
+              counter.classList.add('bg-gray-100', 'text-gray-500');
+              hint.classList.add('hidden');
+            } else if (len < min) {
+              counter.classList.add('bg-amber-50', 'text-amber-600', 'border', 'border-amber-200');
+              hint.textContent = 'zu kurz';
+              hint.classList.add('text-amber-500');
+            } else if (len <= max) {
+              counter.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+              hint.textContent = '✓ optimal';
+              hint.classList.add('text-green-600', 'font-semibold');
+            } else {
+              counter.classList.add('bg-red-50', 'text-red-600', 'border', 'border-red-200');
+              hint.textContent = (len - max) + ' zu viel';
+              hint.classList.add('text-red-500', 'font-semibold');
+            }
+          }
+          // Expose globally for oninput
+          window.seoCount = seoCount;
+          // Init on load
+          var mt = document.getElementById('seo_meta_title');
+          var md = document.getElementById('seo_meta_desc');
+          if (mt) seoCount(mt, 'mt-counter', 'mt-hint', 50, 60);
+          if (md) seoCount(md, 'md-counter', 'md-hint', 150, 160);
+        })();
+      </script>
+
+      <!-- Kategorien & Tags -->
+      <div class="field-card">
+        <h3 class="text-sm font-bold text-gray-900 mb-4">Kategorie & Tags</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="field-label">Kategorie</label>
+            <input name="category" type="text" value="{{ post.category if post and post.category else '' }}" class="field-input" placeholder="z.B. Storage, Laptops">
+          </div>
+          <div>
+            <label class="field-label">Tags</label>
+            <input name="tags" type="text" value="{{ post.get_tags_list()|join(', ') if post else '' }}" class="field-input" placeholder="tag1, tag2, tag3">
+            <p class="field-hint">Durch Komma getrennt</p>
+          </div>
+          <div>
+            <label class="field-label">Cover-Bild URL</label>
+            <div class="flex gap-2">
+              <input name="cover_image_url" id="cover_image_url" type="text" value="{{ post.cover_image_url if post and post.cover_image_url else '' }}" class="field-input" placeholder="https://…">
+              <label class="flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 rounded-lg cursor-pointer text-sm font-medium border border-gray-300">
+                <span class="material-symbols-outlined text-[18px]">upload</span>
+                <input type="file" class="hidden" accept="image/*" onchange="uploadImageFile(this, 'cover_image_url')">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Affiliate & Review -->
+      <div class="field-card">
+        <h3 class="text-sm font-bold text-gray-900 mb-4">Affiliate & Bewertung</h3>
+        <div class="space-y-3">
+          <!-- Always Visible -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Featured Rank</label>
+              <input name="featured_rank" type="number" min="1" max="5" value="{{ post.featured_rank if post and post.featured_rank else '' }}" class="field-input" placeholder="1–5">
+            </div>
+            <div>
+              <label class="field-label">Lesezeit (min)</label>
+              <input name="read_time" type="number" value="{{ post.read_time if post else '5' }}" class="field-input">
+            </div>
+          </div>
+          
+          <!-- Conditionally Visible (for Standard templates only, auto-derived for others) -->
+          <div id="sidebar-affiliate-fields" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="field-label">Rating (/10)</label>
+                <input name="rating" type="number" step="0.1" max="10" value="{{ post.rating if post and post.rating else '' }}" class="field-input">
+              </div>
+              <div>
+                <label class="field-label">Preis ab</label>
+                <input name="price_from" type="text" value="{{ post.price_from if post and post.price_from else '' }}" class="field-input" placeholder="$149.99">
+              </div>
+            </div>
+            <div>
+              <label class="field-label">Best For Label</label>
+              <input name="best_for_label" type="text" value="{{ post.best_for_label if post and post.best_for_label else '' }}" class="field-input" placeholder="Bester Gesamt">
+            </div>
+            <div>
+              <label class="field-label">Affiliate Slug</label>
+              <div class="flex">
+                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">/go/</span>
+                <div class="relative flex-1">
+                  <input name="affiliate_slug" id="sidebar_affiliate_slug" type="text" value="{{ post.affiliate_slug if post and post.affiliate_slug else '' }}" class="field-input rounded-l-none w-full" placeholder="samsung-t9">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+  </form>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VANILLA JS SCHEMA-DRIVEN FORM BUILDER
+     ══════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Injected by server ────────────────────────────────────────────────────────
+const ALL_SCHEMAS   = {{ schemas_json | safe }};
+const ALL_AFFILIATE_LINKS = {{ links_json | safe }};
+const EXISTING_DATA = JSON.parse(document.getElementById('structured-content-data').textContent || '{}');
+
+// Custom autocomplete list populator (Explicitly styled with white background and black text)
+function setupSlugAutocomplete(inp) {
+  const wrapper = inp.parentNode;
+  if (!wrapper) return;
+  
+  wrapper.style.position = 'relative';
+  
+  const dropdown = document.createElement('div');
+  dropdown.className = 'absolute z-50 left-0 w-full max-h-60 overflow-y-auto rounded-lg shadow-xl hidden mt-1 border';
+  dropdown.style.backgroundColor = '#ffffff';
+  dropdown.style.color = '#000000';
+  dropdown.style.borderColor = '#d1d5db';
+  dropdown.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+  
+  wrapper.appendChild(dropdown);
+  
+  function renderSuggestions(query) {
+    dropdown.innerHTML = '';
+    const q = query.toLowerCase().trim();
+    
+    const matches = ALL_AFFILIATE_LINKS.filter(link => {
+      if (!q) return true; // show all available links when input is empty
+      return link.slug.toLowerCase().includes(q) || 
+             link.product_title.toLowerCase().includes(q);
+    });
+    
+    if (matches.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+    
+    matches.forEach(link => {
+      const item = document.createElement('div');
+      item.className = 'px-4 py-2.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors text-left';
+      item.style.backgroundColor = '#ffffff';
+      item.style.color = '#000000';
+      
+      item.innerHTML = `
+        <div class="font-bold text-xs text-gray-900" style="color: #111827;">${link.slug}</div>
+        <div class="text-[11px] text-gray-500 truncate" style="color: #6b7280; margin-top: 2px;">
+          ${link.product_title} ${link.current_price ? '(' + link.current_price + ')' : ''}
+        </div>
+      `;
+      
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        inp.value = link.slug;
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+        dropdown.classList.add('hidden');
+      });
+      
+      dropdown.appendChild(item);
+    });
+    
+    dropdown.classList.remove('hidden');
+  }
+  
+  inp.addEventListener('focus', () => {
+    dropdown.style.width = inp.offsetWidth + 'px';
+    dropdown.style.top = (inp.offsetTop + inp.offsetHeight) + 'px';
+    dropdown.style.left = inp.offsetLeft + 'px';
+    renderSuggestions(inp.value);
+  });
+  
+  inp.addEventListener('input', () => {
+    renderSuggestions(inp.value);
+  });
+  
+  inp.addEventListener('blur', () => {
+    setTimeout(() => {
+      dropdown.classList.add('hidden');
+    }, 150);
+  });
+}
+
+// Bind autocomplete to sidebar input on load
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebarSlug = document.getElementById('sidebar_affiliate_slug');
+  if (sidebarSlug) {
+    setupSlugAutocomplete(sidebarSlug);
+  }
+});
+
+// ── Slug auto-fill from title ────────────────────────────────────────────────
+let slugManuallyEdited = {{ 'true' if post else 'false' }};
+
+function autoFillSlug(title) {
+  if (slugManuallyEdited) return;
+  const slugInput = document.getElementById('post-slug');
+  if (!slugInput) return;
+  const slug = title
+    .toLowerCase()
+    .replace(/[äöü]/g, c => ({ä:'ae',ö:'oe',ü:'ue'}[c]))
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-');
+  slugInput.value = slug;
+}
+
+// ── SEO counters ──────────────────────────────────────────────────────────────
+let currentTemplate = document.getElementById('selected-template').value;
+let formData        = Object.assign({}, EXISTING_DATA);
+
+// ── Template selection ────────────────────────────────────────────────────────
+function toggleSidebarFields(key) {
+  const container = document.getElementById('sidebar-affiliate-fields');
+  if (container) {
+    container.style.display = (key === 'standard') ? '' : 'none';
+  }
+}
+
+function selectTemplate(key, card) {
+  document.querySelectorAll('.tmpl-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  document.getElementById('selected-template').value = key;
+  currentTemplate = key;
+
+  const isStandard = key === 'standard';
+  document.getElementById('standard-content-card').style.display = isStandard ? '' : 'none';
+  document.getElementById('structured-form-container').innerHTML  = '';
+  toggleSidebarFields(key);
+
+  if (!isStandard && ALL_SCHEMAS[key]) {
+    formData = Object.assign({}, EXISTING_DATA);  // keep existing data on template switch
+    buildStructuredForm(ALL_SCHEMAS[key].fields, formData);
+  }
+}
+
+// ── Main form builder ─────────────────────────────────────────────────────────
+function buildStructuredForm(fields, data) {
+  const container = document.getElementById('structured-form-container');
+  container.innerHTML = '';
+
+  const card = el('div', { className: 'field-card' });
+  const title = el('h2', { className: 'text-base font-bold text-gray-900 mb-5', textContent: 'Strukturierter Inhalt' });
+  card.appendChild(title);
+
+  Object.entries(fields).forEach(([key, schema]) => {
+    card.appendChild(buildField(key, schema, data));
+  });
+
+  container.appendChild(card);
+  syncJSON();
+}
+
+function buildField(key, schema, data) {
+  const type = typeof schema === 'string' ? schema : schema.type;
+  const wrap = el('div', { className: 'mb-6' });
+
+  const label = el('label', {
+    className: 'field-label',
+    innerHTML: (schema.label || key) + (schema.required ? ' <span class="field-required">*</span>' : '')
+  });
+  wrap.appendChild(label);
+
+  if (type === 'text') {
+    const inp = el('input', {
+      type: 'text',
+      className: 'field-input',
+      placeholder: schema.placeholder || '',
+      value: data[key] || ''
+    });
+    inp.addEventListener('input', () => { data[key] = inp.value; syncJSON(); });
+    
+    if (key === 'image_url' || key.endsWith('_url') || key.includes('image')) {
+      const flexContainer = el('div', { className: 'flex gap-2' });
+      flexContainer.appendChild(inp);
+      
+      const uploadLabel = el('label', {
+        className: 'flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 rounded-lg cursor-pointer text-sm font-medium border border-gray-300'
+      });
+      uploadLabel.innerHTML = '<span class="material-symbols-outlined text-[18px]">upload</span>';
+      
+      const fileInp = el('input', {
+        type: 'file',
+        className: 'hidden',
+        accept: 'image/*'
+      });
+      fileInp.addEventListener('change', () => {
+        uploadImageFileDirect(fileInp, inp, (newUrl) => {
+          data[key] = newUrl;
+          syncJSON();
+        });
+      });
+      
+      uploadLabel.appendChild(fileInp);
+      flexContainer.appendChild(uploadLabel);
+      wrap.appendChild(flexContainer);
+    } else if (key === 'asin') {
+      const flexContainer = el('div', { className: 'flex gap-2' });
+      flexContainer.appendChild(inp);
+      
+      const fetchBtn = el('button', {
+        type: 'button',
+        className: 'flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3.5 rounded-lg text-xs font-semibold border border-blue-700 transition-colors whitespace-nowrap cursor-pointer',
+        innerHTML: '<span class="material-symbols-outlined text-[16px]">sync</span> <span>Laden</span>'
+      });
+      
+      fetchBtn.addEventListener('click', () => {
+        const asinVal = inp.value.trim();
+        if (!asinVal) {
+          alert('Bitte geben Sie zuerst eine ASIN ein.');
+          return;
+        }
+        
+        const originalText = fetchBtn.innerHTML;
+        fetchBtn.innerHTML = '<span>Lädt...</span>';
+        fetchBtn.disabled = true;
+        
+        fetch(`/admin/api/amazon-fetch/${asinVal}`)
+          .then(res => res.json())
+          .then(result => {
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+            
+            if (result.error) {
+              alert('Fehler beim Abrufen von Amazon: ' + result.error);
+              return;
+            }
+            
+            if (result.demo_mode) {
+              alert('Demo-Modus: Beispieldaten geladen.');
+            }
+            
+            // Set properties directly
+            data.product_name = result.product_title;
+            data.name = result.product_title;
+            data.price = result.current_price ? result.current_price + ' €' : '';
+            data.image_url = result.image_url || '';
+            if (result.features && result.features.length > 0) {
+              data.specs = result.features.slice(0, 5);
+            }
+            
+            // Re-render
+            if (currentTemplate && currentTemplate !== 'standard' && ALL_SCHEMAS[currentTemplate]) {
+              buildStructuredForm(ALL_SCHEMAS[currentTemplate].fields, formData);
+            }
+            syncJSON();
+          })
+          .catch(err => {
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+            alert('Netzwerkfehler: ' + err);
+          });
+      });
+      
+      flexContainer.appendChild(fetchBtn);
+      wrap.appendChild(flexContainer);
+    } else if (key === 'affiliate_slug') {
+      const inputWrapper = el('div', { className: 'relative flex-1' });
+      inputWrapper.appendChild(inp);
+      
+      const flexContainer = el('div', { className: 'flex gap-2 w-full' });
+      flexContainer.appendChild(inputWrapper);
+      
+      const fetchBtn = el('button', {
+        type: 'button',
+        className: 'flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3.5 rounded-lg text-xs font-semibold border border-blue-700 transition-colors whitespace-nowrap cursor-pointer',
+        innerHTML: '<span class="material-symbols-outlined text-[16px]">sync</span> <span>Details laden</span>'
+      });
+      
+      fetchBtn.addEventListener('click', () => {
+        const slugVal = inp.value.trim();
+        if (!slugVal) {
+          alert('Bitte geben Sie zuerst einen Affiliate-Slug ein.');
+          return;
+        }
+        
+        const originalText = fetchBtn.innerHTML;
+        fetchBtn.innerHTML = '<span>Lädt...</span>';
+        fetchBtn.disabled = true;
+        
+        fetch(`/admin/api/affiliate-link/${encodeURIComponent(slugVal)}`)
+          .then(res => res.json())
+          .then(result => {
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+            
+            if (result.error) {
+              alert('Fehler: ' + result.error);
+              return;
+            }
+            
+            // Set properties directly
+            data.product_name = result.product_title;
+            data.name = result.product_title;
+            data.price = result.current_price || '';
+            data.image_url = result.image_url || '';
+            if (result.features && result.features.length > 0) {
+              data.specs = result.features.slice(0, 5);
+            }
+            
+            // Re-render
+            if (currentTemplate && currentTemplate !== 'standard' && ALL_SCHEMAS[currentTemplate]) {
+              buildStructuredForm(ALL_SCHEMAS[currentTemplate].fields, formData);
+            }
+            syncJSON();
+          })
+          .catch(err => {
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+            alert('Netzwerkfehler: ' + err);
+          });
+      });
+      
+      flexContainer.appendChild(fetchBtn);
+      wrap.appendChild(flexContainer);
+      
+      setTimeout(() => {
+        setupSlugAutocomplete(inp);
+      }, 0);
+    } else {
+      wrap.appendChild(inp);
+    }
+
+  } else if (type === 'textarea') {
+    const ta = el('textarea', {
+      className: 'field-input',
+      placeholder: schema.placeholder || '',
+      rows: schema.rows || 4,
+      textContent: data[key] || ''
+    });
+    ta.addEventListener('input', () => { data[key] = ta.value; syncJSON(); });
+    wrap.appendChild(ta);
+
+  } else if (type === 'number') {
+    const inp = el('input', {
+      type: 'number',
+      className: 'field-input',
+      placeholder: schema.placeholder || '',
+      value: data[key] !== undefined ? data[key] : '',
+      step: schema.step || '1',
+      min: schema.min || '',
+      max: schema.max || ''
+    });
+    inp.addEventListener('input', () => { data[key] = inp.value ? parseFloat(inp.value) : null; syncJSON(); });
+    wrap.appendChild(inp);
+
+  } else if (type === 'list') {
+    data[key] = data[key] || [''];
+    const listWrap = el('div', { className: 'space-y-2' });
+    const renderList = () => {
+      listWrap.innerHTML = '';
+      data[key].forEach((val, i) => {
+        const row = el('div', { className: 'list-item-row' });
+        const inp = el('input', { type: 'text', className: 'field-input', value: val, placeholder: schema.placeholder || '' });
+        inp.addEventListener('input', () => { data[key][i] = inp.value; syncJSON(); });
+        const rm = el('button', { type: 'button', innerHTML: '×', className: 'btn-remove', style: 'position:static;font-size:20px;color:#9ca3af;' });
+        rm.addEventListener('click', () => { data[key].splice(i, 1); renderList(); syncJSON(); });
+        row.appendChild(inp); row.appendChild(rm);
+        listWrap.appendChild(row);
+      });
+    };
+    renderList();
+    const addBtn = el('button', { type:'button', className:'btn-add-item', innerHTML: `<span>+</span> ${schema.addLabel || 'Hinzufügen'}` });
+    addBtn.addEventListener('click', () => { data[key].push(''); renderList(); syncJSON(); });
+    wrap.appendChild(listWrap);
+    wrap.appendChild(addBtn);
+
+  } else if (type === 'array') {
+    data[key] = data[key] || [];
+    const arrayWrap = el('div');
+    const max = schema.maxItems || 999;
+
+    const renderArray = () => {
+      arrayWrap.innerHTML = '';
+      data[key].forEach((item, i) => {
+        const block = el('div', { className: 'array-block' });
+        const hdr   = el('div', { className: 'array-block-title' });
+        hdr.innerHTML = `<span class="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">${i+1}</span> ${schema.label || key} #${i+1}`;
+
+        const rmBtn = el('button', { type:'button', className:'btn-remove', innerHTML:'×' });
+        rmBtn.addEventListener('click', () => { data[key].splice(i, 1); renderArray(); syncJSON(); });
+        block.appendChild(rmBtn);
+        block.appendChild(hdr);
+
+        // Render nested fields
+        Object.entries(schema.fields || {}).forEach(([fk, fs]) => {
+          block.appendChild(buildField(fk, typeof fs === 'string' ? {type:fs,label:fk} : fs, item));
+        });
+
+        arrayWrap.appendChild(block);
+      });
+
+      if (data[key].length < max) {
+        const addBtn = el('button', { type:'button', className:'btn-add-item', innerHTML:`<span>+</span> ${schema.addLabel || 'Hinzufügen'}` });
+        addBtn.addEventListener('click', () => { data[key].push({}); renderArray(); syncJSON(); });
+        arrayWrap.appendChild(addBtn);
+      }
+    };
+    renderArray();
+    wrap.appendChild(arrayWrap);
+
+  } else if (type === 'table') {
+    // Helper to extract spec value from an array of key-value spec strings
+    const getSpecValue = (specs, header) => {
+      if (!specs || !Array.isArray(specs)) return "";
+      const headerLower = header.toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+      let keywords = [headerLower];
+      if (headerLower.includes("lesegeschwindigkeit")) {
+        keywords.push("leserate", "lesegeschwindigkeit", "readspeed", "speed", "lese");
+      }
+      if (headerLower.includes("schnittstelle")) {
+        keywords.push("interface", "anschluss", "schnittstelle");
+      }
+      if (headerLower.includes("schutzklasse")) {
+        keywords.push("ip", "schutzklasse", "waterproof", "staub", "wasser");
+      }
+      if (headerLower.includes("verschlüsselung")) {
+        keywords.push("verschlüsselung", "encryption", "sicherheit", "aes");
+      }
+      for (const spec of specs) {
+        if (typeof spec !== 'string') continue;
+        const colonIdx = spec.indexOf(':');
+        if (colonIdx === -1) continue;
+        const specKey = spec.slice(0, colonIdx).trim();
+        const specVal = spec.slice(colonIdx + 1).trim();
+        const specKeyLower = specKey.toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
+        if (specKeyLower === headerLower || 
+            specKeyLower.includes(headerLower) || 
+            headerLower.includes(specKeyLower) ||
+            keywords.some(kw => specKeyLower.includes(kw))) {
+          return specVal;
+        }
+      }
+      return "";
+    };
+
+    // Migrate legacy array table structures to dynamic headers/rows object format
+    if (Array.isArray(data[key])) {
+      const legacyRows = data[key];
+      const cols = schema.columns || [];
+      const newHeaders = cols.map(c => c.label || c.key);
+      const newRows = legacyRows.map(row => cols.map(c => row[c.key] || ''));
+      
+      data[key] = {
+        headers: newHeaders,
+        rows: newRows
+      };
+    }
+
+    // Auto-initialize from products/picks for best_x_for_y_template if empty
+    if ((!data[key] || !data[key].headers || data[key].headers.length === 0) && currentTemplate === 'best_x_for_y_template') {
+      const picks = data.products || data.picks || [];
+      const newHeaders = ["Modell", "Badge / Eignung", "Bewertung", "Preis"];
+      const newRows = picks.map(p => [
+        p.name || "",
+        p.badge || "Standard Pick",
+        p.rating ? p.rating + " / 10" : "",
+        p.price || ""
+      ]);
+      data[key] = {
+        headers: newHeaders,
+        rows: newRows
+      };
+    }
+
+    // Auto-initialize from products for affiliate_comparison_template if empty
+    if ((!data[key] || !data[key].headers || data[key].headers.length === 0) && currentTemplate === 'affiliate_comparison_template') {
+      const products = data.products || [];
+      const newHeaders = ["Modell", "Max. Lesegeschwindigkeit", "Schnittstelle", "IP-Schutzklasse", "Verschlüsselung", "Preis"];
+      const newRows = products.map(p => [
+        p.name || "",
+        getSpecValue(p.specs, "Max. Lesegeschwindigkeit"),
+        getSpecValue(p.specs, "Schnittstelle"),
+        getSpecValue(p.specs, "IP-Schutzklasse"),
+        getSpecValue(p.specs, "Verschlüsselung"),
+        p.price || ""
+      ]);
+      data[key] = {
+        headers: newHeaders,
+        rows: newRows
+      };
+    }
+
+    // Default initialization if empty
+    data[key] = data[key] || {
+      headers: ["Modell", "Spalte 2", "Spalte 3", "Spalte 4", "Spalte 5", "Preis"],
+      rows: []
+    };
+
+    const tableWrap = el('div', { style: 'overflow-x:auto;' });
+
+    const renderTable = () => {
+      tableWrap.innerHTML = '';
+      
+      // Sync from picks/products button for both templates
+      if (currentTemplate === 'best_x_for_y_template' || currentTemplate === 'affiliate_comparison_template') {
+        const syncBtn = el('button', {
+          type: 'button',
+          className: 'px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 text-xs font-semibold flex items-center gap-1.5 transition-colors mb-4 cursor-pointer',
+          innerHTML: '<span class="material-symbols-outlined text-[16px]">sync</span> <span>Standard-Tabelle generieren</span>'
+        });
+        syncBtn.addEventListener('click', () => {
+          if (confirm('Möchten Sie die Vergleichstabelle wirklich auf Standardwerte zurücksetzen? Manuelle Änderungen gehen dabei verloren.')) {
+            if (currentTemplate === 'best_x_for_y_template') {
+              const picks = data.products || data.picks || [];
+              data[key] = {
+                headers: ["Modell", "Badge / Eignung", "Bewertung", "Preis"],
+                rows: picks.map(p => [
+                  p.name || "",
+                  p.badge || "Standard Pick",
+                  p.rating ? p.rating + " / 10" : "",
+                  p.price || ""
+                ])
+              };
+            } else if (currentTemplate === 'affiliate_comparison_template') {
+              const products = data.products || [];
+              data[key] = {
+                headers: ["Modell", "Max. Lesegeschwindigkeit", "Schnittstelle", "IP-Schutzklasse", "Verschlüsselung", "Preis"],
+                rows: products.map(p => [
+                  p.name || "",
+                  getSpecValue(p.specs, "Max. Lesegeschwindigkeit"),
+                  getSpecValue(p.specs, "Schnittstelle"),
+                  getSpecValue(p.specs, "IP-Schutzklasse"),
+                  getSpecValue(p.specs, "Verschlüsselung"),
+                  p.price || ""
+                ])
+              };
+            }
+            renderTable();
+            syncJSON();
+          }
+        });
+        tableWrap.appendChild(syncBtn);
+      }
+
+      const table = el('table', { className: 'table-grid' });
+      
+      // Header with input fields to edit columns dynamically
+      const thead = el('thead');
+      const hr    = el('tr');
+      data[key].headers.forEach((h, i) => {
+        const th = el('th', { style: 'padding: 6px;' });
+        const container = el('div', { className: 'flex items-center gap-1' });
+        const headerInp = el('input', {
+          type: 'text',
+          value: h,
+          className: 'border-b border-dashed border-gray-400 focus:border-blue-500 font-bold bg-transparent text-center outline-none flex-1',
+          style: 'font-size: 13px; color: #111827; min-width: 90px;'
+        });
+        headerInp.addEventListener('input', () => {
+          data[key].headers[i] = headerInp.value;
+          syncJSON();
+        });
+        container.appendChild(headerInp);
+
+        // Delete column button if > 1 columns
+        if (data[key].headers.length > 1) {
+          const delColBtn = el('button', {
+            type: 'button',
+            innerHTML: '×',
+            style: 'color: #ef4444; background: none; border: none; cursor: pointer; font-size: 16px; font-weight: bold; padding: 0 4px;'
+          });
+          delColBtn.title = 'Spalte löschen';
+          delColBtn.addEventListener('click', () => {
+            if (confirm(`Möchten Sie die Spalte "${h}" wirklich löschen?`)) {
+              data[key].headers.splice(i, 1);
+              data[key].rows.forEach(r => r.splice(i, 1));
+              renderTable();
+              syncJSON();
+            }
+          });
+          container.appendChild(delColBtn);
+        }
+
+        th.appendChild(container);
+        hr.appendChild(th);
+      });
+      const thDel = el('th', { textContent: '' });
+      hr.appendChild(thDel);
+      thead.appendChild(hr);
+      table.appendChild(thead);
+      
+      // Rows
+      const tbody = el('tbody');
+      data[key].rows.forEach((row, ri) => {
+        const tr = el('tr');
+        data[key].headers.forEach((_, ci) => {
+          const td  = el('td');
+          row[ci] = row[ci] || '';
+          const cellInp = el('input', { type:'text', value: row[ci], placeholder: 'Wert' });
+          cellInp.addEventListener('input', () => {
+            row[ci] = cellInp.value;
+            syncJSON();
+          });
+          td.appendChild(cellInp);
+          tr.appendChild(td);
+        });
+        const tdDel = el('td');
+        const rm = el('button', { type:'button', innerHTML:'×', style:'color:#9ca3af;font-size:18px;background:none;border:none;cursor:pointer;' });
+        rm.addEventListener('click', () => {
+          data[key].rows.splice(ri, 1);
+          renderTable();
+          syncJSON();
+        });
+        tdDel.appendChild(rm);
+        tr.appendChild(tdDel);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      tableWrap.appendChild(table);
+      
+      const btnContainer = el('div', { className: 'flex gap-4 mt-2' });
+      
+      const addRow = el('button', { type:'button', className:'btn-add-row', innerHTML:'+ Zeile hinzufügen' });
+      addRow.addEventListener('click', () => {
+        const newRow = Array(data[key].headers.length).fill('');
+        data[key].rows.push(newRow);
+        renderTable();
+        syncJSON();
+      });
+      btnContainer.appendChild(addRow);
+      
+      const addCol = el('button', {
+        type:'button',
+        className: 'btn-add-row',
+        style: 'color: #059669;',
+        innerHTML:'+ Spalte hinzufügen'
+      });
+      addCol.addEventListener('click', () => {
+        data[key].headers.push('Neue Spalte');
+        data[key].rows.forEach(r => r.push(''));
+        renderTable();
+        syncJSON();
+      });
+      btnContainer.appendChild(addCol);
+      
+      tableWrap.appendChild(btnContainer);
+    };
+    renderTable();
+    wrap.appendChild(tableWrap);
+  }
+
+  return wrap;
+}
+
+// ── Sync form data → hidden JSON field ───────────────────────────────────────
+function syncJSON() {
+  document.getElementById('structured_content_json').value = JSON.stringify(formData);
+}
+
+// ── Tiny createElement helper ─────────────────────────────────────────────────
+function el(tag, props = {}) {
+  const e = document.createElement(tag);
+  Object.entries(props).forEach(([k, v]) => {
+    if (k === 'className')     e.className   = v;
+    else if (k === 'style' && typeof v === 'string') e.style.cssText = v;
+    else if (k === 'innerHTML')e.innerHTML   = v;
+    else if (k === 'textContent')e.textContent = v;
+    else                        e[k]          = v;
+  });
+  return e;
+}
+
+// ── Pre-submit: merge + validate ──────────────────────────────────────────────
+document.getElementById('cms-form').addEventListener('submit', function(e) {
+  if (currentTemplate !== 'standard') {
+    syncJSON();
+    // Basic required-field validation
+    const schema = ALL_SCHEMAS[currentTemplate];
+    if (schema) {
+      const errors = validateRequired(schema.fields, formData, '');
+      if (errors.length) {
+        e.preventDefault();
+        alert('Bitte alle Pflichtfelder ausfüllen:\n\n' + errors.join('\n'));
+        return;
+      }
+    }
+  }
+});
+
+function validateRequired(fields, data, prefix) {
+  const errs = [];
+  Object.entries(fields || {}).forEach(([key, fs]) => {
+    if (typeof fs === 'string') return;
+    const fullKey = prefix ? `${prefix} → ${fs.label || key}` : (fs.label || key);
+    if (fs.required && (data[key] === undefined || data[key] === '' || data[key] === null)) {
+      errs.push(fullKey);
+    }
+    if (fs.type === 'array' && Array.isArray(data[key])) {
+      data[key].forEach((item, i) => {
+        errs.push(...validateRequired(fs.fields, item, `${fullKey} #${i+1}`));
+      });
+    }
+  });
+  return errs;
+}
+
+// ── Async Image Upload Helpers ──────────────────────────────────────────────
+function uploadImageFileDirect(fileInput, textInput, callback) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const originalText = textInput.value;
+  textInput.value = 'Uploading...';
+  textInput.disabled = true;
+
+  const formDataObj = new FormData();
+  formDataObj.append('file', file);
+
+  fetch('/admin/api/upload', {
+    method: 'POST',
+    body: formDataObj
+  })
+  .then(res => res.json())
+  .then(data => {
+    textInput.disabled = false;
+    if (data.url) {
+      textInput.value = data.url;
+      if (callback) callback(data.url);
+    } else {
+      textInput.value = originalText;
+      alert('Upload failed: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    textInput.disabled = false;
+    textInput.value = originalText;
+    alert('Upload error: ' + err);
+  });
+}
+
+function uploadImageFile(fileInput, targetId) {
+  const targetInput = document.getElementById(targetId);
+  uploadImageFileDirect(fileInput, targetInput, null);
+}
+
+function uploadImageToContent(fileInput, textareaId) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const textarea = document.getElementById(textareaId);
+  const labelTextSpan = fileInput.previousElementSibling;
+  const originalText = labelTextSpan.textContent;
+  labelTextSpan.textContent = 'Uploading...';
+
+  const formDataObj = new FormData();
+  formDataObj.append('file', file);
+
+  fetch('/admin/api/upload', {
+    method: 'POST',
+    body: formDataObj
+  })
+  .then(res => res.json())
+  .then(data => {
+    labelTextSpan.textContent = originalText;
+    if (data.url) {
+      const imgTag = `<img src="${data.url}" alt="" class="rounded-xl shadow-md border my-4" />`;
+      
+      const startPos = textarea.selectionStart;
+      const endPos = textarea.selectionEnd;
+      const textVal = textarea.value;
+      
+      textarea.value = textVal.substring(0, startPos) + imgTag + textVal.substring(endPos, textVal.length);
+      
+      textarea.focus();
+      textarea.selectionStart = startPos + imgTag.length;
+      textarea.selectionEnd = startPos + imgTag.length;
+      
+      const event = new Event('input', { bubbles: true });
+      textarea.dispatchEvent(event);
+    } else {
+      alert('Upload failed: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    labelTextSpan.textContent = originalText;
+    alert('Upload error: ' + err);
+  });
+}
+
+// ── Init: render the form for the current template on page load ───────────────
+(function init() {
+  toggleSidebarFields(currentTemplate);
+  if (currentTemplate && currentTemplate !== 'standard' && ALL_SCHEMAS[currentTemplate]) {
+    buildStructuredForm(ALL_SCHEMAS[currentTemplate].fields, formData);
+  }
+})();
+</script>
+{% endblock %}

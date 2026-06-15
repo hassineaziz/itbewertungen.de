@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('How We Test') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
+{% block meta_description %}{{ _('Discover the rigorous testing methodology we use to rank the best') }} {{ config.get('niche', {}).get('category', 'products') }}.{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ _('How We Test') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
+  "description": "{{ _('Discover the rigorous testing methodology we use to rank the best') }} {{ config.get('niche', {}).get('category', 'products') }}.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "{{ _('How We Test') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.how_we_test') }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+    <div class="mb-10 border-b border-gray-100 pb-8">
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('How We Test') }}</h1>
+        <p class="text-gray-500 text-lg">{{ _('Unser rigoroser, datengetriebener Ansatz für die Bewertung') }} <strong>{{ config.get('niche', {}).get('category', 'Produkte') }}</strong>.</p>
+    </div>
+
+    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
+        <p>{{ _('Bei') }} <strong>{{ config.get('brand', {}).get('name', 'Unserer Seite') }}</strong> {{ _('glauben wir, dass realweltliches Testen der einzig wahre Weg ist, ein Produkt zu bewerten. Wir lesen nicht nur Datenblätter, wir testen jedes Produkt in unserem Labor.') }}</p>
+
+        <div class="flex flex-wrap gap-4 mt-8 mb-10">
+            <div class="bg-blue-50 text-blue-800 px-4 py-3 rounded-lg font-bold text-sm flex items-center gap-2 border border-blue-100">
+                <span class="material-symbols-outlined">inventory_2</span>
+                {{ config.get('niche', {}).get('products_tested', '10+') }} {{ _('Getestete Produkte') }}
+            </div>
+            <div class="bg-green-50 text-green-800 px-4 py-3 rounded-lg font-bold text-sm flex items-center gap-2 border border-green-100">
+                <span class="material-symbols-outlined">timer</span>
+                {{ config.get('niche', {}).get('test_hours', '100+') }} {{ _('Stunden Testen') }}
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('1. Produktauswahl') }}</h2>
+        <p>{{ _('Wir beginnen mit einer Marktrecherche, um die beliebtesten, bestbewerteten und vielversprechenden neuen') }} {{ config.get('niche', {}).get('category', 'Produkte') }}. {{ _('Wir kaufen alle zu testenden Einheiten zum Einzelhandelspreis, um sicherzustellen, dass wir exakt das gleiche Produkt erhalten, das Sie kaufen würden.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('2. Synthetische Benchmarks') }}</h2>
+        <p>{{ _('Wir führen eine Reihe standardisierter synthetischer Tests durch, um eine Leistungsgrundlage zu schaffen. Dadurch können wir die rohen Fähigkeiten verschiedener Marken und Modelle objektiv vergleichen.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('3. Real‑World‑Nutzung') }}</h2>
+        <p>{{ _("Synthetische Zahlen erzählen nicht die ganze Geschichte. Wir verbringen Tage damit, jedes Produkt in realen Szenarien zu nutzen, um Benutzerfreundlichkeit, Haltbarkeit und praktische Leistung zu bewerten.") }}</p>
+        
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('4. Wertebewertung') }}</h2>
+        <p>{{ _("Abschließend wägen wir Leistung und Funktionen gegen den Einzelhandelspreis ab. Ein großartiges Produkt ist nicht wirklich großartig, wenn es kein gutes Preis‑Leistungs‑Verhältnis bietet.") }}</p>
+    </div>
+</div>
+{% endblock %}

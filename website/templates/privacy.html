@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Privacy Policy') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
+
+{% block meta_description %}{{ _('Read the privacy policy of') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('to understand how we collect, use, and protect your data.') }}{% endblock %}
+{% block meta_keywords %}{{ _('privacy policy, data protection, privacy') }}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ _('Privacy Policy') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
+  "description": "{{ _('Read the privacy policy of') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('to understand how we collect, use, and protect your data.') }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "{{ _('Privacy Policy') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.privacy_policy') }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+    <div class="mb-10 border-b border-gray-100 pb-8">
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('Privacy Policy') }}</h1>
+        <p class="text-gray-500 text-lg">{{ _('Last updated:') }} {{ config.get('niche', {}).get('year', '2026') }}</p>
+    </div>
+
+    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
+        <p>{{ _('At') }} <strong>{{ config.get('brand', {}).get('name', 'Our Site') }}</strong>, {{ _('accessible from') }} {{ config.get('seo', {}).get('domain', 'our website') }}, {{ _('one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and how we use it.') }}</p>
+
+        <p>{{ _('If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Log Files') }}</h2>
+        <p>{{ config.get('brand', {}).get('name', 'Our Site') }} {{ _("follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks.") }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Cookies and Web Beacons') }}</h2>
+        <p>{{ _('Like any other website,') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('uses "cookies". These cookies are used to store information including visitors\' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users\' experience by customizing our web page content based on visitors\' browser type and/or other information.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Affiliate Disclosure') }}</h2>
+        <p>{{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase through our links at no extra cost to you.') }} {{ _('This means that we may use affiliate tracking cookies to see which outbound links are clicked and to attribute any resulting purchases. These tracking links do not collect personally identifiable information.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Third Party Privacy Policies') }}</h2>
+        <p>{{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information.") }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Consent') }}</h2>
+        <p>{{ _('By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.') }}</p>
+    </div>
+</div>
+{% endblock %}

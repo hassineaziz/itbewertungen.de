@@ -1,0 +1,682 @@
+# German translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-06-10 13:06+0200\n"
+"PO-Revision-Date: 2026-06-10 13:02+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: website/templates/about.html:3 website/templates/about.html:9
+#: website/templates/base.html:171
+msgid "About Us"
+msgstr "Über Uns"
+
+#: website/templates/about.html:4
+msgid "Learn more about"
+msgstr "Erfahren Sie mehr über"
+
+#: website/templates/about.html:4
+msgid "and our mission."
+msgstr "und unsere Mission."
+
+#: website/templates/about.html:13
+msgid "Welcome to"
+msgstr "Willkommen bei"
+
+#: website/templates/about.html:16
+msgid "Our Mission"
+msgstr "Unsere Mission"
+
+#: website/templates/about.html:17
+msgid "Our goal is to help you find the best"
+msgstr "Unser Ziel ist es, Ihnen zu helfen, die besten"
+
+#: website/templates/about.html:17
+msgid ""
+"on the market. We understand that choosing the right product can be "
+"overwhelming, which is why we dedicate our time to thoroughly test and "
+"review each item we recommend."
+msgstr ""
+"auf dem Markt zu finden. Wir wissen, dass die Auswahl des richtigen "
+"Produkts überwältigend sein kann. Deshalb nehmen wir uns die Zeit, jedes "
+"empfohlene Produkt gründlich zu testen."
+
+#: website/templates/about.html:19
+msgid "Why Trust Us?"
+msgstr "Warum uns vertrauen?"
+
+#: website/templates/about.html:30
+msgid "Our Independence"
+msgstr "Unsere Unabhängigkeit"
+
+#: website/templates/about.html:31
+msgid ""
+"We are completely independent and our recommendations are purely based on"
+" our own lab testing and real-world usage. We never accept payment for "
+"favorable reviews."
+msgstr ""
+"Wir sind völlig unabhängig und unsere Empfehlungen basieren "
+"ausschließlich auf unseren eigenen Labortests und Praxiserfahrungen. Wir "
+"nehmen niemals Geld für positive Bewertungen."
+
+#: website/templates/base.html:72
+msgid "100%% Independent & Reader-Supported"
+msgstr "100%% Unabhängig & Leserfinanziert"
+
+#: website/templates/base.html:76
+msgid "Real Lab Testing"
+msgstr "Echte Labortests"
+
+#: website/templates/base.html:80
+msgid "Zero Sponsored Placements"
+msgstr "Keine bezahlten Platzierungen"
+
+#: website/templates/base.html:84
+msgid "Updated"
+msgstr "Aktualisiert"
+
+#: website/templates/base.html:97 website/templates/base.html:121
+msgid "Best picks"
+msgstr "Beste Auswahl"
+
+#: website/templates/base.html:98 website/templates/base.html:122
+msgid "Reviews"
+msgstr "Testberichte"
+
+#: website/templates/base.html:99 website/templates/base.html:123
+msgid "About"
+msgstr "Über"
+
+#: website/templates/base.html:101 website/templates/base.html:125
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: website/templates/base.html:102 website/templates/base.html:126
+msgid "Logout"
+msgstr "Abmelden"
+
+#: website/templates/base.html:160#: website/templates/base.html
+msgid "Affiliate Disclosure"
+msgstr "Affiliate-Hinweis"
+
+#: website/templates/base.html
+msgid "All rights reserved."
+msgstr "Alle Rechte vorbehalten."
+
+#: website/templates/landing.html
+msgid "Get the best"
+msgstr "Sichern Sie sich das Beste"
+
+#: website/templates/landing.html
+msgid "picks before everyone else"
+msgstr "Empfehlungen vor allen anderen"
+
+#: website/templates/base.html:167
+msgid "Navigation"
+msgstr "Navigation"
+
+#: website/templates/base.html:169
+msgid "Best Picks"
+msgstr "Beste Auswahl"
+
+#: website/templates/base.html:170
+msgid "All Reviews"
+msgstr "Alle Testberichte"
+
+#: website/templates/base.html:172 website/templates/how_we_test.html:3
+#: website/templates/how_we_test.html:9
+msgid "How We Test"
+msgstr "Wie wir testen"
+
+#: website/templates/base.html:176
+msgid "Legal"
+msgstr "Rechtliches"
+
+#: website/templates/base.html:178 website/templates/privacy.html:3
+#: website/templates/privacy.html:11
+msgid "Privacy Policy"
+msgstr "Datenschutzrichtlinie"
+
+#: website/templates/base.html:179 website/templates/terms.html:3
+#: website/templates/terms.html:11
+msgid "Terms of Service"
+msgstr "Nutzungsbedingungen"
+
+#: website/templates/base.html:185
+msgid "All rights reserved."
+msgstr "Alle Rechte vorbehalten."
+
+#: website/templates/how_we_test.html:4
+msgid "Discover the rigorous testing methodology we use to rank the best"
+msgstr "Entdecken Sie die strenge Testmethodik, mit der wir die besten bewerten"
+
+#: website/templates/how_we_test.html:10
+msgid "Our rigorous, data-driven approach to reviewing"
+msgstr "Unser strenger, datengesteuerter Ansatz zur Bewertung von"
+
+#: website/templates/how_we_test.html:14 website/templates/privacy.html:16
+msgid "At"
+msgstr "Bei"
+
+#: website/templates/how_we_test.html:14
+msgid ""
+"we believe that real-world testing is the only way to truly evaluate a "
+"product. We don't just read spec sheets; we put every product through its"
+" paces in our testing lab."
+msgstr ""
+"glauben wir, dass Praxistests der einzige Weg sind, um ein Produkt "
+"wirklich zu bewerten. Wir lesen nicht nur Spezifikationen, sondern prüfen"
+" jedes Produkt in unserem Testlabor auf Herz und Nieren."
+
+#: website/templates/how_we_test.html:19
+msgid "Products Tested"
+msgstr "Getestete Produkte"
+
+#: website/templates/how_we_test.html:23
+msgid "Hours of Testing"
+msgstr "Teststunden"
+
+#: website/templates/how_we_test.html:27
+msgid "1. Product Selection"
+msgstr "1. Produktauswahl"
+
+#: website/templates/how_we_test.html:28
+msgid ""
+"We start by researching the market to find the most popular, highly-"
+"rated, and promising new"
+msgstr ""
+"Wir beginnen mit Marktforschung, um die beliebtesten, am besten "
+"bewerteten und vielversprechendsten neuen"
+
+#: website/templates/how_we_test.html:28
+msgid ""
+"We purchase all the units we test at retail prices to ensure we are "
+"getting the exact same product that you would receive."
+msgstr ""
+"Wir kaufen alle Testgeräte zum regulären Verkaufspreis, um "
+"sicherzustellen, dass wir exakt das gleiche Produkt erhalten wie Sie."
+
+#: website/templates/how_we_test.html:30
+msgid "2. Synthetic Benchmarks"
+msgstr "2. Synthetische Benchmarks"
+
+#: website/templates/how_we_test.html:31
+msgid ""
+"We run a suite of standardized synthetic tests to establish a baseline of"
+" performance. This allows us to compare raw capabilities across different"
+" brands and models objectively."
+msgstr ""
+"Wir führen standardisierte synthetische Tests durch, um eine "
+"Leistungsgrundlage zu ermitteln. So können wir rohe Leistungsdaten über "
+"verschiedene Marken und Modelle hinweg objektiv vergleichen."
+
+#: website/templates/how_we_test.html:33
+msgid "3. Real-World Usage"
+msgstr "3. Nutzung in der Praxis"
+
+#: website/templates/how_we_test.html:34
+msgid ""
+"Synthetic numbers don't tell the whole story. We spend days using each "
+"product in real-world scenarios to evaluate ease of use, durability, and "
+"practical performance."
+msgstr ""
+"Synthetische Zahlen verraten nicht alles. Wir nutzen jedes Produkt "
+"tagelang in realen Szenarien, um Benutzerfreundlichkeit, Haltbarkeit und "
+"praktische Leistung zu bewerten."
+
+#: website/templates/how_we_test.html:36
+msgid "4. Value Assessment"
+msgstr "4. Preis-Leistungs-Bewertung"
+
+#: website/templates/how_we_test.html:37
+msgid ""
+"Finally, we weigh the performance and features against the retail price. "
+"A great product isn't truly great unless it offers good value for your "
+"hard-earned money."
+msgstr ""
+"Zuletzt wägen wir Leistung und Funktionen gegen den Preis ab. Ein "
+"großartiges Produkt ist nur dann wirklich großartig, wenn es ein gutes "
+"Preis-Leistungs-Verhältnis für Ihr hart verdientes Geld bietet."
+
+#: website/templates/landing.html:60
+msgid "Our #1 Pick"
+msgstr "Unsere #1 Empfehlung"
+
+#: website/templates/landing.html:93
+msgid "Check price"
+msgstr ""
+
+#: website/templates/landing.html:96
+#, fuzzy
+msgid "Read full review"
+msgstr "Alle Testberichte"
+
+#: website/templates/landing.html:118
+msgid "Great alternative"
+msgstr ""
+
+#: website/templates/landing.html:133
+#, fuzzy
+msgid "Top picks for"
+msgstr "Beste Auswahl"
+
+#: website/templates/landing.html:224
+msgid "Browse"
+msgstr ""
+
+#: website/templates/landing.html:224
+msgid "by type"
+msgstr ""
+
+#: website/templates/landing.html:231
+#, fuzzy
+msgid "View reviews"
+msgstr "Testberichte"
+
+#: website/templates/privacy.html:5
+msgid "Read the privacy policy of"
+msgstr "Lesen Sie die Datenschutzrichtlinie von"
+
+#: website/templates/privacy.html:5
+msgid "to understand how we collect, use, and protect your data."
+msgstr "um zu verstehen, wie wir Ihre Daten sammeln, nutzen und schützen."
+
+#: website/templates/privacy.html:6
+msgid "privacy policy, data protection, privacy"
+msgstr "Datenschutzrichtlinie, Datenschutz, Privatsphäre"
+
+#: website/templates/privacy.html:12 website/templates/terms.html:12
+msgid "Last updated:"
+msgstr "Zuletzt aktualisiert:"
+
+#: website/templates/privacy.html:16
+msgid "accessible from"
+msgstr "erreichbar unter"
+
+#: website/templates/privacy.html:16
+msgid ""
+"one of our main priorities is the privacy of our visitors. This Privacy "
+"Policy document contains types of information that is collected and "
+"recorded by"
+msgstr ""
+"gehört die Privatsphäre unserer Besucher zu unseren Hauptprioritäten. "
+"Dieses Dokument enthält Arten von Informationen, die gesammelt und "
+"aufgezeichnet werden von"
+
+#: website/templates/privacy.html:16
+msgid "and how we use it."
+msgstr "und wie wir sie verwenden."
+
+#: website/templates/privacy.html:18
+msgid ""
+"If you have additional questions or require more information about our "
+"Privacy Policy, do not hesitate to contact us."
+msgstr ""
+"Wenn Sie weitere Fragen haben oder mehr Informationen zu unserer "
+"Datenschutzrichtlinie benötigen, zögern Sie nicht, uns zu kontaktieren."
+
+#: website/templates/privacy.html:20
+msgid "Log Files"
+msgstr "Protokolldateien"
+
+#: website/templates/privacy.html:21
+msgid ""
+"follows a standard procedure of using log files. These files log visitors"
+" when they visit websites. All hosting companies do this and a part of "
+"hosting services' analytics. The information collected by log files "
+"include internet protocol (IP) addresses, browser type, Internet Service "
+"Provider (ISP), date and time stamp, referring/exit pages, and possibly "
+"the number of clicks."
+msgstr ""
+"folgt einem Standardverfahren zur Verwendung von Protokolldateien. Diese "
+"Dateien protokollieren Besucher. Die durch Protokolldateien gesammelten "
+"Informationen umfassen IP-Adressen, Browsertyp, ISP, Datums- und "
+"Zeitstempel, Verweis-/Ausstiegsseiten und möglicherweise die Anzahl der "
+"Klicks."
+
+#: website/templates/privacy.html:23
+msgid "Cookies and Web Beacons"
+msgstr "Cookies und Web Beacons"
+
+#: website/templates/privacy.html:24
+msgid "Like any other website,"
+msgstr "Wie jede andere Website verwendet auch"
+
+#: website/templates/privacy.html:24
+msgid ""
+"uses \"cookies\". These cookies are used to store information including "
+"visitors' preferences, and the pages on the website that the visitor "
+"accessed or visited. The information is used to optimize the users' "
+"experience by customizing our web page content based on visitors' browser"
+" type and/or other information."
+msgstr ""
+"„Cookies“. Diese Cookies speichern Informationen über die Präferenzen der"
+" Besucher und die aufgerufenen Seiten. Die Informationen werden genutzt, "
+"um das Nutzererlebnis zu optimieren."
+
+#: website/templates/privacy.html:27
+msgid ""
+"This means that we may use affiliate tracking cookies to see which "
+"outbound links are clicked and to attribute any resulting purchases. "
+"These tracking links do not collect personally identifiable information."
+msgstr ""
+"Dies bedeutet, dass wir Affiliate-Tracking-Cookies verwenden, um zu "
+"sehen, welche Links geklickt werden. Diese Tracking-Links sammeln keine "
+"persönlich identifizierbaren Informationen."
+
+#: website/templates/privacy.html:29
+msgid "Third Party Privacy Policies"
+msgstr "Datenschutzrichtlinien von Drittanbietern"
+
+#: website/templates/privacy.html:30
+msgid ""
+"'s Privacy Policy does not apply to other advertisers or websites. Thus, "
+"we are advising you to consult the respective Privacy Policies of these "
+"third-party ad servers for more detailed information."
+msgstr ""
+"Datenschutzrichtlinien gelten nicht für andere Werbetreibende oder "
+"Websites. Wir raten Ihnen, die jeweiligen Richtlinien dieser "
+"Drittanbieter zu konsultieren."
+
+#: website/templates/privacy.html:32
+msgid "Consent"
+msgstr "Zustimmung"
+
+#: website/templates/privacy.html:33
+msgid ""
+"By using our website, you hereby consent to our Privacy Policy and agree "
+"to its Terms and Conditions."
+msgstr ""
+"Durch die Nutzung unserer Website stimmen Sie unserer "
+"Datenschutzrichtlinie und den Nutzungsbedingungen zu."
+
+#: website/templates/terms.html:5
+msgid "Review the terms of service for using"
+msgstr "Lesen Sie die Nutzungsbedingungen für"
+
+#: website/templates/terms.html:5
+msgid "and our affiliate links."
+msgstr "und unsere Affiliate-Links."
+
+#: website/templates/terms.html:6
+msgid "terms of service, legal, conditions"
+msgstr "Nutzungsbedingungen, Rechtliches, Konditionen"
+
+#: website/templates/terms.html:16
+msgid "1. Terms"
+msgstr "1. Bedingungen"
+
+#: website/templates/terms.html:17
+msgid "By accessing this Website, accessible from"
+msgstr "Durch den Zugriff auf diese Website, erreichbar unter"
+
+#: website/templates/terms.html:17
+msgid ""
+"you are agreeing to be bound by these Website Terms and Conditions of Use"
+" and agree that you are responsible for the agreement with any applicable"
+" local laws. If you disagree with any of these terms, you are prohibited "
+"from accessing this site."
+msgstr ""
+"erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie "
+"mit diesen Bedingungen nicht einverstanden sind, ist Ihnen die Nutzung "
+"dieser Website untersagt."
+
+#: website/templates/terms.html:19
+msgid "2. Use License"
+msgstr "2. Nutzungslizenz"
+
+#: website/templates/terms.html:20
+msgid "Permission is granted to temporarily download one copy of the materials on"
+msgstr ""
+"Es wird die Erlaubnis erteilt, vorübergehend eine Kopie der Materialien "
+"auf"
+
+#: website/templates/terms.html:20
+msgid "'s Website for personal, non-commercial transitory viewing only."
+msgstr ""
+"herunterzuladen, ausschließlich für die persönliche, nicht kommerzielle "
+"Betrachtung."
+
+#: website/templates/terms.html:21
+msgid "This will let"
+msgstr "Dies erlaubt"
+
+#: website/templates/terms.html:21
+msgid ""
+"to terminate upon violations of any of these restrictions. Upon "
+"termination, your viewing right will also be terminated and you should "
+"destroy any downloaded materials in your possession whether it is printed"
+" or electronic format."
+msgstr ""
+"bei Verstößen gegen diese Einschränkungen zu kündigen. Nach Beendigung "
+"wird auch Ihr Recht auf Betrachtung beendet und Sie sollten alle "
+"heruntergeladenen Materialien vernichten."
+
+#: website/templates/terms.html:23
+msgid "3. Disclaimer"
+msgstr "3. Haftungsausschluss"
+
+#: website/templates/terms.html:24
+msgid "All the materials on"
+msgstr "Alle Materialien auf"
+
+#: website/templates/terms.html:24
+msgid "'s Website are provided \"as is\"."
+msgstr "werden \"wie besehen\" bereitgestellt."
+
+#: website/templates/terms.html:24
+msgid ""
+"makes no warranties, may it be expressed or implied, therefore negates "
+"all other warranties. Furthermore,"
+msgstr ""
+"übernimmt keine Gewährleistung und lehnt hiermit alle anderen Garantien "
+"ab."
+
+#: website/templates/terms.html:24
+msgid ""
+"does not make any representations concerning the accuracy or reliability "
+"of the use of the materials on its Website or otherwise relating to such "
+"materials or any sites linked to this Website."
+msgstr ""
+"macht keine Zusicherungen hinsichtlich der Genauigkeit oder "
+"Zuverlässigkeit der Nutzung der Materialien auf ihrer Website."
+
+#: website/templates/terms.html:26
+msgid "4. Limitations"
+msgstr "4. Einschränkungen"
+
+#: website/templates/terms.html:27
+msgid ""
+"or its suppliers will not be hold accountable for any damages that will "
+"arise with the use or inability to use the materials on"
+msgstr ""
+"oder deren Lieferanten sind nicht haftbar für Schäden, die durch die "
+"Nutzung oder die Unmöglichkeit der Nutzung der Materialien auf"
+
+#: website/templates/terms.html:27
+msgid "'s Website, even if"
+msgstr "entstehen, selbst wenn"
+
+#: website/templates/terms.html:27
+msgid ""
+"or an authorize representative of this Website has been notified, orally "
+"or written, of the possibility of such damage."
+msgstr ""
+"oder ein autorisierter Vertreter mündlich oder schriftlich auf die "
+"Möglichkeit eines solchen Schadens hingewiesen wurde."
+
+#: website/templates/terms.html:29
+msgid "5. Affiliate Links"
+msgstr "5. Affiliate-Links"
+
+#: website/templates/terms.html:30
+msgid ""
+"This means that if you click on a product link and purchase the item, we "
+"will receive an affiliate commission. We only recommend products we "
+"believe will add value to our readers."
+msgstr ""
+"Dies bedeutet, dass wir eine Affiliate-Provision erhalten, wenn Sie auf "
+"einen Produktlink klicken und den Artikel kaufen. Wir empfehlen nur "
+"Produkte, von denen wir glauben, dass sie einen Mehrwert bieten."
+
+#: website/templates/terms.html:32
+msgid "6. Revisions and Errata"
+msgstr "6. Änderungen und Fehler"
+
+#: website/templates/terms.html:33
+msgid "The materials appearing on"
+msgstr "Die Materialien auf"
+
+#: website/templates/terms.html:33
+msgid "'s Website may include technical, typographical, or photographic errors."
+msgstr "könnten technische, typografische oder fotografische Fehler enthalten."
+
+#: website/templates/terms.html:33
+msgid ""
+"will not promise that any of the materials in this Website are accurate, "
+"complete, or current."
+msgstr ""
+"garantiert nicht, dass die Materialien korrekt, vollständig oder aktuell "
+"sind."
+
+#: website/templates/terms.html:33
+msgid ""
+"may change the materials contained on its Website at any time without "
+"notice."
+msgstr "kann die Materialien jederzeit ohne vorherige Ankündigung ändern."
+
+
+#: website/templates/blog_index.html
+msgid "All Articles"
+msgstr "Alle Artikel"
+
+msgid "Expert reviews and recommendations for"
+msgstr "Experten-Tests und Empfehlungen für"
+
+msgid "Browse our latest reviews, guides, and insights."
+msgstr "Durchsuchen Sie unsere neuesten Testberichte, Guides und Erkenntnisse."
+
+msgid "Read More"
+msgstr "Weiterlesen"
+
+msgid "Previous"
+msgstr "Zurück"
+
+msgid "Next"
+msgstr "Weiter"
+
+msgid "Page"
+msgstr "Seite"
+
+msgid "of"
+msgstr "von"
+
+msgid "No articles found"
+msgstr "Keine Artikel gefunden"
+
+msgid "We couldn't find any articles matching your criteria."
+msgstr "Wir konnten keine Artikel finden, die Ihren Kriterien entsprechen."
+
+msgid "View All Posts"
+msgstr "Alle Beiträge ansehen"
+
+msgid "Categories"
+msgstr "Kategorien"
+
+#: website/templates/blog_post.html
+msgid "Home"
+msgstr "Startseite"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "By"
+msgstr "Von"
+
+msgid "Editorial Team"
+msgstr "Redaktion"
+
+msgid "Updated on"
+msgstr "Aktualisiert am"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Share this article:"
+msgstr "Diesen Artikel teilen:"
+
+msgid "Get the Best Deals"
+msgstr "Sichern Sie sich die besten Angebote"
+
+msgid "Join 10,000+ readers getting exclusive discounts and buying guides."
+msgstr "Werden Sie Teil von über 10.000 Lesern und erhalten Sie exklusive Rabatte und Kaufberatungen."
+
+msgid "Your email"
+msgstr "Ihre E-Mail"
+
+msgid "Subscribe Now"
+msgstr "Jetzt abonnieren"
+
+#: website/templates/landing.html
+msgid "Find the Best Gear"
+msgstr "Finden Sie die beste Ausrüstung"
+
+msgid "Expert insights to help you make the best buying decisions."
+msgstr "Expertenwissen für Ihre besten Kaufentscheidungen."
+
+msgid "Browse all reviews"
+msgstr "Alle Testberichte ansehen"
+
+msgid "Our #1 Pick"
+msgstr "Unsere #1 Empfehlung"
+
+msgid "Check price"
+msgstr "Preis prüfen"
+
+msgid "Read full review"
+msgstr "Vollständigen Test lesen"
+
+msgid "Great alternative"
+msgstr "Tolle Alternative"
+
+msgid "Top picks for"
+msgstr "Top-Auswahl für"
+
+msgid "Latest"
+msgstr "Neueste"
+
+msgid "View all"
+msgstr "Alle ansehen"
+
+msgid "Browse"
+msgstr "Durchsuchen"
+
+msgid "by type"
+msgstr "nach Typ"
+
+msgid "View reviews"
+msgstr "Testberichte ansehen"
+
+msgid "Get the best"
+msgstr "Sichern Sie sich die besten"
+
+msgid "picks before everyone else"
+msgstr "Empfehlungen vor allen anderen"
+
+msgid "Join our newsletter for exclusive deals and reviews."
+msgstr "Melden Sie sich für exklusive Angebote an."
+
+msgid "Search..."
+msgstr "Suchen..."

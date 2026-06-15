@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.meta_title or post.title }} - {{ SITE_NAME }}{% endblock %}
+
+{% block meta_description %}{{ post.meta_description or post.excerpt }}{% endblock %}
+
+{% if post.focus_keyword %}
+{% block meta_keywords %}{{ post.focus_keyword }}{% endblock %}
+{% endif %}
+
+{% block og_title %}{{ post.meta_title or post.title }}{% endblock %}
+{% block og_description %}{{ post.meta_description or post.excerpt }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+    {% if post.cover_image_url %}
+    <meta property="og:image" content="{{ post.cover_image_url }}" />
+    {% endif %}
+{% endblock %}
+
+{% block twitter_title %}{{ post.meta_title or post.title }}{% endblock %}
+{% block twitter_description %}{{ post.meta_description or post.excerpt }}{% endblock %}
+{% block twitter_image %}
+    {% if post.cover_image_url %}
+    <meta name="twitter:image" content="{{ post.cover_image_url }}" />
+    {% endif %}
+{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ post.title | tojson }},
+  "description": {{ (post.meta_description or post.excerpt or '') | tojson }},
+  {% if post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
+  "author": {
+    "@type": "Organization",
+    "name": {{ config.get('brand', {}).get('name', SITE_NAME) | tojson }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ config.get('brand', {}).get('name', SITE_NAME) | tojson }}
+  }{% if post.published_at %},
+  "datePublished": "{{ post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+  "dateModified": "{{ post.updated_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if post.updated_at else post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}"{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.blog_index') }}" }{% if post.category %},
+    { "@type": "ListItem", "position": 3, "name": {{ post.category | tojson }}, "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.blog_index', category=post.category) }}" }{% endif %},
+    { "@type": "ListItem", "position": {% if post.category %}4{% else %}3{% endif %}, "name": {{ post.title | tojson }}, "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.blog_post', slug=post.slug) }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-[2200px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
+    <div class="flex flex-col lg:flex-row gap-12">
+        
+        <!-- Main Article Content -->
+        <article class="w-full lg:w-8/12 xl:w-3/4">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex text-sm text-gray-500 mb-6 font-medium" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-2">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="hover:text-primary transition-colors">{{ _('Home') }}</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+                            <a href="{{ url_for('views.blog_index') }}" class="hover:text-primary transition-colors">{{ _('Blog') }}</a>
+                        </div>
+                    </li>
+                    {% if post.category %}
+                    <li>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+                            <a href="{{ url_for('views.blog_index', category=post.category) }}" class="hover:text-primary transition-colors capitalize">{{ post.category }}</a>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <header class="mb-10">
+                {% if post.category %}
+                <a href="{{ url_for('views.blog_index', category=post.category) }}" class="inline-block text-primary text-sm font-bold uppercase tracking-wider mb-4 hover:underline">
+                    {{ post.category }}
+                </a>
+                {% endif %}
+                
+                <h1 class="text-4xl md:text-5xl font-serif font-extrabold text-gray-900 leading-tight mb-6">
+                    {{ post.title }}
+                </h1>
+                
+                <div class="flex items-center text-sm text-gray-500 border-b border-gray-200 pb-6 mb-6">
+                    <div class="flex items-center mr-6">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold mr-3">
+                            {{ SITE_NAME[:1] }}
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900">{{ _('By') }} {{ SITE_NAME }} {{ _('Editorial Team') }}</p>
+                            {% if post.published_at %}
+                            <time datetime="{{ post.published_at.isoformat() }}">{{ _('Updated on') }} {{ post.published_at.strftime('%B %d, %Y') }}</time>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+
+            </header>
+
+            {% if post.cover_image_url %}
+            <figure class="mb-12 rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+                <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="w-full h-auto object-cover max-h-[600px]" width="1200" height="675">
+            </figure>
+            {% endif %}
+
+
+
+            <!-- Content Area using Tailwind Typography -->
+            <div class="prose prose-lg prose-blue max-w-none text-gray-800 font-sans leading-loose tracking-wide
+                        prose-headings:font-serif prose-headings:font-bold prose-headings:text-gray-900
+                        prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-b prose-h2:pb-2 prose-h2:border-gray-100
+                        prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
+                        prose-a:font-semibold prose-a:text-primary hover:prose-a:text-primary-container
+                        prose-img:rounded-xl prose-img:shadow-md
+                        prose-strong:text-gray-900 prose-strong:font-bold
+                        prose-ul:list-disc prose-ol:list-decimal
+                        prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:text-gray-700">
+                
+                {{ post.content_html | safe }}
+
+            </div>
+
+
+
+            <!-- Tags -->
+            {% if post.get_tags_list() %}
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 mb-4">{{ _('Tags') }}</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in post.get_tags_list() %}
+                    <a href="{{ url_for('views.blog_index', tag=tag) }}" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+                        #{{ tag|title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Social Share -->
+            <div class="mt-12 py-8 border-y border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <h3 class="font-serif font-bold text-xl text-gray-900">{{ _('Share this article:') }}</h3>
+                <div class="flex gap-3">
+                    <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ post.title }}" target="_blank" class="w-10 h-10 rounded-full bg-blue-400 text-white flex items-center justify-center hover:bg-blue-500 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                </div>
+            </div>
+
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="w-full lg:w-4/12 xl:w-1/4 space-y-10">
+            
+            <!-- Sticky Sidebar Container -->
+            <div class="sticky top-24 space-y-10">
+
+
+                <!-- Newsletter / Lead Gen Widget -->
+                <div class="bg-primary/5 rounded-2xl border border-primary/20 p-6 text-center">
+                    <h3 class="font-serif font-bold text-xl text-gray-900 mb-2">{{ _('Get the Best Deals') }}</h3>
+                    <p class="text-sm text-gray-600 mb-6">{{ _('Join 10,000+ readers getting exclusive discounts and buying guides.') }}</p>
+                    <form class="space-y-3">
+                        <input type="email" placeholder="{{ _('Your email') }}" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary" required>
+                        <button type="submit" class="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-3 rounded-lg transition-colors">
+                            {{ _('Subscribe Now') }}
+                        </button>
+                    </form>
+                </div>
+
+
+            </div>
+
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Create with AI - Blog Admin{% endblock %}
+{% block content %}
+<div class="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Create with AI</h1>
+    <p class="text-gray-600 mt-2">Generate a fully structured, SEO-optimized draft article using Google Gemini.</p>
+  </div>
+
+  {% if not has_api_key %}
+  <div class="mb-6 bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 flex items-center gap-3">
+    <span class="material-symbols-outlined text-red-600">warning</span>
+    <div>
+      <span class="font-bold">Achtung:</span> Der <code class="bg-red-100 px-1.5 py-0.5 rounded text-[13px]">GEMINI_API_KEY</code> fehlt in der <code class="bg-red-100 px-1.5 py-0.5 rounded text-[13px]">.env</code>-Datei auf dem Server. Die Artikelgenerierung wird fehlschlagen, bis dieser konfiguriert ist.
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+    <form id="ai-generate-form" method="POST" class="p-8 space-y-6">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      
+      <!-- Focus Keyword -->
+      <div class="space-y-2">
+        <label for="focus_keyword" class="block text-sm font-bold text-gray-900">Fokus-Keyword (Hauptsuchbegriff) <span class="text-red-500">*</span></label>
+        <input type="text" id="focus_keyword" name="focus_keyword" required
+               placeholder="z.B. Sony WH-1000XM5 Test"
+               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white">
+        <p class="text-xs text-gray-500">Das Haupt-Keyword wird im Titel, in den Meta-Tags und organisch im Text platziert.</p>
+      </div>
+
+      <!-- LSI / Secondary Keywords -->
+      <div class="space-y-2">
+        <label for="secondary_keywords" class="block text-sm font-bold text-gray-900">Sekundäre Keywords / LSI-Keywords (Optional)</label>
+        <textarea id="secondary_keywords" name="secondary_keywords" rows="2"
+                  placeholder="z.B. Noise Cancelling, Akkulaufzeit, LDAC Support, Bluetooth-Kopfhörer (kommagetrennt)"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
+        <p class="text-xs text-gray-500">Diese Begriffe werden natürlich in Überschriften und Absätzen verteilt, um die thematische Relevanz zu stärken.</p>
+      </div>
+
+      <!-- Category & Template -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label for="category" class="block text-sm font-bold text-gray-900">Kategorie <span class="text-red-500">*</span></label>
+          <select id="category" name="category" required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white">
+            {% for cat in categories %}
+            <option value="{{ cat.name }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="space-y-2">
+          <label for="template" class="block text-sm font-bold text-gray-900">Layout-Template <span class="text-red-500">*</span></label>
+          <select id="template" name="template" required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white">
+            {% for name, label in template_names.items() %}
+            <option value="{{ name }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Core Product Slugs (DB resolution) -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-900">Verknüpfte Produkte aus dem Datenbank-Bestand</label>
+        
+        <!-- Search filter input -->
+        <div class="relative">
+          <input type="text" id="product-search-input" 
+                 placeholder="Produkte nach Titel oder Slug durchsuchen..." 
+                 class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white mb-2">
+        </div>
+
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-[160px] overflow-y-auto space-y-2">
+          {% if affiliate_links %}
+            {% for link in affiliate_links %}
+            <label class="product-item flex items-center space-x-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer" 
+                   data-title="{{ (link.product_title or '') | lower }} {{ link.slug | lower }}">
+              <input type="checkbox" name="core_product_slugs" value="{{ link.slug }}" class="rounded text-primary focus:ring-primary h-4 w-4">
+              <span>{{ link.product_title or link.slug }} <span class="text-xs text-gray-400">({{ link.slug }} - {{ link.current_price or 'Ohne Preis' }})</span></span>
+            </label>
+            {% endfor %}
+          {% else %}
+            <p class="text-sm text-gray-500 py-2">Keine Affiliate-Links in der Datenbank gefunden. Erstellen Sie zuerst Links im Manager.</p>
+          {% endif %}
+        </div>
+        <p class="text-xs text-gray-500">Wir laden automatisch die Preise, Bilder und Spezifikationen dieser Produkte für die KI-Generierung.</p>
+      </div>
+
+      <!-- Dynamic Per-Product EEAT & Specs -->
+      <div class="border border-gray-200 rounded-xl overflow-hidden">
+        <div class="w-full px-6 py-4 bg-gray-50 flex justify-between items-center text-sm font-bold text-gray-900 border-b border-gray-200">
+          <span class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">military_tech</span>
+            Produktspezifische Daten & Testerfahrungen (E-E-A-T)
+          </span>
+        </div>
+        
+        <div id="dynamic-overrides-container" class="bg-white">
+          <div class="p-6 text-sm text-gray-500 text-center italic" id="empty-overrides-msg">
+            Wählen Sie oben Produkte aus dem Datenbank-Bestand aus, um hier spezifische Testerfahrungen und Zusatzdaten (Specs) pro Produkt zu hinterlegen.
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden template for product override blocks -->
+      <template id="product-override-template">
+        <div class="p-6 border-b border-gray-100 last:border-0 override-block" data-slug="{SLUG}">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">inventory_2</span>
+            {TITLE}
+          </h3>
+          
+          <div class="space-y-6">
+            <!-- EEAT Toggle -->
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="enable_eeat_{SLUG}" class="eeat-toggle rounded text-primary focus:ring-primary h-4 w-4" onchange="document.getElementById('eeat-sliders-{SLUG}').classList.toggle('hidden', !this.checked)">
+              <span class="text-sm font-bold text-gray-900">E-E-A-T Bewertungsscores für dieses Produkt aktivieren</span>
+            </label>
+
+            <!-- Sliders -->
+            <div id="eeat-sliders-{SLUG}" class="space-y-4 hidden border-l-2 border-primary pl-4">
+              <h4 class="text-[13px] font-bold text-gray-700 uppercase tracking-wider">Eigene Bewertungsscores (0.0 bis 1.0)</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs font-semibold text-gray-700">
+                    <span>Preis-Leistung (Value)</span>
+                    <span id="val-display-{SLUG}">0.5</span>
+                  </div>
+                  <input type="range" name="score_value_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('val-display-{SLUG}').textContent=this.value">
+                </div>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs font-semibold text-gray-700">
+                    <span>Verarbeitung & Material</span>
+                    <span id="build-display-{SLUG}">0.5</span>
+                  </div>
+                  <input type="range" name="score_build_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('build-display-{SLUG}').textContent=this.value">
+                </div>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs font-semibold text-gray-700">
+                    <span>Handhabung & Installation</span>
+                    <span id="usability-display-{SLUG}">0.5</span>
+                  </div>
+                  <input type="range" name="score_usability_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('usability-display-{SLUG}').textContent=this.value">
+                </div>
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs font-semibold text-gray-700">
+                    <span>Alltagstauglichkeit</span>
+                    <span id="expectation-display-{SLUG}">0.5</span>
+                  </div>
+                  <input type="range" name="score_expectation_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('expectation-display-{SLUG}').textContent=this.value">
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Eigene Notizen / Testerkenntnisse</label>
+              <textarea name="quick_notes_{SLUG}" rows="2"
+                        placeholder="Hands-on Erfahrungen spezifisch für {TITLE}..."
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
+            </div>
+
+            <!-- Raw Specs -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Zusätzliche Produktdaten / Herstellerinfos (Optional)</label>
+              <textarea name="raw_source_info_{SLUG}" rows="3"
+                        placeholder="Spezifikationen, Datenblätter oder Kopien von Herstellerseiten für {TITLE}..."
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Global Fallback (for when no DB products are checked) -->
+      <div id="global-fallback-block" class="space-y-6 border border-gray-200 rounded-xl p-6 bg-gray-50">
+        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-2">
+          <span class="material-symbols-outlined text-gray-500">public</span> Allgemeine Daten (Ohne Datenbank-Verknüpfung)
+        </h3>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Allgemeine Notizen / Testerkenntnisse</label>
+          <textarea name="global_quick_notes" rows="2"
+                    placeholder="Falls kein Produkt ausgewählt wurde, können Sie hier allgemeine Erfahrungen hinterlegen..."
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
+        </div>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Zusätzliche Produktdaten / Herstellerinfos (Optional)</label>
+          <textarea name="global_raw_source_info" rows="3"
+                    placeholder="Spezifikationen oder Datenblätter für ein nicht in der DB vorhandenes Produkt..."
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-4 border-t border-gray-200 flex justify-end gap-3">
+        <a href="{{ url_for('views.blog_dashboard') }}" 
+           class="px-5 py-3 rounded-lg border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-colors shadow-sm text-sm">
+          Abbrechen
+        </a>
+        <button type="submit" 
+                class="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-md text-sm flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span> Artikel generieren
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Loading overlay container -->
+<div id="ai-loading-overlay" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white hidden">
+  <div class="flex flex-col items-center max-w-[500px] text-center px-6">
+    <div class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+    <h3 class="text-2xl font-bold mb-3 text-purple-200">Kompiliere SEO-Kontext...</h3>
+    <p class="text-gray-300 text-sm leading-relaxed mb-1">
+      Wir analysieren Spezifikationen, rufen alternative Links ab und integrieren thematische interne Link-Silos.
+    </p>
+    <p class="text-gray-400 text-xs mt-3 animate-pulse">
+      Die Generierung mit Google Gemini dauert ca. 15-30 Sekunden. Bitte schließen Sie diese Seite nicht.
+    </p>
+  </div>
+</div>
+
+<script>
+  // Dynamic Per-Product EEAT Logic
+  const container = document.getElementById('dynamic-overrides-container');
+  const emptyMsg = document.getElementById('empty-overrides-msg');
+  const fallbackBlock = document.getElementById('global-fallback-block');
+  const template = document.getElementById('product-override-template').innerHTML;
+  const productCheckboxes = document.querySelectorAll('input[name="core_product_slugs"]');
+
+  function updateOverrides() {
+    // Collect currently checked slugs
+    const checkedBoxes = Array.from(productCheckboxes).filter(cb => cb.checked);
+    
+    // Toggle empty message and global fallback
+    if (checkedBoxes.length === 0) {
+      emptyMsg.style.display = 'block';
+      fallbackBlock.style.display = 'block';
+    } else {
+      emptyMsg.style.display = 'none';
+      fallbackBlock.style.display = 'none';
+    }
+
+    // Add missing blocks
+    checkedBoxes.forEach(cb => {
+      const slug = cb.value;
+      const titleSpan = cb.closest('.product-item').querySelector('span').innerText.split('(')[0].trim();
+      
+      // If block doesn't exist, create it
+      if (!document.querySelector(`.override-block[data-slug="${slug}"]`)) {
+        const html = template
+          .replace(/{SLUG}/g, slug)
+          .replace(/{TITLE}/g, titleSpan);
+        container.insertAdjacentHTML('beforeend', html);
+      }
+    });
+
+    // Remove unchecked blocks
+    const existingBlocks = document.querySelectorAll('.override-block');
+    existingBlocks.forEach(block => {
+      const slug = block.getAttribute('data-slug');
+      if (!checkedBoxes.find(cb => cb.value === slug)) {
+        block.remove();
+      }
+    });
+  }
+
+  // Listen for changes
+  productCheckboxes.forEach(cb => {
+    cb.addEventListener('change', updateOverrides);
+  });
+  
+  // Initial run
+  updateOverrides();
+
+  // Intercept form submit and show overlay
+  const form = document.getElementById('ai-generate-form');
+  const overlay = document.getElementById('ai-loading-overlay');
+  
+  form.addEventListener('submit', () => {
+    overlay.classList.remove('hidden');
+  });
+
+  // Product Search Filter
+  const searchInput = document.getElementById('product-search-input');
+  const productItems = document.querySelectorAll('.product-item');
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      productItems.forEach(item => {
+        const title = item.getAttribute('data-title') || '';
+        if (title.includes(query)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Terms of Service') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
+
+{% block meta_description %}{{ _('Review the terms of service for using') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our affiliate links.') }}{% endblock %}
+{% block meta_keywords %}{{ _('terms of service, legal, conditions') }}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ _('Terms of Service') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
+  "description": "{{ _('Review the terms of service for using') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our affiliate links.') }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "{{ _('Terms of Service') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.terms_of_service') }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+    <div class="mb-10 border-b border-gray-100 pb-8">
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('Terms of Service') }}</h1>
+        <p class="text-gray-500 text-lg">{{ _('Last updated:') }} {{ config.get('niche', {}).get('year', '2026') }}</p>
+    </div>
+
+    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('1. Terms') }}</h2>
+        <p>{{ _('By accessing this Website, accessible from') }} {{ config.get('seo', {}).get('domain', 'our website') }}, {{ _('you are agreeing to be bound by these Website Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('2. Use License') }}</h2>
+        <p>{{ _('Permission is granted to temporarily download one copy of the materials on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website for personal, non-commercial transitory viewing only.") }}</p>
+        <p>{{ _('This will let') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('to terminate upon violations of any of these restrictions. Upon termination, your viewing right will also be terminated and you should destroy any downloaded materials in your possession whether it is printed or electronic format.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('3. Disclaimer') }}</h2>
+        <p>{{ _('All the materials on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _('\'s Website are provided "as is".') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('makes no warranties, may it be expressed or implied, therefore negates all other warranties. Furthermore,') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('does not make any representations concerning the accuracy or reliability of the use of the materials on its Website or otherwise relating to such materials or any sites linked to this Website.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('4. Limitations') }}</h2>
+        <p>{{ config.get('brand', {}).get('name', 'Our Site') }} {{ _("or its suppliers will not be hold accountable for any damages that will arise with the use or inability to use the materials on") }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website, even if") }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('or an authorize representative of this Website has been notified, orally or written, of the possibility of such damage.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('5. Affiliate Links') }}</h2>
+        <p>{{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase through our links at no extra cost to you.') }} {{ _('This means that if you click on a product link and purchase the item, we will receive an affiliate commission. We only recommend products we believe will add value to our readers.') }}</p>
+        
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('6. Revisions and Errata') }}</h2>
+        <p>{{ _('The materials appearing on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website may include technical, typographical, or photographic errors.") }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('will not promise that any of the materials in this Website are accurate, complete, or current.') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('may change the materials contained on its Website at any time without notice.') }}</p>
+    </div>
+</div>
+{% endblock %}

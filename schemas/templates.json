@@ -1,0 +1,506 @@
+{
+  "affiliate_comparison_template": {
+    "label": "Affiliate Comparison (Top 3)",
+    "description": "Compare 3 products side-by-side with benchmarks and FAQ",
+    "fields": {
+      "headline": {
+        "type": "text",
+        "label": "Page Headline (H1)",
+        "required": true,
+        "placeholder": "Die 5 besten externen SSDs für Mac und PC"
+      },
+      "sub_head": {
+        "type": "textarea",
+        "label": "Intro Paragraph",
+        "required": true,
+        "placeholder": "Wir haben 14 Laufwerke getestet...",
+        "rows": 4
+      },
+      "author_name": {
+        "type": "text",
+        "label": "Author Name",
+        "required": true,
+        "placeholder": "Max Müller"
+      },
+      "author_bio": {
+        "type": "text",
+        "label": "Author Bio / Role",
+        "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "products": {
+        "type": "array",
+        "label": "Products",
+        "minItems": 3,
+        "maxItems": 3,
+        "addLabel": "Add Product",
+        "fields": {
+          "affiliate_slug": {
+            "type": "text",
+            "label": "Affiliate Slug (e.g. samsung-t9)",
+            "placeholder": "samsung-t9"
+          },
+          "asin": {
+            "type": "text",
+            "label": "Amazon ASIN (optional, for auto-fetch)",
+            "placeholder": "B0CGMS3XBB"
+          },
+          "name": {
+            "type": "text",
+            "label": "Product Name",
+            "required": true,
+            "placeholder": "Samsung T9 2TB"
+          },
+          "badge": {
+            "type": "text",
+            "label": "Badge (e.g. Best Overall)",
+            "placeholder": "Bester Gesamt"
+          },
+          "price": {
+            "type": "text",
+            "label": "Price",
+            "required": true,
+            "placeholder": "$149.00"
+          },
+          "rating": {
+            "type": "number",
+            "label": "Rating (0–10)",
+            "placeholder": "9.8",
+            "step": "0.1",
+            "min": "0",
+            "max": "10"
+          },
+          "image_url": {
+            "type": "text",
+            "label": "Product Image URL",
+            "placeholder": "https://..."
+          },
+          "description": {
+            "type": "textarea",
+            "label": "Full Review / Description",
+            "required": true,
+            "placeholder": "Ausführliche Beschreibung des Produkts...",
+            "rows": 6
+          },
+          "pros": {
+            "type": "list",
+            "label": "Pros",
+            "addLabel": "Add Pro",
+            "placeholder": "2.000 MB/s Lesegeschwindigkeit"
+          },
+          "cons": {
+            "type": "list",
+            "label": "Cons",
+            "addLabel": "Add Con",
+            "placeholder": "Benötigt USB 3.2x2 Port"
+          },
+          "specs": {
+            "type": "list",
+            "label": "Key Specs (label: value format)",
+            "addLabel": "Add Spec",
+            "placeholder": "Kapazität: 2TB"
+          }
+        }
+      },
+      "comparison_table": {
+        "type": "table",
+        "label": "Comparison Table",
+        "columns": [
+          {
+            "key": "model",
+            "label": "Modell",
+            "type": "text"
+          },
+          {
+            "key": "read_speed",
+            "label": "Max. Lesegeschwindigkeit",
+            "type": "text"
+          },
+          {
+            "key": "interface",
+            "label": "Schnittstelle",
+            "type": "text"
+          },
+          {
+            "key": "ip_rating",
+            "label": "IP-Schutzklasse",
+            "type": "text"
+          },
+          {
+            "key": "encryption",
+            "label": "Verschlüsselung",
+            "type": "text"
+          },
+          {
+            "key": "price",
+            "label": "Preis",
+            "type": "text"
+          }
+        ]
+      },
+      "faq": {
+        "type": "array",
+        "label": "FAQ",
+        "minItems": 0,
+        "maxItems": 10,
+        "addLabel": "Add FAQ Item",
+        "fields": {
+          "question": {
+            "type": "text",
+            "label": "Question",
+            "required": true,
+            "placeholder": "Welche externe SSD ist am schnellsten?"
+          },
+          "answer": {
+            "type": "textarea",
+            "label": "Answer",
+            "required": true,
+            "rows": 3,
+            "placeholder": "Die Samsung T9 erreicht bis zu 2.000 MB/s..."
+          }
+        }
+      },
+      "verdict": {
+        "type": "textarea",
+        "label": "Final Verdict / Conclusion",
+        "placeholder": "Zusammenfassung und Empfehlung...",
+        "rows": 5
+      }
+    }
+  },
+  "product_review_template": {
+    "label": "Single Product Review",
+    "description": "In-depth review of a single product",
+    "fields": {
+      "headline": {
+        "type": "text",
+        "label": "Page Headline (H1)",
+        "required": true,
+        "placeholder": "Samsung T9 Review: Der beste portable SSD 2026?"
+      },
+      "sub_head": {
+        "type": "textarea",
+        "label": "Intro Paragraph",
+        "required": true,
+        "rows": 4,
+        "placeholder": "Wir haben das Gerät 3 Wochen lang ausgiebig getestet..."
+      },
+      "author_name": {
+        "type": "text",
+        "label": "Author Name",
+        "required": true,
+        "placeholder": "Max Müller"
+      },
+      "author_bio": {
+        "type": "text",
+        "label": "Author Bio / Role",
+        "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "affiliate_slug": {
+        "type": "text",
+        "label": "Affiliate Slug",
+        "placeholder": "samsung-t9"
+      },
+      "asin": {
+        "type": "text",
+        "label": "Amazon ASIN (optional)",
+        "placeholder": "B0CGMS3XBB"
+      },
+      "product_name": {
+        "type": "text",
+        "label": "Product Name",
+        "required": true,
+        "placeholder": "Samsung T9 2TB"
+      },
+      "price": {
+        "type": "text",
+        "label": "Current Price",
+        "required": true,
+        "placeholder": "$149.00"
+      },
+      "rating": {
+        "type": "number",
+        "label": "Overall Rating (0–10)",
+        "step": "0.1",
+        "min": "0",
+        "max": "10",
+        "placeholder": "9.8"
+      },
+      "image_url": {
+        "type": "text",
+        "label": "Product Image URL",
+        "placeholder": "https://..."
+      },
+      "pros": {
+        "type": "list",
+        "label": "Pros",
+        "addLabel": "Add Pro",
+        "placeholder": "Sehr schnell"
+      },
+      "cons": {
+        "type": "list",
+        "label": "Cons",
+        "addLabel": "Add Con",
+        "placeholder": "Teurer als Konkurrenz"
+      },
+      "score_bars": {
+        "type": "array",
+        "label": "Score Breakdown (Rating Bars)",
+        "addLabel": "Add Score Category",
+        "fields": {
+          "name": {
+            "type": "text",
+            "label": "Category Name",
+            "required": true,
+            "placeholder": "Geschwindigkeit"
+          },
+          "value": {
+            "type": "number",
+            "label": "Score (0–10)",
+            "step": "0.1",
+            "min": "0",
+            "max": "10",
+            "placeholder": "9.5"
+          }
+        }
+      },
+      "specs": {
+        "type": "list",
+        "label": "Technical Specs (Label: Value format)",
+        "addLabel": "Add Spec",
+        "placeholder": "Schnittstelle: USB 3.2 Gen 2×2"
+      },
+      "alternatives": {
+        "type": "array",
+        "label": "Alternative Products (Sidebar)",
+        "addLabel": "Add Alternative",
+        "fields": {
+          "name": {
+            "type": "text",
+            "label": "Product Name",
+            "required": true,
+            "placeholder": "WD My Passport SSD"
+          },
+          "badge": {
+            "type": "text",
+            "label": "Badge",
+            "placeholder": "Bestes Preis-Leistungs-Verhältnis"
+          },
+          "price": {
+            "type": "text",
+            "label": "Price",
+            "placeholder": "$69"
+          },
+          "rating": {
+            "type": "number",
+            "label": "Rating (0–10)",
+            "step": "0.1",
+            "min": "0",
+            "max": "10"
+          },
+          "affiliate_slug": {
+            "type": "text",
+            "label": "Affiliate Slug",
+            "placeholder": "wd-passport-ssd"
+          }
+        }
+      },
+      "sections": {
+        "type": "array",
+        "label": "Review Sections",
+        "addLabel": "Add Section",
+        "fields": {
+          "title": {
+            "type": "text",
+            "label": "Section Title",
+            "required": true,
+            "placeholder": "Leistung & Geschwindigkeit"
+          },
+          "body": {
+            "type": "textarea",
+            "label": "Section Content",
+            "required": true,
+            "rows": 6,
+            "placeholder": "Ausführlicher Abschnitt..."
+          }
+        }
+      },
+      "faq": {
+        "type": "array",
+        "label": "FAQ",
+        "addLabel": "Add FAQ Item",
+        "fields": {
+          "question": {
+            "type": "text",
+            "label": "Question",
+            "required": true
+          },
+          "answer": {
+            "type": "textarea",
+            "label": "Answer",
+            "required": true,
+            "rows": 3
+          }
+        }
+      },
+      "verdict": {
+        "type": "textarea",
+        "label": "Final Verdict / Conclusion",
+        "placeholder": "Zusammenfassung und Empfehlung...",
+        "rows": 5
+      }
+    }
+  },
+  "best_x_for_y_template": {
+    "label": "Best X for Y (Listicle)",
+    "description": "Best-of listicle with ranked products",
+    "fields": {
+      "headline": {
+        "type": "text",
+        "label": "Page Headline (H1)",
+        "required": true,
+        "placeholder": "Die besten Espresso-Maschinen für Zuhause 2026"
+      },
+      "sub_head": {
+        "type": "textarea",
+        "label": "Intro Paragraph",
+        "required": true,
+        "rows": 4,
+        "placeholder": "Wir haben 12 Espressomaschinen getestet..."
+      },
+      "author_name": {
+        "type": "text",
+        "label": "Author Name",
+        "required": true,
+        "placeholder": "Max Müller"
+      },
+      "author_bio": {
+        "type": "text",
+        "label": "Author Bio / Role",
+        "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "products": {
+        "type": "array",
+        "label": "Products",
+        "minItems": 1,
+        "maxItems": 10,
+        "addLabel": "Add Product",
+        "fields": {
+          "affiliate_slug": {
+            "type": "text",
+            "label": "Affiliate Slug"
+          },
+          "rank": {
+            "type": "number",
+            "label": "Rank",
+            "required": true
+          },
+          "asin": {
+            "type": "text",
+            "label": "Amazon ASIN (optional)",
+            "placeholder": "B0CGMS3XBB"
+          },
+          "name": {
+            "type": "text",
+            "label": "Product Name",
+            "required": true
+          },
+          "badge": {
+            "type": "text",
+            "label": "Badge (Best for...)"
+          },
+          "price": {
+            "type": "text",
+            "label": "Price",
+            "required": true
+          },
+          "rating": {
+            "type": "number",
+            "label": "Rating (0–10)",
+            "step": "0.1"
+          },
+          "image_url": {
+            "type": "text",
+            "label": "Image URL"
+          },
+          "summary": {
+            "type": "textarea",
+            "label": "Short Summary",
+            "rows": 3
+          },
+          "pros": {
+            "type": "list",
+            "label": "Pros",
+            "addLabel": "Add Pro"
+          },
+          "cons": {
+            "type": "list",
+            "label": "Cons",
+            "addLabel": "Add Con"
+          },
+          "specs": {
+            "type": "list",
+            "label": "Key Specs (label: value format)",
+            "addLabel": "Add Spec",
+            "placeholder": "Kapazität: 2TB"
+          }
+        }
+      },
+      "buying_guide": {
+        "type": "textarea",
+        "label": "Buying Guide / What to Look For",
+        "rows": 6,
+        "placeholder": "Worauf sollte man beim Kauf achten..."
+      },
+      "comparison_table": {
+        "type": "table",
+        "label": "Comparison Table",
+        "columns": [
+          {
+            "key": "model",
+            "label": "Modell",
+            "type": "text"
+          },
+          {
+            "key": "badge",
+            "label": "Badge / Eignung",
+            "type": "text"
+          },
+          {
+            "key": "rating",
+            "label": "Bewertung",
+            "type": "text"
+          },
+          {
+            "key": "price",
+            "label": "Preis",
+            "type": "text"
+          }
+        ]
+      },
+      "faq": {
+        "type": "array",
+        "label": "FAQ",
+        "addLabel": "Add FAQ Item",
+        "fields": {
+          "question": {
+            "type": "text",
+            "label": "Question",
+            "required": true
+          },
+          "answer": {
+            "type": "textarea",
+            "label": "Answer",
+            "required": true,
+            "rows": 3
+          }
+        }
+      },
+      "verdict": {
+        "type": "textarea",
+        "label": "Final Verdict / Conclusion",
+        "placeholder": "Zusammenfassung und Empfehlung...",
+        "rows": 5
+      }
+    }
+  }
+}

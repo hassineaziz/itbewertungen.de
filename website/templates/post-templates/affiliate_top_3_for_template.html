@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{# ── SEO meta from structured data ─────────────────────────────────────── #}
+{% block title %}{{ post.meta_title if post and post.meta_title else data.get('headline', 'Vergleich') }} | {{ config.brand.name | default('') }}{% endblock %}
+{% block meta_description %}{{ post.meta_description if post and post.meta_description else data.get('sub_head', '')[:155] }}{% endblock %}
+{% block meta_keywords %}{{ post.focus_keyword if post and post.focus_keyword else data.get('headline', '') }}{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block schema %}
+{% if data.get('faq') %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in data.faq %}
+    {
+      "@type": "Question",
+      "name": {{ item.question | tojson }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ item.answer | tojson }} }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% if data.get('products') and data.products | length > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ data.get('headline', '') | tojson }},
+  "description": {{ data.get('sub_head', '') | tojson }},
+  "numberOfItems": {{ data.products | length }},
+  "itemListElement": [
+    {% for p in data.products %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "name": {{ p.name | tojson }},
+      "url": "{{ config.get('seo',{}).get('domain','') }}/blog/{{ post.slug if post else '' }}",
+      "item": {
+        "@type": "Product",
+        "name": {{ p.name | tojson }},
+        {% if p.get('image_url') %}"image": {{ p.image_url | tojson }},{% endif %}
+        {% if p.get('description') %}"description": {{ p.description | tojson }},{% endif %}
+        "offers": {
+          "@type": "Offer",
+          "price": "{{ p.price | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim }}",
+          "priceCurrency": "EUR"
+        }{% if p.get('rating') %},
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "{{ p.rating }}",
+          "bestRating": "10",
+          "reviewCount": "1"
+        }{% endif %}
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  "description": {{ data.get('sub_head', '') | tojson }},
+  {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
+  "author": {
+    "@type": "Person",
+    "name": {{ data.get('author_name', 'Redaktion') | tojson }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ config.get('brand', {}).get('name', '') | tojson }}
+  }{% if post and post.published_at %},
+  "datePublished": "{{ post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+  "dateModified": "{{ post.updated_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if post.updated_at else post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}"{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo',{}).get('domain','') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Reviews", "item": "{{ config.get('seo',{}).get('domain','') }}/blog" }{% if post %},
+    { "@type": "ListItem", "position": 3, "name": {{ post.title | tojson }}, "item": "{{ config.get('seo',{}).get('domain','') }}/blog/{{ post.slug }}" }{% endif %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<style>
+  .markdown-inline-p p {
+    display: inline;
+    margin: 0;
+    padding: 0;
+  }
+  .markdown-content a {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+  }
+  .markdown-content a:hover {
+    color: #1d4ed8;
+  }
+</style>
+<article class="max-w-[2200px] mx-auto bg-white">
+
+  {# ══ BREADCRUMBS ═══════════════════════════════════════════════════════ #}
+  <nav aria-label="Breadcrumb" class="px-8 lg:px-12 py-3 border-b border-gray-100">
+    <ol class="flex items-center gap-1.5 text-[11px] text-gray-400">
+      <li><a href="{{ url_for('views.home') }}" class="hover:text-primary transition-colors">Home</a></li>
+      <span class="text-gray-300">/</span>
+      <li><a href="{{ url_for('views.blog_index') }}" class="hover:text-primary transition-colors">Reviews</a></li>
+      <span class="text-gray-300">/</span>
+      <li class="text-gray-600 truncate max-w-[200px]">{{ data.get('headline', post.title if post else '') }}</li>
+    </ol>
+  </nav>
+
+  {# ══ HERO ════════════════════════════════════════════════════════════════ #}
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[320px] border-b border-gray-200">
+
+    {# Left: Headline + Intro #}
+    <div class="p-8 lg:p-12 flex flex-col justify-center border-r border-gray-200">
+      <div class="text-[11px] font-medium tracking-[0.08em] uppercase text-primary mb-3 flex items-center">
+        <span class="material-symbols-outlined text-[14px] mr-1">science</span>
+        Im Labor getestet · Ausgabe {{ config.niche.year | default('2026') }}
+      </div>
+      <h1 class="text-3xl lg:text-4xl font-extrabold leading-[1.2] mb-4 text-gray-900" itemprop="headline">
+        {{ data.get('headline', post.title if post else 'Vergleich') }}
+      </h1>
+      <div class="text-[15px] text-gray-600 mb-6 leading-relaxed markdown-inline-p">
+        {{ data.get('sub_head', '') | markdown }}
+      </div>
+      <div class="flex gap-2 mb-6 flex-wrap">
+        {% if data.get('author_name') or post %}
+        <span class="text-[11px] bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[12px]">person</span>
+          {{ data.get('author_name', 'Redaktion') }}{% if data.get('author_bio') %} · {{ data.author_bio }}{% endif %}
+        </span>
+        {% endif %}
+        <span class="text-[11px] bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[12px]">schedule</span>
+          {{ post.read_time if post else '12' }} Min. Lesezeit
+        </span>
+        <span class="text-[11px] bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[12px]">calendar_today</span>
+          {{ current_date }}
+        </span>
+      </div>
+      <div>
+        <a href="#overall-winner"
+           class="inline-flex items-center gap-2 bg-primary hover:bg-blue-700 text-white text-[13px] font-bold px-6 py-3 rounded-lg transition-colors shadow-sm">
+          Sehen Sie unsere #1 Empfehlung
+          <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+        </a>
+      </div>
+    </div>
+
+    {# Right: Winner Card + Runner Ups #}
+    <div class="p-6 lg:p-10 flex flex-col gap-4 bg-gray-50">
+      {% set winner = data.get('products', [{}])[0] %}
+      {% if winner %}
+      <div class="bg-white border-2 border-primary rounded-xl p-5 relative shadow-sm">
+        <span class="absolute -top-3 left-4 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider uppercase">
+          {{ winner.get('badge', 'BEST OVERALL') }}
+        </span>
+        <div class="flex items-center gap-4 mb-4">
+          {% if winner.get('image_url') %}
+          <img src="{{ winner.image_url }}" alt="{{ winner.name }}" class="w-16 h-16 object-contain rounded-lg border border-gray-100 bg-white p-1">
+          {% else %}
+          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-3xl text-gray-300">inventory_2</span>
+          </div>
+          {% endif %}
+          <div>
+            <div class="text-[12px] font-bold text-primary uppercase tracking-wider mb-0.5">Unsere #1 Empfehlung</div>
+            <h3 class="text-[15px] font-bold text-gray-900">{{ winner.get('name', '') }}</h3>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 mb-4">
+          <div class="text-[28px] font-bold text-primary leading-none">{{ winner.get('rating', '9.8') }}</div>
+          <div>
+            <div class="text-yellow-400 text-[14px] tracking-[-1px]">★★★★★</div>
+            <div class="text-[11px] text-gray-500">von 10 — Echte Labor-Messwerte</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          {% if winner.get('pros') %}
+          <div class="bg-gray-50 rounded-lg p-3">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-green-600 mb-2">Vorteile</div>
+            {% for pro in winner.pros[:3] %}
+            <div class="text-[12px] text-gray-600 flex gap-1.5 mb-1"><span class="text-green-600 text-[14px] leading-none">✓</span> {{ pro }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if winner.get('cons') %}
+          <div class="bg-gray-50 rounded-lg p-3">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-2">Nachteile</div>
+            {% for con in winner.cons[:2] %}
+            <div class="text-[12px] text-gray-600 flex gap-1.5 mb-1"><span class="text-red-500 text-[14px] leading-none">✗</span> {{ con }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center justify-between border-t border-gray-100 pt-3 mb-1">
+          <span class="text-[14px] font-bold text-green-600 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">sell</span> {{ winner.get('price', '') }}
+          </span>
+          <span class="text-[10px] text-gray-400">Preisänderungen vorbehalten</span>
+        </div>
+        {% if winner.get('affiliate_slug') %}
+        <a href="{{ url_for('views.affiliate_redirect', slug=winner.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
+          Preis auf Amazon prüfen <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {# Runner-ups list #}
+      {% for p in data.get('products', [])[1:] %}
+      <div class="bg-white border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-2 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-2.5 h-2.5 rounded-full {% if loop.first %}bg-green-600{% else %}bg-purple-600{% endif %} flex-shrink-0"></div>
+          <div>
+            <div class="text-[13px] font-bold text-gray-900">{{ p.get('name', '') }}</div>
+            <div class="text-[11px] text-gray-500">{{ p.get('badge', '') }}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-[13px] font-bold text-gray-600">{{ p.get('rating', '') }} / 10</div>
+          <div class="text-[11px] font-bold text-green-600">{{ p.get('price', '') }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ══ SIDE-BY-SIDE RECOMMENDATIONS ══════════════════════════════════ #}
+  {% set products_count = data.get('products', [])|length %}
+  <div id="overall-winner" class="p-8 lg:p-12 border-b border-gray-200 bg-gray-50 scroll-mt-24">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Direkter Vergleich: Die Top-{{ products_count }} Empfehlungen im Überblick</h2>
+    <div class="grid grid-cols-1 {% if products_count == 2 %}md:grid-cols-2{% elif products_count == 4 %}md:grid-cols-4{% elif products_count >= 5 %}md:grid-cols-3 lg:grid-cols-5{% else %}md:grid-cols-3{% endif %} gap-4">
+      {% for p in data.get('products', []) %}
+      <div class="bg-white border {% if loop.first %}border-2 border-primary{% else %}border-gray-200{% endif %} rounded-xl p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="text-[10px] font-bold {% if loop.first %}text-primary{% else %}text-gray-500{% endif %} tracking-wider mb-2 uppercase">
+            {% if loop.first %}★ Bester Gesamt{% else %}{{ p.get('badge', '') }}{% endif %}
+          </div>
+          <h3 class="text-[15px] font-bold text-gray-900 mb-1">{{ p.get('name', '') }}</h3>
+          <div class="text-[20px] font-bold text-primary mb-4">{{ p.get('price', '') }}</div>
+          <div class="space-y-2 mb-6">
+            {% for pro in p.get('pros', [])[:3] %}
+            <div class="text-[12px] text-gray-600 flex gap-2"><span class="text-green-600 font-bold">✓</span> {{ pro }}</div>
+            {% endfor %}
+            {% for con in p.get('cons', [])[:1] %}
+            <div class="text-[12px] text-gray-600 flex gap-2"><span class="text-red-500 font-bold">✗</span> {{ con }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% if p.get('affiliate_slug') %}
+        <a href="{{ url_for('views.affiliate_redirect', slug=p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full mt-auto">
+          Preis prüfen
+        </a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ══ THREE-COLUMN LAYOUT ══════════════════════════════════════════════════ #}
+  <div class="px-8 py-12 max-w-[2200px] mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_320px] gap-12">
+
+      {# Left: Table of Contents #}
+      <aside aria-label="Table of contents" class="hidden lg:block">
+        <div class="sticky top-24 bg-white rounded-xl border border-gray-200 shadow p-6">
+          <h3 class="text-sm font-semibold text-gray-900 mb-3">Inhalt</h3>
+          <nav id="toc" class="toc-nav text-sm text-gray-700 space-y-2"></nav>
+        </div>
+      </aside>
+
+      {# Center: Main Content #}
+      <div class="min-w-0" id="seo-content">
+        
+        <h2 id="top-picks-reviewed" class="text-2xl font-bold text-gray-900 mb-8 mt-12">Quick Reviews: Our Top Picks</h2>
+
+        {# One-by-One Product Reviews #}
+        {% if data.get('products') %}
+        {% for p in data.products %}
+        <div class="mb-10 border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden flex flex-col md:flex-row">
+          {# Left side of the box #}
+          <div class="w-full md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200">
+            <div class="relative w-full aspect-square max-w-[180px] bg-white rounded-xl mb-4 flex items-center justify-center border border-gray-100 shadow-inner overflow-hidden p-2">
+              <span class="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded z-10">
+                #{{ loop.index }} {{ p.get('badge', '') | upper }}
+              </span>
+              {% if p.get('image_url') %}
+              <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-full h-full object-contain p-2">
+              {% else %}
+              <span class="material-symbols-outlined text-6xl text-gray-300">inventory_2</span>
+              {% endif %}
+            </div>
+            <div class="text-[20px] font-bold text-gray-900 mb-1">
+              {{ p.get('price', '') }}
+            </div>
+            <div class="text-[11px] text-gray-500 mb-4 text-center">
+              Pricing subject to change
+            </div>
+            {% if p.get('affiliate_slug') %}
+            <a href="{{ url_for('views.affiliate_redirect', slug=p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
+              Jetzt kaufen <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            </a>
+            {% endif %}
+          </div>
+
+          {# Right side of the box #}
+          <div class="w-full md:w-2/3 p-6 md:p-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">{{ loop.index }}. {{ p.name }}</h3>
+
+            {% if p.get('specs') %}
+            <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+              Quick Overview
+            </h4>
+            <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
+              {% for spec in p.specs[:2] %}
+              <li>
+                {% if ':' in spec %}
+                  {% set parts = spec.split(':', 1) %}
+                  <strong>{{ parts[0] }}:</strong>{{ parts[1] }}
+                {% else %}
+                  {{ spec }}
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+
+            <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+              Key Features
+            </h4>
+            <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
+              {% for spec in p.specs[2:] %}
+              <li>
+                {% if ':' in spec %}
+                  {% set parts = spec.split(':', 1) %}
+                  <strong>{{ parts[0] }}:</strong>{{ parts[1] }}
+                {% else %}
+                  {{ spec }}
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+              Quick Overview
+            </h4>
+            <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
+              {% for pro in p.get('pros', [])[:2] %}
+              <li><strong>Highlight:</strong> {{ pro }}</li>
+              {% endfor %}
+            </ul>
+
+            <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+              Key Features
+            </h4>
+            <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
+              {% for pro in p.get('pros', [])[2:4] %}
+              <li><strong>Feature:</strong> {{ pro }}</li>
+              {% endfor %}
+              {% for con in p.get('cons', [])[:1] %}
+              <li class="text-gray-500"><strong>Note:</strong> {{ con }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+
+            <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
+              Verdict
+            </h4>
+            <div class="text-[13px] text-gray-700 leading-relaxed m-0 markdown-content">
+              {{ p.get('description', '') | markdown }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {# Performance Benchmarks #}
+        <h2 id="benchmarks" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Performance Benchmarks & How We Test</h2>
+        <p class="text-[15px] text-gray-700 leading-relaxed mb-6">
+          Our team tests each product in controlled environment conditions. We analyze direct latency, response consistency, material durability, and build quality under real stress. Below is our benchmark rating overview for each recommendation.
+        </p>
+
+        <div class="w-full mb-12 mt-6">
+          <div class="grid grid-cols-[140px_1fr_60px] items-center gap-3 py-2 border-b border-gray-200">
+            <span class="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Modell</span>
+            <span class="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Testwertung (0-10)</span>
+            <span class="text-[12px] font-bold text-gray-500 uppercase tracking-wider text-right">Score</span>
+          </div>
+          {% for p in data.get('products', []) %}
+          <div class="grid grid-cols-[140px_1fr_60px] items-center gap-3 py-3 border-b border-gray-100">
+            <span class="text-[13px] font-bold text-gray-900">{{ p.name.split(' ')[0:3] | join(' ') }} <span class="text-primary text-[10px] ml-1">#{{ loop.index }}</span></span>
+            <div class="bg-gray-100 rounded-[3px] h-2.5 w-full overflow-hidden">
+              <div class="{% if loop.first %}bg-primary{% elif loop.index == 2 %}bg-teal-600{% else %}bg-gray-400{% endif %} h-full rounded-[3px]" style="width: {{ (p.get('rating', 9.0) * 10) | int }}%"></div>
+            </div>
+            <span class="text-[13px] font-bold text-gray-900 text-right">{{ p.get('rating', '') }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        {# Final Verdict #}
+        {% if data.get('verdict') %}
+        h2 id="fazit" class="text-2xl font-bold text-gray-900 mb-4 mt-16">Unser Fazit</h2>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-16">
+          <div class="text-[15px] text-gray-800 leading-relaxed m-0 markdown-inline-p">{{ data.verdict | markdown }}</div>
+        </div>
+        {% endif %}
+
+        {# Use Case Recommendations (Best for X and Best for Y) #}
+        <h2 id="who-should-buy" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Which Option is Right For You?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {% set premium_p = data.get('products', [{}])[0] %}
+          {% set budget_p = data.get('products', [{}])[-1] %}
+          
+          {% if premium_p %}
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col h-full">
+            <h3 class="text-[16px] font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">military_tech</span> Für maximale Performance
+            </h3>
+            <p class="text-[13px] text-gray-600 mb-4 leading-relaxed">
+              Wenn Sie keine Kompromisse eingehen wollen und das absolute Spitzenprodukt für anspruchsvolle Szenarien suchen, ist das die beste Option.
+            </p>
+            <div class="mt-auto">
+              <div class="text-[13px] font-bold text-primary mb-3">Empfehlung: {{ premium_p.name }}</div>
+              {% if premium_p.get('affiliate_slug') %}
+              <a href="{{ url_for('views.affiliate_redirect', slug=premium_p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
+                Jetzt kaufen
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if budget_p %}
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col h-full">
+            <h3 class="text-[16px] font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-green-600">savings</span> Für Preis-Leistungs-Bewusste
+            </h3>
+            <p class="text-[13px] text-gray-600 mb-4 leading-relaxed">
+              Wenn Sie ein begrenztes Budget haben oder das Produkt nur gelegentlich nutzen, bietet dieses Modell die beste Leistung fürs Geld.
+            </p>
+            <div class="mt-auto">
+              <div class="text-[13px] font-bold text-green-600 mb-3">Empfehlung: {{ budget_p.name }}</div>
+              {% if budget_p.get('affiliate_slug') %}
+              <a href="{{ url_for('views.affiliate_redirect', slug=budget_p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
+                Auf Amazon prüfen
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        {# Spec Comparison Table #}
+        {% if data.get('comparison_table') %}
+        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Vergleichstabelle</h3>
+        <div class="overflow-x-auto mb-12 border border-gray-200 rounded-xl">
+          <table class="w-full text-left border-collapse min-w-[600px] text-[13px]">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-200">
+                {% if data.comparison_table is mapping and data.comparison_table.get('headers') %}
+                  {% for h in data.comparison_table.headers %}
+                  <th class="py-3 px-4 font-bold text-gray-900">{{ h }}</th>
+                  {% endfor %}
+                {% else %}
+                  <th class="py-3 px-4 font-bold text-gray-900">Modell</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">Max. Lesegeschwindigkeit</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">Schnittstelle</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">IP-Schutzklasse</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">Verschlüsselung</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">Preis</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-gray-700">
+              {% if data.comparison_table is mapping and 'rows' in data.comparison_table %}
+                {% for row in data.comparison_table.rows %}
+                <tr class="hover:bg-gray-50">
+                  {% for cell in row %}
+                  <td class="py-3 px-4 {% if loop.first %}font-semibold text-gray-900{% elif loop.last %}font-bold text-green-600{% endif %}">
+                    {{ cell }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              {% else %}
+                {% for row in data.comparison_table %}
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 px-4 font-semibold text-gray-900">{{ row.get('model', '') }}</td>
+                  <td class="py-3 px-4">{{ row.get('read_speed', '') }}</td>
+                  <td class="py-3 px-4">{{ row.get('interface', '') }}</td>
+                  <td class="py-3 px-4">{{ row.get('ip_rating', '') }}</td>
+                  <td class="py-3 px-4">{{ row.get('encryption', '') }}</td>
+                  <td class="py-3 px-4 font-bold text-green-600">{{ row.get('price', '') }}</td>
+                </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Spec Comparison Table</h3>
+        <div class="overflow-x-auto mb-12 border border-gray-200 rounded-xl">
+          <table class="w-full text-left border-collapse min-w-[600px] text-[13px]">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-200">
+                <th class="py-3 px-4 font-bold text-gray-900">Modell</th>
+                <th class="py-3 px-4 font-bold text-gray-900">Badge / Eignung</th>
+                <th class="py-3 px-4 font-bold text-gray-900">Bewertung</th>
+                <th class="py-3 px-4 font-bold text-gray-900">Preis</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-gray-700">
+              {% for p in data.get('products', []) %}
+              <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-semibold text-gray-900">{{ p.name }}</td>
+                <td class="py-3 px-4">{{ p.get('badge', 'Standard Pick') }}</td>
+                <td class="py-3 px-4 text-green-600 font-bold">{{ p.get('rating', '') }} / 10</td>
+                <td class="py-3 px-4 text-green-600 font-semibold">{{ p.get('price', '') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        {# FAQ #}
+        {% if data.get('faq') and data.faq | length > 0 %}
+        <h2 id="faq" class="text-2xl font-bold text-gray-900 mb-6 mt-16">Frequently Asked Questions</h2>
+        <div class="space-y-0">
+          {% for item in data.faq %}
+          <div class="border-b border-gray-200 py-4">
+            <details class="group cursor-pointer">
+              <summary class="flex justify-between items-center font-bold text-[15px] text-gray-900 list-none">
+                {{ item.question }}
+                <span class="transition group-open:rotate-180 material-symbols-outlined text-gray-400">expand_more</span>
+              </summary>
+              <div class="text-[14px] text-gray-600 mt-3 leading-relaxed pr-8 markdown-inline-p">
+                {{ item.answer | markdown }}
+              </div>
+            </details>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Author box #}
+        {% if data.get('author_name') %}
+        <div class="border-t border-gray-100 pt-8 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+            {{ data.author_name[:1] | upper }}
+          </div>
+          <div>
+            <div class="font-bold text-gray-900">{{ data.author_name }}</div>
+            <div class="text-[13px] text-gray-500">{{ data.get('author_bio', '') }} · Zuletzt aktualisiert {{ current_date }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      {# Right: Sidebar #}
+      <aside aria-label="Sidebar">
+        <div class="sticky top-24 space-y-10">
+          
+          {# Quick recommendation widget #}
+          {% if data.get('products') %}
+          <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Unsere Empfehlungen</div>
+            {% for p in data.products %}
+            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-gray-100 text-gray-600 font-bold text-[10px] flex items-center justify-center">#{{ loop.index }}</span>
+                <span class="text-[13px] font-semibold text-gray-900">{{ p.name[:18] }}{% if p.name|length > 18 %}…{% endif %}</span>
+              </div>
+              <span class="text-[12px] font-bold text-green-600">{{ p.get('price', '') }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="bg-primary/5 rounded-2xl border border-primary/20 p-6 text-center shadow-sm">
+            <h3 class="font-serif font-bold text-xl text-gray-900 mb-2">Get the Best Deals</h3>
+            <p class="text-sm text-gray-600 mb-6">Join 10,000+ readers getting exclusive discounts and buying guides.</p>
+            <form action="{{ url_for('views.subscribe') }}" method="POST" class="space-y-3">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="email" name="email" placeholder="Your email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm" required>
+              <button type="submit" class="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-3 rounded-lg transition-colors shadow-sm text-sm">
+                Subscribe Now
+              </button>
+            </form>
+            <p class="text-[11px] text-gray-400 mt-4 text-center">No spam. Unsubscribe anytime.</p>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</article>
+
+<!-- TOC + Scrollspy script -->
+<script>
+    (function () {
+        var container = document.getElementById('seo-content');
+        var toc = document.getElementById('toc');
+        if (!container || !toc) return;
+
+        var headings = container.querySelectorAll('h2, h3');
+        var list = document.createElement('ul');
+        list.className = 'space-y-2';
+
+        headings.forEach(function (h, i) {
+            if (!h.id) h.id = 'sec-' + (i + 1);
+            var li = document.createElement('li');
+            if (h.tagName.toLowerCase() === 'h3') li.style.marginLeft = '0.75rem';
+            var a = document.createElement('a');
+            a.href = '#' + h.id;
+            a.textContent = h.textContent;
+            a.className = 'hover:text-primary transition-colors';
+            li.appendChild(a);
+            list.appendChild(li);
+        });
+        toc.appendChild(list);
+
+        // Scrollspy
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                var link = toc.querySelector('a[href="#' + entry.target.id + '"]');
+                if (!link) return;
+                if (entry.isIntersecting) {
+                    toc.querySelectorAll('a').forEach(function (l) { l.classList.remove('font-bold', 'text-primary'); });
+                    link.classList.add('font-bold', 'text-primary');
+                }
+            });
+        }, { rootMargin: '0px 0px -70% 0px', threshold: 0.1 });
+
+        headings.forEach(function (h) { observer.observe(h); });
+
+        // Mobile: collapse TOC into <details>
+        function setupMobileTOC() {
+            if (window.innerWidth < 1024) {
+                if (!toc.dataset.mobile) {
+                    var details = document.createElement('details');
+                    details.open = false;
+                    var summary = document.createElement('summary');
+                    summary.textContent = 'Inhalt';
+                    summary.className = 'cursor-pointer font-semibold text-gray-900 mb-2';
+                    details.appendChild(summary);
+                    while (toc.firstChild) { details.appendChild(toc.firstChild); }
+                    toc.appendChild(details);
+                    toc.dataset.mobile = '1';
+                }
+            }
+        }
+        setupMobileTOC();
+        window.addEventListener('resize', setupMobileTOC);
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('About Us') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
+{% block meta_description %}{{ _('Learn more about') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our mission.') }}{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": "{{ _('About Us') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
+  "description": "{{ _('Learn more about') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our mission.') }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "{{ _('About Us') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.about') }}" }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+    <div class="mb-10 border-b border-gray-100 pb-8">
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('About Us') }}</h1>
+    </div>
+
+    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
+        <p>{{ _('Welcome to') }} <strong>{{ config.get('brand', {}).get('name', 'Our Site') }}</strong>.</p>
+        <p>{{ config.get('niche', {}).get('home_description', 'We provide expert insights and independent reviews.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Our Mission') }}</h2>
+        <p>{{ _('Our goal is to help you find the best') }} <strong>{{ config.get('niche', {}).get('category', 'products') }}</strong> {{ _('on the market. We understand that choosing the right product can be overwhelming, which is why we dedicate our time to thoroughly test and review each item we recommend.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Why Trust Us?') }}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            {% for point in config.get('niche', {}).get('trust_points', []) %}
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">{{ point.icon | default('verified') }}</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">{{ point.title }}</h3>
+                <p class="text-sm text-gray-600">{{ point.text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Our Independence') }}</h2>
+        <p>{{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase through our links at no extra cost to you.') }} {{ _('We are completely independent and our recommendations are purely based on our own lab testing and real-world usage. We never accept payment for favorable reviews.') }}</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+# Core Flask Framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.3
+Flask-Migrate==4.0.5
+Flask-WTF==1.2.1
+WTForms==3.1.1
+Flask-Admin==1.6.1
+
+# Database
+psycopg2-binary==2.9.7
+SQLAlchemy==2.0.21
+sqlalchemy-utils==0.41.1
+
+# Utilities
+requests==2.31.0
+python-dotenv==1.0.0
+markdown==3.6
+
+# Production Dependencies
+gunicorn==21.2.0
+whitenoise==6.6.0
+PyYAML==6.0.2
+python-amazon-paapi==6.3.0
+flask_babel

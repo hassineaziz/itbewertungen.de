@@ -1,0 +1,70 @@
+# ==============================================================================
+# AFFILIATE SITE CONFIGURATION TEMPLATE
+# Every variable here dynamically renders somewhere in the Flask Jinja templates.
+# ==============================================================================
+
+brand:
+  # The main name of your site (Used in the SEO titles, footer copyright, and Navbar)
+  name: "SSDLab"
+  logo_text: "SSD Lab"
+  # The main theme color for all your buttons and links! (Use a Hex Code)
+  primary_color: "#2563eb"
+
+niche:
+  # Used across the site to refer to what you review (e.g. "We tested [category]")
+  category: "External SSDs"
+  # Displayed in the Top Trust Bar ("Updated [year]") and Footer copyright
+  year: "2026"
+  # (Optional) Not currently rendered, but available for trust metrics
+  products_tested: 14
+  # (Optional) Not currently rendered, but available for trust metrics
+  test_hours: 120
+  # (Optional) Not currently rendered
+  readers: "50,000"
+  
+  # The massive H1 Headline on the landing page (Hero Section)
+  home_title: "Best External SSDs 2026 — Lab Tested & Ranked"
+  # The sub-headline text right below the H1 on the landing page
+  home_description: "We tested 14 drives over 120 hours. Here's what to buy."
+  
+  # Note: The Top Trust Bar icons are now hardcoded in base.html for the new premium design,
+  # so 'trust_points' here is kept for future-proofing or if you revert to dynamic rendering.
+  trust_points:
+    - icon: "check_circle"
+      title: "100% Independent"
+      text: "We buy all our own test units."
+    - icon: "science"
+      title: "Lab Tested"
+      text: "Rigorous synthetic and real-world benchmarks."
+    - icon: "update"
+      title: "Always Current"
+      text: "We constantly update our top picks."
+
+affiliate:
+  # Unused by templates (The CTA buttons are currently hardcoded or pulled from DB)
+  default_cta: "Check price on Amazon"
+  # The legal affiliate disclosure printed prominently in the Footer (base.html)
+  disclosure: "We earn a small commission at no cost to you. This funds our testing."
+
+seo:
+  # Used to construct Absolute URLs for sitemaps and canonical links (e.g. https://yourdomain.com)
+  domain: "http://127.0.0.1:5000"
+  # Links the Twitter icon in the Footer. If left blank "", the icon disappears!
+  twitter_handle: "@ssdlab"
+
+email:
+  # The subtitle paragraph text in the Newsletter Subscribe box on the landing page
+  subscribe_sub: "Join our newsletter for exclusive deals and reviews."
+  # The bullet-point checklist rendered above the email input on the landing page
+  perks:
+    - icon: "mail" # Google Material Icon name
+      label: "Weekly updates"
+    - icon: "sell"
+      label: "Exclusive deals"
+    - icon: "bolt"
+      label: "Early access"
+  # The text on the Newsletter submit button
+  cta_label: "Subscribe"
+  # The bold text showing social proof next to the avatar stack on the landing page
+  subscriber_count: "10,000"
+

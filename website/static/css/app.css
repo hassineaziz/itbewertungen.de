@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .btn-amazon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: #FFA41C;
+        color: #111827; /* text-gray-900 */
+        font-size: 13px;
+        font-weight: 700;
+        padding: 0.625rem 1rem; /* py-2.5 px-4 */
+        border-radius: 0.5rem; /* rounded-lg */
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    }
+    
+    .btn-amazon:hover {
+        background-color: #FA8900;
+    }
+}
