@@ -81,6 +81,8 @@ htmlcov/
 !DEPLOYMENT.md
 !GOOGLE_OAUTH_SETUP.md
 !CLEANUP_SUMMARY.md
+!seo_prompts/
+!seo_prompts/*.md
 
 # Migration scripts (keep migrations folder structure)
 # But ignore specific migration files if needed
