@@ -66,6 +66,23 @@ def create_app():
     app.register_blueprint(views, url_prefix='/en', name='views_en')
     app.register_blueprint(seo_bp, url_prefix='/')
     
+    @app.before_request
+    def redirect_trailing_slash():
+        if request.method == 'GET':
+            path = request.path
+            if path != '/' and path.endswith('/'):
+                # Avoid redirecting admin, static, or affiliate routes
+                if path.startswith(('/admin', '/static', '/go')):
+                    return
+                
+                # Keep query parameters
+                qs = request.query_string.decode('utf-8')
+                new_path = path.rstrip('/')
+                if qs:
+                    new_path += f"?{qs}"
+                from flask import redirect
+                return redirect(new_path, code=301)
+    
     from .models import BlogPost, Category, AffiliateLink
     
     with app.app_context():
