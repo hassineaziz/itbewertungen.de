@@ -32,8 +32,16 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Security Configuration
-    app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'
+    is_prod = os.getenv('FLASK_ENV') == 'production' or os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
+    app.config['SESSION_COOKIE_SECURE'] = is_prod
     app.config['SESSION_COOKIE_HTTPONLY'] = True
+    if is_prod:
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    
+    # Proxy Fix for running behind Nginx/reverse proxies
+    if is_prod or os.getenv('USE_PROXY_FIX', 'false').lower() == 'true':
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     
     try:
         with open('config.yaml', 'r') as f:
