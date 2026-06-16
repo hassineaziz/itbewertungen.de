@@ -20,12 +20,29 @@
             'ad_user_data': consentState === 'granted' ? 'granted' : 'denied',
             'ad_personalization': consentState === 'granted' ? 'granted' : 'denied'
         });
-    </script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.get('tracking', {}).get('google_analytics_id') }}"></script>
-    <script>
-        gtag('js', new Date());
-        gtag('config', '{{ config.get('tracking', {}).get('google_analytics_id') }}');
+
+        // Function to load Google Tag Manager script dynamically
+        function loadGtagScript() {
+            if (window.gtagScriptLoaded) return;
+            window.gtagScriptLoaded = true;
+            
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = "https://www.googletagmanager.com/gtag/js?id={{ config.get('tracking', {}).get('google_analytics_id') }}";
+            document.head.appendChild(script);
+            
+            gtag('js', new Date());
+            gtag('config', '{{ config.get('tracking', {}).get('google_analytics_id') }}');
+        }
+
+        // Only load GTM if consent has already been granted, deferred until after page load
+        if (consentState === 'granted') {
+            if (document.readyState === 'complete') {
+                loadGtagScript();
+            } else {
+                window.addEventListener('load', loadGtagScript);
+            }
+        }
     </script>
     {%- endif %}
     <meta charset="utf-8" />
@@ -205,9 +222,9 @@
                     <div class="flex bg-gray-100 rounded-md p-0.5 text-[11px] font-bold">
                         {% set view_args = request.view_args if request.view_args else {} %}
                         <a href="{{ url_for(request.endpoint, force_lang='en', **view_args) }}"
-                            class="px-2 py-1 rounded-sm {% if current_language == 'en' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-500 hover:text-gray-700{% endif %}">EN</a>
+                            class="px-2 py-1 rounded-sm {% if current_language == 'en' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-700 hover:text-gray-950{% endif %}">EN</a>
                         <a href="{{ url_for(request.endpoint, force_lang='de', **view_args) }}"
-                            class="px-2 py-1 rounded-sm {% if current_language == 'de' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-500 hover:text-gray-700{% endif %}">DE</a>
+                            class="px-2 py-1 rounded-sm {% if current_language == 'de' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-700 hover:text-gray-950{% endif %}">DE</a>
                     </div>
                     <form action="{{ url_for('views.blog_index') }}" method="GET" class="hidden lg:block">
                         <input type="text" name="q" value="{{ request.args.get('q', '') }}"
@@ -271,12 +288,12 @@
                         {{ config.get('brand', {}).get('name', 'Site') }}<span
                             class="text-accent text-3xl leading-[0] mb-2">.</span>
                     </a>
-                    <p class="text-gray-500 text-sm max-w-sm leading-relaxed mb-6">
+                    <p class="text-gray-600 text-sm max-w-sm leading-relaxed mb-6">
                         {{ config.get('niche', {}).get('home_description', 'Expert insights and independent reviews to
                         help you make the best buying decisions.') }}
                     </p>
-                    <div class="text-xs text-gray-400 leading-relaxed max-w-md border-l-2 border-gray-200 pl-4">
-                        <span class="font-medium text-gray-500 uppercase tracking-wider mb-1 block">{{ _('Affiliate
+                    <div class="text-xs text-gray-600 leading-relaxed max-w-md border-l-2 border-gray-300 pl-4">
+                        <span class="font-medium text-gray-700 uppercase tracking-wider mb-1 block">{{ _('Affiliate
                             Disclosure') }}</span>
                         {{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase
                         through our links at no extra cost to you.') }}
@@ -287,7 +304,7 @@
                 <div>
                     <h4 class="text-sm font-medium text-gray-900 uppercase tracking-wider mb-4">{{ _('Navigation') }}
                     </h4>
-                    <ul class="space-y-3 text-sm text-gray-500">
+                    <ul class="space-y-3 text-sm text-gray-600">
                         <li><a href="{{ url_for('views.home') }}#best-picks"
                                 class="hover:text-primary transition-colors">{{ _('Best Picks') }}</a></li>
                         <li><a href="{{ url_for('views.blog_index') }}" class="hover:text-primary transition-colors">{{
@@ -300,7 +317,7 @@
                 </div>
                 <div>
                     <h4 class="text-sm font-medium text-gray-900 uppercase tracking-wider mb-4">{{ _('Legal') }}</h4>
-                    <ul class="space-y-3 text-sm text-gray-500">
+                    <ul class="space-y-3 text-sm text-gray-600">
                         <li><a href="{{ url_for('views.privacy_policy') }}"
                                 class="hover:text-primary transition-colors">{{ _('Privacy Policy') }}</a></li>
                         <li><a href="{{ url_for('views.terms_of_service') }}"
@@ -310,12 +327,12 @@
             </div>
 
             <div class="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-sm text-gray-400">© {{ config.get('niche', {}).get('year', '2026') }} {{
+                <p class="text-sm text-gray-600">© {{ config.get('niche', {}).get('year', '2026') }} {{
                     config.get('brand', {}).get('name', 'Site') }}. {{ _('All rights reserved.') }}</p>
                 <div class="flex space-x-4">
                     {% if config.get('seo', {}).get('twitter_handle') %}
                     <a href="https://twitter.com/{{ config.get('seo', {}).get('twitter_handle', '')|replace('@', '') }}"
-                        class="text-gray-400 hover:text-gray-900 transition-colors">
+                        class="text-gray-600 hover:text-gray-900 transition-colors">
                         <span class="sr-only">Twitter</span>
                         <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path
@@ -348,7 +365,7 @@
                     <span class="material-symbols-outlined text-primary text-[18px]">cookie</span>
                     {% if current_language == 'en' %}Cookie Settings{% else %}Cookie-Einstellungen{% endif %}
                 </h3>
-                <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                <p class="text-xs text-gray-600 mt-2 leading-relaxed">
                     {% if current_language == 'en' %}
                     We use cookies to improve your browsing experience, analyze site traffic, and deliver personalized content. You can accept all cookies or decline optional tracking.
                     {% else %}
@@ -360,7 +377,7 @@
                 </p>
             </div>
             <div class="flex items-center justify-between gap-4 text-xs mt-1">
-                <button id="decline-cookies" class="text-gray-400 hover:text-gray-600 transition-colors underline cursor-pointer font-medium p-1 bg-transparent border-0 shadow-none">
+                <button id="decline-cookies" class="text-gray-600 hover:text-gray-800 transition-colors underline cursor-pointer font-medium p-1 bg-transparent border-0 shadow-none">
                     {% if current_language == 'en' %}Only essential cookies{% else %}Nur essenzielle Cookies{% endif %}
                 </button>
                 <button id="accept-cookies" class="px-5 py-2.5 bg-primary hover:bg-opacity-90 text-white rounded-lg transition-all font-semibold shadow-sm cursor-pointer hover:scale-[1.02]">
@@ -400,6 +417,9 @@
                     'ad_user_data': 'granted',
                     'ad_personalization': 'granted'
                 });
+                if (typeof loadGtagScript === 'function') {
+                    loadGtagScript();
+                }
                 hideBanner();
             });
 

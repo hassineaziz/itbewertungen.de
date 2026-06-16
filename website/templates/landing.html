@@ -85,11 +85,11 @@
                         </div>
                         <div class="sm:w-2/3 flex flex-col">
                             <h3 class="text-xl font-medium text-gray-900 mb-1">{{ featured_post.title }}</h3>
-                            <div class="text-sm text-gray-500 mb-3">{{ featured_post.excerpt | truncate(60) }}</div>
+                            <div class="text-sm text-gray-600 mb-3">{{ featured_post.excerpt | truncate(60) }}</div>
                             <div class="flex items-center gap-2 text-sm mb-auto">
                                 <span class="bg-primary text-white font-medium px-2 py-0.5 rounded text-xs">{{ featured_post.rating | default('9.5') }}</span>
                                 <span class="flex text-star"><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star</span><span class="material-symbols-outlined text-[14px]">star_half</span></span>
-                                <span class="text-gray-400 text-xs">({{ featured_post.rating_count | default('0') }})</span>
+                                <span class="text-gray-600 text-xs">({{ featured_post.rating_count | default('0') }})</span>
                             </div>
                         </div>
                     </div>
@@ -105,7 +105,7 @@
                             <a href="{{ url_for('views.affiliate_redirect', slug=featured_post.affiliate_slug) if featured_post.affiliate_slug else '#' }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full whitespace-nowrap">
                                 {{ config.affiliate.default_cta | default(_('Check price')) }}
                             </a>
-                            <a href="{{ url_for('views.blog_post', slug=featured_post.slug) }}" class="text-center text-[13px] font-medium text-gray-500 hover:text-gray-900">
+                            <a href="{{ url_for('views.blog_post', slug=featured_post.slug) }}" class="text-center text-[13px] font-medium text-gray-600 hover:text-gray-950">
                                 {{ _('Read full review') }}
                             </a>
                         </div>
@@ -125,10 +125,10 @@
                     {% if post.featured_rank and post.featured_rank > 1 %}
                     <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="flex items-center justify-between p-4 border-[1px] border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all group bg-white">
                         <div class="flex items-center gap-4">
-                            <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-500 font-bold text-[11px] flex items-center justify-center">#{{ post.featured_rank }}</span>
+                            <span class="w-6 h-6 rounded-full bg-gray-200 text-gray-700 font-bold text-[11px] flex items-center justify-center">#{{ post.featured_rank }}</span>
                             <div>
                                 <div class="text-[14px] font-medium text-gray-900 group-hover:text-primary transition-colors">{{ post.title }}</div>
-                                <div class="text-[11px] text-gray-500">{{ post.best_for_label | default(_('Great alternative')) }} · {{ post.rating | default('9.0') }}/10</div>
+                                <div class="text-[11px] text-gray-600">{{ post.best_for_label | default(_('Great alternative')) }} · {{ post.rating | default('9.0') }}/10</div>
                             </div>
                         </div>
                         <div class="text-[13px] font-bold text-success">{{ post.price_from | default('') }}</div>
@@ -158,12 +158,12 @@
                     </div>
                     
                     <h3 class="text-lg font-medium text-gray-900 mb-1">{{ post.title }}</h3>
-                    <div class="text-sm text-gray-500 mb-4 h-10 overflow-hidden">{{ post.excerpt | truncate(60) }}</div>
+                    <div class="text-sm text-gray-600 mb-4 h-10 overflow-hidden">{{ post.excerpt | truncate(60) }}</div>
                     
                     <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
                         <div class="flex items-center gap-2">
                             <span class="bg-gray-900 text-white font-medium px-2 py-0.5 rounded text-xs">{{ post.rating | default('9.0') }}</span>
-                            <span class="text-xs text-gray-500">/10</span>
+                            <span class="text-xs text-gray-600">/10</span>
                         </div>
                         <div class="text-lg font-medium text-success">{{ post.price_from | default('') }}</div>
                     </div>
@@ -181,7 +181,7 @@
                         <a href="{{ url_for('views.affiliate_redirect', slug=post.affiliate_slug) if post.affiliate_slug else '#' }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
                             {{ config.affiliate.default_cta | default('Check price') }}
                         </a>
-                        <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="block w-full text-center text-sm font-medium text-gray-500 border border-gray-200 px-4 py-2.5 rounded hover:bg-gray-50 transition-colors">
+                        <a href="{{ url_for('views.blog_post', slug=post.slug) }}" class="block w-full text-center text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2.5 rounded hover:bg-gray-50 transition-colors">
                             Full review
                         </a>
                     </div>
@@ -217,8 +217,8 @@
                 <div class="flex flex-col justify-center">
                     <span class="text-xs font-medium text-accent uppercase tracking-wider mb-2">{{ post.category.name if post.category and not post.category is string else post.category | default('Review') }}</span>
                     <h3 class="text-lg font-medium text-gray-900 mb-2 group-hover:text-primary transition-colors">{{ post.title }}</h3>
-                    <p class="text-sm text-gray-500 mb-4">{{ post.excerpt | truncate(120) }}</p>
-                    <div class="flex items-center gap-4 text-xs text-gray-400 mt-auto">
+                    <p class="text-sm text-gray-600 mb-4">{{ post.excerpt | truncate(120) }}</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-600 mt-auto">
                         <span>{{ post.updated_at.strftime('%b %d, %Y') if post.updated_at else '' }}</span>
                         <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-medium">{{ post.rating | default('N/A') }}</span>
                         <span>{{ post.read_time | default('5') }} min read</span>
@@ -241,7 +241,7 @@
                 <a href="{{ url_for('views.blog_index', category=cat.slug) }}" class="flex flex-col items-center justify-center p-6 md:p-8 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50/50 transition-colors group bg-white shadow-sm hover:shadow">
                     <span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors mb-3">{{ cat.icon | default('folder') }}</span>
                     <h3 class="text-base font-medium text-gray-900 group-hover:text-primary transition-colors mb-1">{{ cat.name }}</h3>
-                    <span class="text-[12px] text-gray-500">{{ _('View reviews') }} &rarr;</span>
+                    <span class="text-[12px] text-gray-600">{{ _('View reviews') }} &rarr;</span>
                 </a>
                 {% endfor %}
             </div>

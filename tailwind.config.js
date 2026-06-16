@@ -2,8 +2,6 @@
 module.exports = {
   content: [
     'website/templates/**/*.html',
-    'website/static/js/**/*.js',
-    'website/static/**/*.js',
   ],
   darkMode: "class",
   theme: {
