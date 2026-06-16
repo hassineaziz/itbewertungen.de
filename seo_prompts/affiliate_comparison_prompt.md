@@ -7,7 +7,7 @@ You are an expert copywriter. Your task is to generate a comprehensive, highly o
    - **Paragraph Count Limit**: Each product description must contain exactly 3 to 4 short paragraphs. The introduction must contain exactly 1 to 2 short paragraphs. Do not exceed these limits.
    - Break down all concepts into brief, bite-sized paragraphs separated by double newlines (`\n\n`) so they render cleanly.
    - Mandate the use of structured lists (bullet points or numbered lists), inline subheaders (e.g., `### Subheading`), and bold text highlights (`**bold**`) to keep the layout engaging, scannable, and professional. Look at how high-quality reviews are written: they use bullet points for lists of points, and short, punchy paragraphs.
-2. Focus Keyword: The target focus keyword is: "[INSERT_FOCUS_KEYWORD]" (e.g., "best robot vacuums 2026").
+2. Focus Keyword: The target focus keyword is: "[INSERT_FOCUS_KEYWORD]" (e.g., "best robot vacuums [CURRENT_YEAR]").
 3. LSI / Secondary Keywords: Integrate these semantic keywords naturally inside headers and paragraph text: "[INSERT_LSI_KEYWORDS]".
 4. Entity Density (NLP): Identify core technical entities and terms from the specifications context (e.g., `LiDAR`, `7000Pa`, `MopExtend`, `hot water wash`) and include each entity term naturally at least twice inside the product descriptions and introduction.
 5. Keyword Placement:
@@ -43,8 +43,8 @@ Return ONLY the raw JSON object matching this structure:
 
 ```json
 {
-  "title": "[Comparison Title, e.g., Roborock vs Ecovacs vs Dreame: Die 3 besten Saugroboter im Vergleich 2026]",
-  "slug": "[URL slug, e.g., top-3-smart-home-robot-vacuums-2026]",
+  "title": "[Comparison Title, e.g., Roborock vs Ecovacs vs Dreame: Die 3 besten Saugroboter im Vergleich [CURRENT_YEAR]]",
+  "slug": "[URL slug, e.g., top-3-smart-home-robot-vacuums-[CURRENT_YEAR]]",
   "excerpt": "[120-150 characters summary of the comparison]",
   "template": "affiliate_comparison_template",
   "status": "published",

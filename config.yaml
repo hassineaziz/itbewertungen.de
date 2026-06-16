@@ -57,3 +57,7 @@ email:
       label: "Früher Zugang"
   cta_label: "Abonnieren"
   subscriber_count: "10.000"
+
+tracking:
+  google_analytics_id: ""
+  google_search_console_id: ""

@@ -43,8 +43,8 @@ Return ONLY the raw JSON object matching this structure:
 
 ```json
 {
-  "title": "[Listicle Title, e.g. Die 5 besten 4K-Monitore für Programmierer 2026]",
-  "slug": "[URL slug, e.g., the-5-best-4k-monitors-for-programming-2026]",
+  "title": "[Listicle Title, e.g. Die 5 besten 4K-Monitore für Programmierer [CURRENT_YEAR]]",
+  "slug": "[URL slug, e.g., the-5-best-4k-monitors-for-programming-[CURRENT_YEAR]]",
   "excerpt": "[120-150 characters summary of the listicle]",
   "template": "best_x_for_y_template",
   "status": "published",

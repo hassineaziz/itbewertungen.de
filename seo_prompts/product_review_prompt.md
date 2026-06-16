@@ -40,7 +40,7 @@ Return ONLY the raw JSON object matching this structure:
 ```json
 {
   "title": "[Title containing focus keyword, H1]",
-  "slug": "[URL slug, e.g., sony-wh-1000xm5-test-2026-review]",
+  "slug": "[URL slug, e.g., sony-wh-1000xm5-test-[CURRENT_YEAR]-review]",
   "excerpt": "[120-150 characters short summary]",
   "template": "product_review_template",
   "status": "published",

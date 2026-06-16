@@ -68,3 +68,9 @@ email:
   # The bold text showing social proof next to the avatar stack on the landing page
   subscriber_count: "10,000"
 
+tracking:
+  # Google Analytics 4 Measurement ID (e.g., G-XXXXXXXXXX)
+  google_analytics_id: ""
+  # Google Search Console HTML verification key (value of content attribute in the meta tag)
+  google_search_console_id: ""
+

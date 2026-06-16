@@ -21,6 +21,10 @@
   },
   "review": {
     "@type": "Review",
+    "itemReviewed": {
+      "@type": "Product",
+      "name": {{ data.product_name | tojson }}
+    },
     "reviewRating": {
       "@type": "Rating",
       "ratingValue": "{{ data.get('rating', '10') }}",

@@ -155,7 +155,11 @@ def generate_article(
         raise FileNotFoundError(f"Could not open prompt template at {prompt_path}")
 
     # 7. Interpolate Placeholders
+    from datetime import datetime
+    current_year = datetime.now().year
+    
     # Handle multiple placeholder formats supported in our files
+    prompt_content = prompt_content.replace("[CURRENT_YEAR]", str(current_year))
     prompt_content = prompt_content.replace("[INSERT_FOCUS_KEYWORD]", focus_keyword)
     prompt_content = prompt_content.replace("[INSERT TARGET FOCUS KEYWORD HERE]", focus_keyword)
     
@@ -198,13 +202,16 @@ def generate_article(
     )
 
     # Append additional contextual inputs as System Instructions
+    from datetime import datetime
+    current_year = datetime.now().year
     final_prompt = (
         f"{prompt_content}\n\n"
         "### DYNAMIC CONTEXT ENGINE INPUTS\n"
         f"Use the following database parameters when generating sections, lists, and links:\n"
-        f"1. CATEGORY: {category}\n"
-        f"2. ALTERNATIVES DATABASE LIST (for alternatives section if layout supports it):\n{alternatives_context_str}\n\n"
-        f"3. SILO INTERNAL LINKS POOL (prioritize category matches, fallback to site-wide matches. "
+        f"1. CURRENT YEAR: {current_year} (CRITICAL: All references, titles, slugs, guides, and rankings MUST refer to the current year {current_year}. Do NOT write 2024 or 2025.)\n"
+        f"2. CATEGORY: {category}\n"
+        f"3. ALTERNATIVES DATABASE LIST (for alternatives section if layout supports it):\n{alternatives_context_str}\n\n"
+        f"4. SILO INTERNAL LINKS POOL (prioritize category matches, fallback to site-wide matches. "
         f"ONLY include these links if they naturally fit within the text. DO NOT force them. NEVER create a 'Verwandte Artikel' list):\n{internal_links_str}\n"
     )
 
