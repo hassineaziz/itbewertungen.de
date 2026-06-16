@@ -276,6 +276,13 @@
       {# Center Column: Core Content #}
       <main class="min-w-0">
 
+        {# Cover Image #}
+        {% if post and post.cover_image_url %}
+        <div class="mb-8 rounded-xl overflow-hidden border border-gray-150 shadow-sm max-h-[380px]">
+          <img src="{{ post.cover_image_url | optimize_amazon_image(800) }}" alt="{{ post.title }}" class="w-full h-full object-cover" width="800" height="400" loading="lazy">
+        </div>
+        {% endif %}
+
         {# Core Definition Highlight Box #}
         <section id="definition-callout" class="mb-10 p-6 bg-gradient-to-r from-primary/5 to-gray-50/50 rounded-xl border-l-4 border-primary shadow-sm scroll-mt-24">
           <div>
