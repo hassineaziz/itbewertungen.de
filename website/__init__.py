@@ -164,4 +164,26 @@ def create_app():
             return ""
         return Markup(markdown.markdown(text))
 
+    @app.template_filter('optimize_amazon_image')
+    def optimize_amazon_image_filter(url, max_size=500):
+        if not url or "media-amazon.com" not in url:
+            return url
+        import re
+        match = re.match(r"^(https://m\.media-amazon\.com/images/I/[^./\s]+)(\._[A-Za-z0-9_-]+\.)(jpg|png|gif|jpeg|webp)$", url)
+        if match:
+            base = match.group(1)
+            suffix = match.group(2)
+            ext = match.group(3)
+            new_suffix = re.sub(r'(SL|SX|SY|UL|CR|AC_UL|AC_SL)\d+', r'\g<1>' + str(max_size), suffix)
+            if new_suffix == suffix:
+                new_suffix = f"._AC_SL{max_size}_."
+            return f"{base}{new_suffix}{ext}"
+        else:
+            match_no_suffix = re.match(r"^(https://m\.media-amazon\.com/images/I/[^./\s]+)\.(jpg|png|gif|jpeg|webp)$", url)
+            if match_no_suffix:
+                base = match_no_suffix.group(1)
+                ext = match_no_suffix.group(2)
+                return f"{base}._AC_SL{max_size}_.{ext}"
+        return url
+
     return app
