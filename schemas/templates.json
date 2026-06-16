@@ -502,5 +502,136 @@
         "rows": 5
       }
     }
+  },
+  "expanded_definition_template": {
+    "label": "Expanded Definition (Glossar / Info)",
+    "description": "Comprehensive explanation of a term or concept (What is X?)",
+    "fields": {
+      "headline": {
+        "type": "text",
+        "label": "Page Headline (H1)",
+        "required": true,
+        "placeholder": "Was ist eine SSD? Solid-State-Drive einfach erklärt"
+      },
+      "sub_head": {
+        "type": "textarea",
+        "label": "Intro Paragraph",
+        "required": true,
+        "placeholder": "Ein Solid-State-Drive (SSD) ist ein elektronisches Speichermedium...",
+        "rows": 4
+      },
+      "author_name": {
+        "type": "text",
+        "label": "Author Name",
+        "required": true,
+        "placeholder": "Max Müller"
+      },
+      "author_bio": {
+        "type": "text",
+        "label": "Author Bio / Role",
+        "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "term_name": {
+        "type": "text",
+        "label": "Term Name (e.g. SSD)",
+        "required": true,
+        "placeholder": "SSD"
+      },
+      "abbreviation": {
+        "type": "text",
+        "label": "Full Term Name / Abbreviation (e.g. Solid-State-Drive)",
+        "placeholder": "Solid-State-Drive"
+      },
+      "primary_domain": {
+        "type": "text",
+        "label": "Primary Domain (e.g. Speichertechnologie)",
+        "placeholder": "Speichertechnologie"
+      },
+      "key_takeaways": {
+        "type": "list",
+        "label": "Key Takeaways (Bullet points)",
+        "addLabel": "Add Takeaway",
+        "placeholder": "SSDs nutzen Flash-Speicher und haben keine beweglichen Teile."
+      },
+      "outline": {
+        "type": "list",
+        "label": "What you'll learn (TOC outline list)",
+        "addLabel": "Add Point",
+        "placeholder": "Warum SSDs schneller sind als HDDs"
+      },
+      "qa_sections": {
+        "type": "array",
+        "label": "Q&A Content Sections",
+        "addLabel": "Add Section",
+        "fields": {
+          "question": {
+            "type": "text",
+            "label": "Section Heading (H2)",
+            "required": true,
+            "placeholder": "Wie funktioniert ein Solid-State-Drive?"
+          },
+          "answer": {
+            "type": "textarea",
+            "label": "Section Body (HTML)",
+            "required": true,
+            "rows": 8,
+            "placeholder": "Ausführliche Erklärung in HTML..."
+          }
+        }
+      },
+      "related_resources": {
+        "type": "array",
+        "label": "Further Reading / Related Resources",
+        "addLabel": "Add Resource",
+        "fields": {
+          "title": {
+            "type": "text",
+            "label": "Resource Title",
+            "required": true,
+            "placeholder": "Guide: NVMe vs SATA SSDs"
+          },
+          "description": {
+            "type": "text",
+            "label": "Short Description",
+            "placeholder": "Ein detaillierter Vergleich der beiden gängigsten Schnittstellen."
+          },
+          "url": {
+            "type": "text",
+            "label": "URL Path (e.g., /blog/nvme-vs-sata)",
+            "required": true,
+            "placeholder": "/blog/nvme-vs-sata"
+          },
+          "badge": {
+            "type": "text",
+            "label": "Badge Label (e.g., Guide, Vergleich)",
+            "placeholder": "Vergleich"
+          }
+        }
+      },
+      "faq": {
+        "type": "array",
+        "label": "FAQ Page Items",
+        "addLabel": "Add FAQ Item",
+        "fields": {
+          "question": {
+            "type": "text",
+            "label": "Question",
+            "required": true
+          },
+          "answer": {
+            "type": "textarea",
+            "label": "Answer",
+            "required": true,
+            "rows": 3
+          }
+        }
+      },
+      "verdict": {
+        "type": "textarea",
+        "label": "Final Thoughts / Summary",
+        "placeholder": "Zusammenfassung des Themas...",
+        "rows": 5
+      }
+    }
   }
 }

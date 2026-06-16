@@ -1,0 +1,482 @@
+{% extends "base.html" %}
+
+{# ── SEO meta from structured data ─────────────────────────────────────── #}
+{% block title %}{{ post.meta_title if post and post.meta_title else data.get('headline', 'Definition') }} | {{ config.brand.name | default('') }}{% endblock %}
+{% block meta_description %}{{ post.meta_description if post and post.meta_description else data.get('sub_head', '')[:155] }}{% endblock %}
+{% block meta_keywords %}{{ post.focus_keyword if post and post.focus_keyword else data.get('term_name', '') ~ ' Definition, ' ~ data.get('term_name', '') ~ ' erklärt, Was ist ' ~ data.get('term_name', '') }}{% endblock %}
+{% block og_type %}article{% endblock %}
+
+{% block schema %}
+{# 1. DefinedTerm Schema (Glossary Entity) #}
+{% if data.get('term_name') %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DefinedTerm",
+  "name": {{ data.term_name | tojson }},
+  "alternateName": {{ data.get('abbreviation', '') | tojson }},
+  "description": {{ data.get('excerpt', data.get('sub_head', '')) | tojson }},
+  "inDefinedTermSet": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/blog"
+}
+</script>
+{% endif %}
+
+{# 2. Article Schema #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  "description": {{ (post.meta_description or post.excerpt or data.get('sub_head', '')) | tojson }},
+  {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
+  "author": {
+    "@type": "Person",
+    "name": {{ data.get('author_name', 'Redaktion') | tojson }},
+    "description": {{ data.get('author_bio', '') | tojson }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ config.get('brand', {}).get('name', '') | tojson }}
+  }{% if post and post.published_at %},
+  "datePublished": "{{ post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+  "dateModified": "{{ post.updated_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if post.updated_at else post.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}"{% endif %}
+}
+</script>
+
+{# 3. BreadcrumbList Schema #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo',{}).get('domain','').rstrip('/') }}/" },
+    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "{{ config.get('seo',{}).get('domain','').rstrip('/') }}{{ url_for('views.blog_index') }}" }{% if post.category %},
+    { "@type": "ListItem", "position": 3, "name": {{ post.category | tojson }}, "item": "{{ config.get('seo',{}).get('domain','').rstrip('/') }}{{ url_for('views.blog_index', category=post.category) }}" }{% endif %},
+    { "@type": "ListItem", "position": {% if post.category %}4{% else %}3{% endif %}, "name": {{ post.title | tojson }}, "item": "{{ config.get('seo',{}).get('domain','').rstrip('/') }}/blog/{{ post.slug }}" }
+  ]
+}
+</script>
+
+{# 4. FAQPage Schema #}
+{% if data.get('faq') and data.faq | length > 0 %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in data.faq %}
+    {
+      "@type": "Question",
+      "name": {{ item.question | tojson }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ item.answer | tojson }}
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<article class="max-w-screen-2xl mx-auto bg-white">
+
+  {# ══ BREADCRUMBS ══════════════════════════════════════════════════════════ #}
+  <nav aria-label="Breadcrumb" class="px-8 lg:px-12 py-3 border-b border-gray-100">
+    <ol class="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
+      <li>
+        <a href="{{ url_for('views.home') }}" class="hover:text-primary transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">home</span>Home
+        </a>
+      </li>
+      <span class="text-gray-300">/</span>
+      <li>
+        <a href="{{ url_for('views.blog_index') }}" class="hover:text-primary transition-colors">Blog</a>
+      </li>
+      {% if post.category %}
+      <span class="text-gray-300">/</span>
+      <li>
+        <a href="{{ url_for('views.blog_index', category=post.category) }}" class="hover:text-primary transition-colors capitalize">
+          {{ post.category }}
+        </a>
+      </li>
+      {% endif %}
+      <span class="text-gray-300">/</span>
+      <li class="text-gray-650 truncate max-w-[200px]">
+        <span>{{ data.get('term_name', post.title if post else 'Definition') }}</span>
+      </li>
+    </ol>
+  </nav>
+
+  {# ══ STICKY HEADER BAR ═══════════════════════════════════════════════════ #}
+  <style>
+    .markdown-inline-p p {
+      display: inline;
+      margin: 0;
+      padding: 0;
+    }
+    .markdown-content a {
+      color: var(--color-primary);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      font-weight: 500;
+    }
+    .markdown-content a:hover {
+      opacity: 0.85;
+    }
+    #sticky-definition-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      opacity: 0;
+      transform: translateY(-100%);
+      pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1);
+      display: flex !important;
+    }
+    #sticky-definition-bar.bar-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    @keyframes page-shake {
+      0%   { transform: translateY(0); }
+      15%  { transform: translateY(-6px); }
+      30%  { transform: translateY(5px); }
+      45%  { transform: translateY(-4px); }
+      60%  { transform: translateY(3px); }
+      75%  { transform: translateY(-2px); }
+      90%  { transform: translateY(1px); }
+      100% { transform: translateY(0); }
+    }
+    .shake-once {
+      animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    }
+  </style>
+
+  <div id="sticky-definition-bar"
+       class="border-b border-t border-gray-200 bg-white px-8 py-3 items-center justify-between gap-3 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-[14px]">
+        {{ data.get('term_name', 'i')[:2] }}
+      </div>
+      <div>
+        <div class="text-[13px] font-bold text-gray-900 leading-snug">{{ data.get('term_name', post.title if post else '') }}</div>
+        {% if data.get('abbreviation') %}
+        <div class="text-[10px] text-gray-500 truncate max-w-[250px]">{{ data.abbreviation }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="#definition-main"
+         class="inline-flex items-center gap-1.5 bg-primary hover:opacity-90 text-white text-[12px] font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
+        <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+        Definition lesen
+      </a>
+    </div>
+  </div>
+
+  {# ══ HERO SECTION ══════════════════════════════════════════════════════════ #}
+  <div class="border-b border-gray-200">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[340px]">
+      
+      {# Hero Left: Headline + Intro #}
+      <div class="p-8 lg:p-12 flex flex-col justify-center border-r border-gray-200">
+        <div class="text-[10px] font-bold tracking-[0.08em] uppercase text-primary mb-3 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">menu_book</span>
+          Begriffserklärung · {{ current_date }}
+        </div>
+
+        <h1 class="text-2xl lg:text-3xl font-extrabold leading-[1.25] mb-4 text-gray-900" itemprop="headline">
+          {{ data.get('headline', post.title if post else 'Begriff erklärt') }}
+        </h1>
+
+        <div class="text-[13px] text-gray-600 mb-6 leading-relaxed markdown-inline-p">
+          {{ data.get('sub_head', '') | markdown }}
+        </div>
+
+        {# Meta credentials info #}
+        <div class="flex flex-wrap gap-2 items-center">
+          {% if data.get('author_name') %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">person</span>
+            {{ data.author_name }}{% if data.get('author_bio') %} · {{ data.author_bio }}{% endif %}
+          </span>
+          {% endif %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-3 py-1 text-gray-500 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">schedule</span>
+            {{ post.read_time if post else '5' }} Min. Lesezeit
+          </span>
+        </div>
+      </div>
+
+      {# Hero Right: Steckbrief (Term Info Card) #}
+      <div class="p-6 lg:p-10 flex flex-col justify-center bg-gray-50">
+        <div class="bg-white border-2 border-primary/20 rounded-xl p-6 shadow-sm">
+          <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+            <div class="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-400">Glossar-Steckbrief</div>
+            {% if data.get('primary_domain') %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary uppercase tracking-wide">
+              {{ data.primary_domain }}
+            </span>
+            {% endif %}
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <div class="text-[22px] font-black text-gray-900 leading-tight">{{ data.get('term_name', '') }}</div>
+              {% if data.get('abbreviation') %}
+              <div class="text-[12px] text-gray-500 mt-0.5">{{ data.abbreviation }}</div>
+              {% endif %}
+            </div>
+
+            {# Key Takeaways bulleted list #}
+            {% if data.get('key_takeaways') %}
+            <div class="bg-primary/5 rounded-lg p-4 border border-primary/10">
+              <div class="text-[10px] font-bold uppercase tracking-[0.06em] text-primary mb-2 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">vpn_key</span>
+                Key Takeaways
+              </div>
+              <ul class="space-y-2">
+                {% for take in data.key_takeaways %}
+                <li class="text-[11px] text-gray-750 flex gap-2 items-start leading-snug">
+                  <span class="text-primary font-bold flex-shrink-0">✓</span>
+                  <span>{{ take }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# ══ THREE-COLUMN LAYOUT ══════════════════════════════════════════════════ #}
+  <div id="definition-main" class="p-6 lg:p-10">
+    <div class="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)_280px] gap-8">
+
+      {# Left Column: Table of Contents #}
+      <aside class="hidden lg:block">
+        <div class="sticky top-20 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <div class="text-[11px] font-bold text-gray-800 uppercase tracking-wide mb-3 flex items-center gap-1 border-b border-gray-100 pb-2">
+            <span class="material-symbols-outlined text-[14px]">format_list_bulleted</span>
+            Inhalt des Guides
+          </div>
+          <nav id="toc" class="space-y-0.5">
+            {# Dynamic Scrollspy Links added via JS #}
+          </nav>
+        </div>
+      </aside>
+
+      {# Center Column: Core Content #}
+      <main class="min-w-0">
+
+        {# Core Definition Highlight Box #}
+        <section id="definition-callout" class="mb-10 p-6 bg-gradient-to-r from-primary/5 to-gray-50/50 rounded-xl border-l-4 border-primary shadow-sm scroll-mt-24">
+          <div class="flex items-start gap-3.5">
+            <span class="material-symbols-outlined text-[24px] text-primary mt-0.5">auto_stories</span>
+            <div>
+              <div class="text-[11px] font-bold uppercase tracking-[0.08em] text-primary mb-1">Kurzerklärung</div>
+              <div class="text-[14px] sm:text-[15px] font-semibold text-gray-850 leading-relaxed markdown-inline-p">
+                {{ data.get('excerpt', post.excerpt if post else '') | markdown }}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {# "What You'll Learn" Mini outline box #}
+        {% if data.get('outline') %}
+        <section id="outline-summary" class="mb-10 p-5 border border-gray-200 rounded-xl bg-white shadow-sm scroll-mt-24">
+          <h2 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-gray-500 font-bold">checklist</span>
+            Was du in diesem Ratgeber lernst:
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px] text-gray-600">
+            {% for item in data.outline %}
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+              <span class="truncate">{{ item }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        {# Q&A Article Content Sections #}
+        {% if data.get('qa_sections') %}
+        <div class="space-y-10">
+          {% for sec in data.qa_sections %}
+          <section id="section-{{ loop.index }}" class="pb-10 border-b border-gray-100 last:border-0 last:pb-0 scroll-mt-24">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              {{ sec.question }}
+            </h2>
+            <div class="text-[14px] text-gray-700 leading-relaxed markdown-content space-y-4">
+              {{ sec.answer | markdown }}
+            </div>
+          </section>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {# FAQ Accordion Section (PAA) #}
+        {% if data.get('faq') %}
+        <section id="faq-section" class="mt-12 pt-10 border-t border-gray-200 scroll-mt-24">
+          <div class="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-400 mb-2">Häufige Fragen</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-6">FAQ: Häufig gestellte Fragen</h2>
+          <div class="space-y-3">
+            {% for item in data.faq %}
+            <details class="group border border-gray-200 rounded-xl bg-white transition-all duration-200 open:border-primary/30 open:shadow-sm">
+              <summary class="flex items-center justify-between gap-3 px-5 py-4 font-semibold text-gray-900 cursor-pointer list-none select-none text-[13px] sm:text-[14px]">
+                <span>{{ item.question }}</span>
+                <span class="transition-transform duration-200 group-open:rotate-180 material-symbols-outlined text-gray-400 text-[18px]">expand_more</span>
+              </summary>
+              <div class="px-5 pb-5 text-[13px] sm:text-[13.5px] text-gray-650 leading-relaxed border-t border-gray-100 pt-3.5 markdown-inline-p">
+                {{ item.answer | markdown }}
+              </div>
+            </details>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        {# Verdict / Final Thoughts Box #}
+        {% if data.get('verdict') %}
+        <section id="verdict-section" class="mt-12 p-6 bg-gray-50 border border-gray-200 rounded-xl shadow-sm scroll-mt-24">
+          <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-[24px] text-primary mt-0.5">assignment_turned_in</span>
+            <div>
+              <h2 class="text-[13px] font-bold text-gray-900 uppercase tracking-wide mb-2">Fazit & Zusammenfassung</h2>
+              <div class="text-[13.5px] text-gray-700 leading-relaxed markdown-inline-p">
+                {{ data.verdict | markdown }}
+              </div>
+            </div>
+          </div>
+        </section>
+        {% endif %}
+
+      </main>
+
+      {# Right Column: Widgets #}
+      <aside>
+        <div class="sticky top-20 space-y-6">
+
+          {# Newsletter Card #}
+          <div class="bg-primary/5 rounded-2xl border border-primary/10 p-6 text-center shadow-sm">
+            <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 text-primary">
+              <span class="material-symbols-outlined text-[20px]">mail</span>
+            </div>
+            <h3 class="font-bold text-[16px] text-gray-900 mb-2">Wissen vertiefen</h3>
+            <p class="text-[12px] text-gray-500 mb-5 leading-normal">
+              Erhalte wöchentlich verständliche Erklärungen, Tests und exklusive Deals direkt in dein Postfach.
+            </p>
+            <form class="space-y-2.5" onsubmit="event.preventDefault(); alert('Vielen Dank für Ihre Anmeldung!'); this.reset();">
+              <input type="email" placeholder="Deine E-Mail-Adresse" 
+                     class="w-full px-3 py-2.5 text-[12px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" required>
+              <button type="submit" class="w-full bg-primary hover:opacity-90 text-white font-bold py-2.5 text-[12px] rounded-lg transition-colors">
+                Kostenlos abonnieren
+              </button>
+            </form>
+          </div>
+
+          {# Category Badge / Info #}
+          {% if post and post.category %}
+          <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+            <div class="text-[10px] font-bold uppercase tracking-[0.07em] text-gray-400 mb-2">Kategorie</div>
+            <a href="{{ url_for('views.blog_index', category=post.category) }}" 
+               class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:underline">
+              <span class="material-symbols-outlined text-[14px]">folder</span>
+              {{ post.category }}
+            </a>
+          </div>
+          {% endif %}
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  {# ══ RELATED RESOURCES SECTION (FULL WIDTH) ══════════════════════════════ #}
+  {% if data.get('related_resources') %}
+  <div class="bg-gray-50/50 border-t border-gray-100 p-8 lg:p-12 mt-12">
+    <div class="max-w-[2200px] mx-auto">
+      <div class="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-450 mb-2">Mehr zum Thema</div>
+      <h2 class="text-lg lg:text-xl font-bold text-gray-900 mb-6">Weiterführende Ratgeber & Tests</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for res in data.related_resources %}
+        <a href="{{ res.url }}" class="group block bg-white border border-gray-200 hover:border-primary rounded-xl p-5 transition-all shadow-sm hover:shadow-md flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide bg-primary/5 text-primary uppercase">
+                {{ res.badge | default('Ratgeber') }}
+              </span>
+              <span class="material-symbols-outlined text-[16px] text-gray-400 group-hover:text-primary transition-colors">arrow_forward</span>
+            </div>
+            <h3 class="font-bold text-gray-900 text-[13.5px] group-hover:text-primary transition-colors mb-2 leading-snug">
+              {{ res.title }}
+            </h3>
+            {% if res.description %}
+            <p class="text-[11.5px] text-gray-500 leading-relaxed line-clamp-2">
+              {{ res.description }}
+            </p>
+            {% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</article>
+
+<script>
+(function () {
+  // ── ToC builder ────────────────────────────────────────────────────────────
+  const toc = document.getElementById('toc');
+  if (toc) {
+    document.querySelectorAll('#definition-main main h2').forEach(function (el, i) {
+      if (!el.id) el.id = 'sec-' + i;
+      const a = document.createElement('a');
+      a.href = '#' + el.id;
+      a.textContent = el.textContent.trim();
+      a.className = 'block text-[11px] text-gray-600 hover:text-primary py-1.5 border-b border-gray-100 last:border-0 flex items-center gap-1.5 truncate';
+      const dot = document.createElement('span');
+      dot.className = 'w-1.5 h-1.5 rounded-full bg-gray-200 flex-shrink-0';
+      a.prepend(dot);
+      toc.appendChild(a);
+    });
+  }
+
+  // ── Sticky Header Trigger — smooth slide-down ────────────────────────────
+  const stickyBar = document.getElementById('sticky-definition-bar');
+  const heroSection = document.querySelector('article > div.border-b');
+  if (stickyBar && heroSection) {
+    let barShown = false;
+    const io = new IntersectionObserver(function (entries) {
+      const leaving = !entries[0].isIntersecting;
+      if (leaving && !barShown) {
+        stickyBar.classList.add('bar-visible');
+        barShown = true;
+        document.body.classList.remove('shake-once');
+        void document.body.offsetWidth; // trigger reflow
+        document.body.classList.add('shake-once');
+        document.body.addEventListener('animationend', function () {
+          document.body.classList.remove('shake-once');
+        }, { once: true });
+      } else if (!leaving && barShown) {
+        stickyBar.classList.remove('bar-visible');
+        barShown = false;
+      }
+    }, { threshold: 0 });
+    io.observe(heroSection);
+  }
+})();
+</script>
+{% endblock %}

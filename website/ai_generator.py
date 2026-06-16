@@ -140,7 +140,8 @@ def generate_article(
         'standard': 'standard_post_prompt.md',
         'product_review_template': 'product_review_prompt.md',
         'best_x_for_y_template': 'best_x_for_y_prompt.md',
-        'affiliate_comparison_template': 'affiliate_comparison_prompt.md'
+        'affiliate_comparison_template': 'affiliate_comparison_prompt.md',
+        'expanded_definition_template': 'expanded_definition_prompt.md'
     }
     
     prompt_filename = prompt_file_map.get(template_name, 'standard_post_prompt.md')
