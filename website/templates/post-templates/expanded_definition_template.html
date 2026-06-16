@@ -278,13 +278,13 @@
 
         {# Core Definition Highlight Box #}
         <section id="definition-callout" class="mb-10 p-6 bg-gradient-to-r from-primary/5 to-gray-50/50 rounded-xl border-l-4 border-primary shadow-sm scroll-mt-24">
-          <div class="flex items-start gap-3.5">
-            <span class="material-symbols-outlined text-[24px] text-primary mt-0.5">auto_stories</span>
-            <div>
-              <div class="text-[11px] font-bold uppercase tracking-[0.08em] text-primary mb-1">Kurzerklärung</div>
-              <div class="text-[14px] sm:text-[15px] font-semibold text-gray-850 leading-relaxed markdown-inline-p">
-                {{ data.get('excerpt', post.excerpt if post else '') | markdown }}
-              </div>
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-[0.08em] text-primary mb-2.5 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-primary">auto_stories</span>
+              Kurzerklärung
+            </div>
+            <div class="text-[14px] sm:text-[15px] font-semibold text-gray-850 leading-relaxed markdown-inline-p">
+              {{ data.get('excerpt', post.excerpt if post else '') | markdown }}
             </div>
           </div>
         </section>

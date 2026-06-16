@@ -61,6 +61,15 @@
         </div>
       </div>
 
+      <!-- Optional Products Toggle for definition template -->
+      <div id="definition-products-toggle-wrapper" class="space-y-2 hidden border-t border-gray-150 pt-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="include-products-checkbox" class="rounded text-primary focus:ring-primary h-4 w-4">
+          <span class="text-sm font-bold text-gray-900">Produkte aus der Datenbank mit diesem Artikel verknüpfen (Optional)</span>
+        </label>
+        <p class="text-xs text-gray-500">Aktivieren Sie dies, falls Sie verwandte Testberichte oder Kaufempfehlungen im Artikel verlinken möchten.</p>
+      </div>
+
       <!-- Core Product Slugs (DB resolution) -->
       <div class="space-y-2" id="products-selection-wrapper">
         <label class="block text-sm font-bold text-gray-900">Verknüpfte Produkte aus dem Datenbank-Bestand</label>
@@ -237,13 +246,24 @@
   const globalRawLabel = document.getElementById('global-raw-label');
   const globalRawTextarea = document.getElementById('global-raw-textarea');
   const globalFallbackHeader = document.getElementById('global-fallback-header');
+  const definitionProductsToggleWrapper = document.getElementById('definition-products-toggle-wrapper');
+  const includeProductsCheckbox = document.getElementById('include-products-checkbox');
 
   function adjustFieldsForTemplate() {
     const isDefinition = templateSelect.value === 'expanded_definition_template';
     if (isDefinition) {
-      // Hide product selections
-      productsSelectionWrapper.style.display = 'none';
-      productsEeatWrapper.style.display = 'none';
+      // Show optional products toggle checkbox wrapper
+      definitionProductsToggleWrapper.style.display = 'block';
+      
+      // Check if products should be included
+      if (includeProductsCheckbox.checked) {
+        productsSelectionWrapper.style.display = 'block';
+        productsEeatWrapper.style.display = 'block';
+      } else {
+        productsSelectionWrapper.style.display = 'none';
+        productsEeatWrapper.style.display = 'none';
+      }
+      
       // Hide general notes
       globalNotesWrapper.style.display = 'none';
       
@@ -256,7 +276,13 @@
       
       // Always show global fallback block
       fallbackBlock.style.display = 'block';
+      
+      // Sync overrides if checked
+      updateOverrides();
     } else {
+      // Hide optional products toggle checkbox wrapper
+      definitionProductsToggleWrapper.style.display = 'none';
+      
       // Restore defaults
       productsSelectionWrapper.style.display = 'block';
       productsEeatWrapper.style.display = 'block';
@@ -275,7 +301,7 @@
 
   function updateOverrides() {
     const isDefinition = templateSelect.value === 'expanded_definition_template';
-    if (isDefinition) {
+    if (isDefinition && !includeProductsCheckbox.checked) {
       fallbackBlock.style.display = 'block';
       return;
     }
@@ -321,11 +347,10 @@
     cb.addEventListener('change', updateOverrides);
   });
   templateSelect.addEventListener('change', adjustFieldsForTemplate);
+  includeProductsCheckbox.addEventListener('change', adjustFieldsForTemplate);
   
   // Initial run
-  updateOverrides();
   adjustFieldsForTemplate();
-  updateOverrides();
 
   // Intercept form submit and show overlay
   const form = document.getElementById('ai-generate-form');
