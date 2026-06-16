@@ -4,7 +4,8 @@
   "description": "A Flask-based SaaS application for creating and scheduling legacy letters to be delivered after death verification.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i website/static/css/app.css -o website/static/css/app.build.css --minify"
   },
   "repository": {
     "type": "git",

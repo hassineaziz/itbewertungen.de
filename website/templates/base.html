@@ -92,30 +92,21 @@
     {% endif %}
     {% endblock %}
     <meta name="theme-color" content="#111827">
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap"
-        rel="stylesheet" />
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "{{ config.get('brand', {}).get('primary_color', '#2563eb') }}",
-                        success: '#059669',
-                        star: '#f59e0b',
-                        trust: '#111827'
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer components {
-            .btn-amazon {
-                @apply flex items-center justify-center gap-2 bg-[#FFA41C] hover:bg-[#FA8900] text-gray-900 text-[13px] font-bold py-2.5 px-4 rounded-lg transition-colors shadow-sm;
-            }
+    <!-- DNS Preconnect to external font files -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Static Compiled Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.build.css') }}">
+    
+    <!-- Runtime CSS Variables (for branding configuration) -->
+    <style>
+        :root {
+            --color-primary: {{ config.get('brand', {}).get('primary_color', '#381D92') }};
         }
     </style>
     <style>
