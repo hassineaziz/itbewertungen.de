@@ -17,14 +17,11 @@
   "offers": {
     "@type": "Offer",
     "price": "{{ data.get('price', '') | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim }}",
-    "priceCurrency": "EUR"
+    "priceCurrency": "EUR",
+    "availability": "https://schema.org/InStock"
   },
   "review": {
     "@type": "Review",
-    "itemReviewed": {
-      "@type": "Product",
-      "name": {{ data.product_name | tojson }}
-    },
     "reviewRating": {
       "@type": "Rating",
       "ratingValue": "{{ data.get('rating', '10') }}",
