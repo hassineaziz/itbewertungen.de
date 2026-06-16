@@ -129,6 +129,16 @@
         :root {
             --color-primary: {{ config.get('brand', {}).get('primary_color', '#381D92') }};
         }
+        /* Prevent Material Symbols FOUT layout shifts by locking the icon box size to the font-size */
+        .material-symbols-outlined {
+            display: inline-block !important;
+            width: 1em !important;
+            height: 1em !important;
+            overflow: hidden !important;
+            vertical-align: middle;
+            line-height: 1 !important;
+            white-space: nowrap !important;
+        }
     </style>
     <style>
         /* Font weights to match Tailwind's Inter integration */

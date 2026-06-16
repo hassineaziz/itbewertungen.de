@@ -262,7 +262,7 @@
                 #{{ p.get('rank', loop.index) }} {{ p.get('badge', '') | upper }}
               </span>
               {% if p.get('image_url') %}
-              <img src="{{ p.image_url | optimize_amazon_image(400) }}" alt="{{ p.name }}" class="w-full h-full object-contain p-2">
+              <img src="{{ p.image_url | optimize_amazon_image(256) }}" alt="{{ p.name }}" class="w-full h-full object-contain p-2" width="256" height="256" loading="lazy">
               {% else %}
               <span class="material-symbols-outlined text-6xl text-gray-300">inventory_2</span>
               {% endif %}
