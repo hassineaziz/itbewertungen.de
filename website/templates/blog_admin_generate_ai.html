@@ -62,7 +62,7 @@
       </div>
 
       <!-- Core Product Slugs (DB resolution) -->
-      <div class="space-y-2">
+      <div class="space-y-2" id="products-selection-wrapper">
         <label class="block text-sm font-bold text-gray-900">Verknüpfte Produkte aus dem Datenbank-Bestand</label>
         
         <!-- Search filter input -->
@@ -89,7 +89,7 @@
       </div>
 
       <!-- Dynamic Per-Product EEAT & Specs -->
-      <div class="border border-gray-200 rounded-xl overflow-hidden">
+      <div class="border border-gray-200 rounded-xl overflow-hidden" id="products-eeat-wrapper">
         <div class="w-full px-6 py-4 bg-gray-50 flex justify-between items-center text-sm font-bold text-gray-900 border-b border-gray-200">
           <span class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-xl">military_tech</span>
@@ -175,18 +175,18 @@
 
       <!-- Global Fallback (for when no DB products are checked) -->
       <div id="global-fallback-block" class="space-y-6 border border-gray-200 rounded-xl p-6 bg-gray-50">
-        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-2">
+        <h3 id="global-fallback-header" class="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-2">
           <span class="material-symbols-outlined text-gray-500">public</span> Allgemeine Daten (Ohne Datenbank-Verknüpfung)
         </h3>
-        <div class="space-y-2">
+        <div class="space-y-2" id="global-notes-wrapper">
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Allgemeine Notizen / Testerkenntnisse</label>
           <textarea name="global_quick_notes" rows="2"
                     placeholder="Falls kein Produkt ausgewählt wurde, können Sie hier allgemeine Erfahrungen hinterlegen..."
                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
         </div>
-        <div class="space-y-2">
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Zusätzliche Produktdaten / Herstellerinfos (Optional)</label>
-          <textarea name="global_raw_source_info" rows="3"
+        <div class="space-y-2" id="global-raw-wrapper">
+          <label id="global-raw-label" class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Zusätzliche Produktdaten / Herstellerinfos (Optional)</label>
+          <textarea id="global-raw-textarea" name="global_raw_source_info" rows="3"
                     placeholder="Spezifikationen oder Datenblätter für ein nicht in der DB vorhandenes Produkt..."
                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
         </div>
@@ -229,7 +229,57 @@
   const template = document.getElementById('product-override-template').innerHTML;
   const productCheckboxes = document.querySelectorAll('input[name="core_product_slugs"]');
 
+  // New fields for template styling
+  const templateSelect = document.getElementById('template');
+  const productsSelectionWrapper = document.getElementById('products-selection-wrapper');
+  const productsEeatWrapper = document.getElementById('products-eeat-wrapper');
+  const globalNotesWrapper = document.getElementById('global-notes-wrapper');
+  const globalRawLabel = document.getElementById('global-raw-label');
+  const globalRawTextarea = document.getElementById('global-raw-textarea');
+  const globalFallbackHeader = document.getElementById('global-fallback-header');
+
+  function adjustFieldsForTemplate() {
+    const isDefinition = templateSelect.value === 'expanded_definition_template';
+    if (isDefinition) {
+      // Hide product selections
+      productsSelectionWrapper.style.display = 'none';
+      productsEeatWrapper.style.display = 'none';
+      // Hide general notes
+      globalNotesWrapper.style.display = 'none';
+      
+      // Customize context inputs for definition
+      globalFallbackHeader.innerHTML = `
+        <span class="material-symbols-outlined text-gray-500">menu_book</span> Zusätzlicher Kontext für die Begriffserklärung (Optional)
+      `;
+      globalRawLabel.textContent = "Begriff-Kontext / Wikipedia-Kopie / Eigene Notizen";
+      globalRawTextarea.placeholder = "Kopieren Sie hier Hintergrundwissen, Begriffsdetails oder Wikipedia-Artikel hinein, um die KI-Antworten präziser zu steuern...";
+      
+      // Always show global fallback block
+      fallbackBlock.style.display = 'block';
+    } else {
+      // Restore defaults
+      productsSelectionWrapper.style.display = 'block';
+      productsEeatWrapper.style.display = 'block';
+      globalNotesWrapper.style.display = 'block';
+      
+      globalFallbackHeader.innerHTML = `
+        <span class="material-symbols-outlined text-gray-500">public</span> Allgemeine Daten (Ohne Datenbank-Verknüpfung)
+      `;
+      globalRawLabel.textContent = "Zusätzliche Produktdaten / Herstellerinfos (Optional)";
+      globalRawTextarea.placeholder = "Spezifikationen oder Datenblätter für ein nicht in der DB vorhandenes Produkt...";
+      
+      // Re-trigger original visibility rules
+      updateOverrides();
+    }
+  }
+
   function updateOverrides() {
+    const isDefinition = templateSelect.value === 'expanded_definition_template';
+    if (isDefinition) {
+      fallbackBlock.style.display = 'block';
+      return;
+    }
+
     // Collect currently checked slugs
     const checkedBoxes = Array.from(productCheckboxes).filter(cb => cb.checked);
     
@@ -270,8 +320,11 @@
   productCheckboxes.forEach(cb => {
     cb.addEventListener('change', updateOverrides);
   });
+  templateSelect.addEventListener('change', adjustFieldsForTemplate);
   
   // Initial run
+  updateOverrides();
+  adjustFieldsForTemplate();
   updateOverrides();
 
   // Intercept form submit and show overlay
