@@ -181,4 +181,23 @@ def create_app():
             return ""
         return Markup(markdown.markdown(text))
 
+    @app.template_filter('optimize_amazon_image')
+    def optimize_amazon_image(url, size):
+        if not url:
+            return ""
+        # Check if it is an Amazon image URL
+        if 'media-amazon.com' in url or 'ssl-images-amazon.com' in url:
+            import re
+            # Amazon URL pattern: match the part after the last dot (before the extension)
+            # e.g., https://m.media-amazon.com/images/I/71XyZ._AC_UL320_.jpg -> replace ._AC_UL320_ with ._SL{size}_
+            match = re.search(r'\._[A-Z0-9_-]+\.(jpg|jpeg|png|gif)$', url, re.IGNORECASE)
+            if match:
+                return re.sub(r'\._[A-Z0-9_-]+\.', f'._SL{size}.', url)
+            else:
+                parts = url.rsplit('.', 1)
+                if len(parts) == 2:
+                    return f"{parts[0]}._SL{size}.{parts[1]}"
+        return url
+
     return app
+
