@@ -25,6 +25,7 @@ def get_locale():
 
 def create_app():
     app = Flask(__name__)
+    css_cache = {}
     
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'hjshjhdjah_kjshkjdhjs_fallback_secret')
     database_url = os.getenv('SQLALCHEMY_DATABASE_URI', os.getenv('DATABASE_URL', 'sqlite:///blog.db'))
@@ -109,6 +110,21 @@ def create_app():
     def inject_site_config():
         from flask import url_for as flask_url_for
         
+        def get_inline_css(filename):
+            if not app.debug and filename in css_cache:
+                return css_cache[filename]
+            
+            filepath = os.path.join(app.root_path, 'static', 'css', filename)
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                if not app.debug:
+                    css_cache[filename] = content
+                return content
+            except Exception as e:
+                app.logger.error(f"Error loading inline CSS {filename}: {e}")
+                return ""
+        
         def custom_url_for(endpoint, **values):
             force_lang = values.pop('force_lang', None)
             
@@ -139,6 +155,7 @@ def create_app():
         
         return {
             'url_for': custom_url_for,
+            'get_inline_css': get_inline_css,
             'config': site_config,
             'SITE_NAME': site_config.get('brand', {}).get('name', 'Premium Blog'),
             'SITE_DOMAIN': site_config.get('seo', {}).get('domain', 'https://example.com'),
@@ -163,27 +180,5 @@ def create_app():
         if not text:
             return ""
         return Markup(markdown.markdown(text))
-
-    @app.template_filter('optimize_amazon_image')
-    def optimize_amazon_image_filter(url, max_size=500):
-        if not url or "media-amazon.com" not in url:
-            return url
-        import re
-        match = re.match(r"^(https://m\.media-amazon\.com/images/I/[^./\s]+)(\._[A-Za-z0-9_-]+\.)(jpg|png|gif|jpeg|webp)$", url)
-        if match:
-            base = match.group(1)
-            suffix = match.group(2)
-            ext = match.group(3)
-            new_suffix = re.sub(r'(SL|SX|SY|UL|CR|AC_UL|AC_SL)\d+', r'\g<1>' + str(max_size), suffix)
-            if new_suffix == suffix:
-                new_suffix = f"._AC_SL{max_size}_."
-            return f"{base}{new_suffix}{ext}"
-        else:
-            match_no_suffix = re.match(r"^(https://m\.media-amazon\.com/images/I/[^./\s]+)\.(jpg|png|gif|jpeg|webp)$", url)
-            if match_no_suffix:
-                base = match_no_suffix.group(1)
-                ext = match_no_suffix.group(2)
-                return f"{base}._AC_SL{max_size}_.{ext}"
-        return url
 
     return app

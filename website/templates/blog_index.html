@@ -71,7 +71,7 @@
                 <article class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full group">
                     <div class="w-full aspect-video bg-gray-100 relative overflow-hidden">
                         {% if post.cover_image_url %}
-                        <img src="{{ post.cover_image_url | optimize_amazon_image(400) }}" alt="{{ post.title }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" width="400" height="225">
+                        <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" width="400" height="225">
                         {% else %}
                         <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
                             <span class="material-symbols-outlined text-4xl">image</span>

@@ -104,8 +104,8 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap">
     </noscript>
     
-    <!-- Static Compiled Tailwind CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.build.css') }}">
+    <!-- Inline Compiled Tailwind CSS (Eliminates Render Blocking Network Request) -->
+    <style id="main-compiled-css">{{ get_inline_css('app.build.css') | safe }}</style>
     
     <!-- Runtime CSS Variables (for branding configuration) -->
     <style>
