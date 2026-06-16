@@ -6,11 +6,24 @@
     <meta name="google-site-verification" content="{{ config.get('tracking', {}).get('google_search_console_id') }}" />
     {%- endif %}
     {%- if config.get('tracking', {}).get('google_analytics_id') %}
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.get('tracking', {}).get('google_analytics_id') }}"></script>
+    <!-- Google Consent Mode v2 Initialization -->
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
+        
+        // Read prior consent state from localStorage
+        const consentState = localStorage.getItem('cookie_consent');
+        
+        gtag('consent', 'default', {
+            'ad_storage': consentState === 'granted' ? 'granted' : 'denied',
+            'analytics_storage': consentState === 'granted' ? 'granted' : 'denied',
+            'ad_user_data': consentState === 'granted' ? 'granted' : 'denied',
+            'ad_personalization': consentState === 'granted' ? 'granted' : 'denied'
+        });
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.get('tracking', {}).get('google_analytics_id') }}"></script>
+    <script>
         gtag('js', new Date());
         gtag('config', '{{ config.get('tracking', {}).get('google_analytics_id') }}');
     </script>
@@ -330,6 +343,84 @@
         }
     </script>
     {% endblock %}
+
+    {%- if config.get('tracking', {}).get('google_analytics_id') %}
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="fixed bottom-0 left-0 right-0 sm:bottom-6 sm:right-6 sm:left-auto sm:max-w-md w-full bg-white border-t sm:border border-gray-200 sm:rounded-2xl shadow-xl z-[9999] p-5 transform translate-y-full opacity-0 transition-all duration-500 ease-out pointer-events-none">
+        <div class="flex flex-col gap-4">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary text-[18px]">cookie</span>
+                    {% if current_language == 'en' %}Cookie Settings{% else %}Cookie-Einstellungen{% endif %}
+                </h3>
+                <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                    {% if current_language == 'en' %}
+                    We use cookies to improve your browsing experience, analyze site traffic, and deliver personalized content. You can accept all cookies or decline optional tracking.
+                    {% else %}
+                    Wir verwenden Cookies, um Ihr Surferlebnis zu verbessern, den Website-Traffic zu analysieren und personalisierte Inhalte bereitzustellen. Sie können alle Cookies akzeptieren oder optionales Tracking ablehnen.
+                    {% endif %}
+                    <a href="{{ url_for('views.privacy_policy') }}" class="text-primary hover:underline font-medium ml-1">
+                        {% if current_language == 'en' %}Privacy Policy{% else %}Datenschutzerklärung{% endif %}
+                    </a>
+                </p>
+            </div>
+            <div class="flex items-center justify-between gap-4 text-xs mt-1">
+                <button id="decline-cookies" class="text-gray-400 hover:text-gray-600 transition-colors underline cursor-pointer font-medium p-1 bg-transparent border-0 shadow-none">
+                    {% if current_language == 'en' %}Only essential cookies{% else %}Nur essenzielle Cookies{% endif %}
+                </button>
+                <button id="accept-cookies" class="px-5 py-2.5 bg-primary hover:bg-opacity-90 text-white rounded-lg transition-all font-semibold shadow-sm cursor-pointer hover:scale-[1.02]">
+                    {% if current_language == 'en' %}Accept All{% else %}Alle akzeptieren{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const banner = document.getElementById('cookie-consent-banner');
+            const acceptBtn = document.getElementById('accept-cookies');
+            const declineBtn = document.getElementById('decline-cookies');
+
+            // If consent is already set, do not show the banner
+            if (localStorage.getItem('cookie_consent')) {
+                return;
+            }
+
+            // Show banner after a slight delay for smooth entrance
+            setTimeout(() => {
+                banner.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+                banner.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }, 600);
+
+            function hideBanner() {
+                banner.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                banner.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+            }
+
+            acceptBtn.addEventListener('click', function () {
+                localStorage.setItem('cookie_consent', 'granted');
+                gtag('consent', 'update', {
+                    'ad_storage': 'granted',
+                    'analytics_storage': 'granted',
+                    'ad_user_data': 'granted',
+                    'ad_personalization': 'granted'
+                });
+                hideBanner();
+            });
+
+            declineBtn.addEventListener('click', function () {
+                localStorage.setItem('cookie_consent', 'denied');
+                gtag('consent', 'update', {
+                    'ad_storage': 'denied',
+                    'analytics_storage': 'denied',
+                    'ad_user_data': 'denied',
+                    'ad_personalization': 'denied'
+                });
+                hideBanner();
+            });
+        });
+    </script>
+    {%- endif %}
 </body>
 
 </html>

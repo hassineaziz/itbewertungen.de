@@ -1,20 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Terms of Service') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
+{% block title %}
+{% if current_language == 'en' %}Terms of Service{% else %}Nutzungsbedingungen{% endif %} - {{ config.get('brand', {}).get('name', 'ITBewertungen') }}
+{% endblock %}
 
-{% block meta_description %}{{ _('Review the terms of service for using') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our affiliate links.') }}{% endblock %}
-{% block meta_keywords %}{{ _('terms of service, legal, conditions') }}{% endblock %}
+{% block meta_description %}
+{% if current_language == 'en' %}
+Review the terms of service, conditions, and disclaimers for using the {{ config.get('brand', {}).get('name', 'ITBewertungen') }} website.
+{% else %}
+Prüfen Sie die Nutzungsbedingungen und Haftungsausschlüsse für die Nutzung der {{ config.get('brand', {}).get('name', 'ITBewertungen') }} Website.
+{% endif %}
+{% endblock %}
 
 {% block schema %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  "name": "{{ _('Terms of Service') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
-  "description": "{{ _('Review the terms of service for using') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our affiliate links.') }}",
+  "name": "{% if current_language == 'en' %}Terms of Service{% else %}Nutzungsbedingungen{% endif %} - {{ config.get('brand', {}).get('name', 'ITBewertungen') }}",
+  "description": "{% if current_language == 'en' %}Review the terms of service, conditions, and disclaimers for using the {{ config.get('brand', {}).get('name', 'ITBewertungen') }} website.{% else %}Prüfen Sie die Nutzungsbedingungen und Haftungsausschlüsse für die Nutzung der {{ config.get('brand', {}).get('name', 'ITBewertungen') }} Website.{% endif %}",
   "publisher": {
     "@type": "Organization",
-    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+    "name": "{{ config.get('brand', {}).get('name', 'ITBewertungen') }}"
   }
 }
 </script>
@@ -24,38 +31,86 @@
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
-    { "@type": "ListItem", "position": 2, "name": "{{ _('Terms of Service') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.terms_of_service') }}" }
+    { "@type": "ListItem", "position": 2, "name": "{% if current_language == 'en' %}Terms of Service{% else %}Nutzungsbedingungen{% endif %}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.terms_of_service') }}" }
   ]
 }
 </script>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+<div class="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
     <div class="mb-10 border-b border-gray-100 pb-8">
-        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('Terms of Service') }}</h1>
-        <p class="text-gray-500 text-lg">{{ _('Last updated:') }} {{ config.get('niche', {}).get('year', '2026') }}</p>
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">
+            {% if current_language == 'en' %}Terms of Service{% else %}Nutzungsbedingungen{% endif %}
+        </h1>
+        <p class="text-gray-500 text-sm">
+            {% if current_language == 'en' %}Last updated: June 2026{% else %}Stand: Juni 2026{% endif %}
+        </p>
     </div>
 
-    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('1. Terms') }}</h2>
-        <p>{{ _('By accessing this Website, accessible from') }} {{ config.get('seo', {}).get('domain', 'our website') }}, {{ _('you are agreeing to be bound by these Website Terms and Conditions of Use and agree that you are responsible for the agreement with any applicable local laws. If you disagree with any of these terms, you are prohibited from accessing this site.') }}</p>
+    <div class="prose prose-blue prose-lg max-w-none text-gray-650 leading-relaxed">
+        {% if current_language == 'en' %}
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">1. Acceptance of Terms</h2>
+        <p>By accessing and browsing this Website, accessible from <a href="{{ config.get('seo', {}).get('domain', 'https://itbewertungen.de') }}" class="text-primary hover:underline">{{ config.get('seo', {}).get('domain', 'itbewertungen.de') | replace('https://', '') | replace('http://', '') }}</a>, you agree to be bound by these Terms of Service and accept responsibility for compliance with any applicable local laws. If you disagree with any part of these terms, you are prohibited from using or accessing this site.</p>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('2. Use License') }}</h2>
-        <p>{{ _('Permission is granted to temporarily download one copy of the materials on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website for personal, non-commercial transitory viewing only.") }}</p>
-        <p>{{ _('This will let') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('to terminate upon violations of any of these restrictions. Upon termination, your viewing right will also be terminated and you should destroy any downloaded materials in your possession whether it is printed or electronic format.') }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">2. Intellectual Property Rights & Use License</h2>
+        <p>All original review texts, benchmarks, score breakdowns, custom graphics, and layout elements published on this website are the intellectual property of <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> and are protected by applicable copyright and trademark law.</p>
+        <p>Permission is granted to temporarily download one copy of the materials for personal, non-commercial transitory viewing only. Under this license you may not:</p>
+        <ul class="list-disc pl-5 my-4">
+            <li>Modify, scrape, or copy the materials for commercial databases or other websites;</li>
+            <li>Use the materials for any commercial purpose or public display;</li>
+            <li>Attempt to decompile or reverse engineer any software running on the site;</li>
+            <li>Transfer the materials to another person or mirror the materials on any other server.</li>
+        </ul>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('3. Disclaimer') }}</h2>
-        <p>{{ _('All the materials on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _('\'s Website are provided "as is".') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('makes no warranties, may it be expressed or implied, therefore negates all other warranties. Furthermore,') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('does not make any representations concerning the accuracy or reliability of the use of the materials on its Website or otherwise relating to such materials or any sites linked to this Website.') }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">3. Disclaimer (No Warranty)</h2>
+        <p>All information, test reports, and recommendations on this Website are provided "as is". <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> makes no warranties, expressed or implied, and hereby disclaims all other warranties including, without limitation, implied warranties of merchantability, fitness for a particular purpose, or non-infringement of intellectual property.</p>
+        <p>While we make every effort to verify the accuracy of specs and benchmarks, we do not warrant that the materials on this website are fully accurate, complete, or current. Technology specifications and firmware are subject to rapid change by manufacturers.</p>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('4. Limitations') }}</h2>
-        <p>{{ config.get('brand', {}).get('name', 'Our Site') }} {{ _("or its suppliers will not be hold accountable for any damages that will arise with the use or inability to use the materials on") }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website, even if") }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('or an authorize representative of this Website has been notified, orally or written, of the possibility of such damage.') }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">4. Affiliate Disclaimer & Pricing Information</h2>
+        <p>Our website displays product recommendations and contains affiliate links to merchant sites (such as Amazon). Prices, availability, and delivery conditions of the products are determined exclusively by the respective seller. **We have no control over merchant pricing.**</p>
+        <p>Although we try to keep price ranges and availability current, the prices displayed on the merchant site at the time of purchase will apply. We are not responsible for any price discrepancies, stock out issues, or shipping conditions on third-party shops.</p>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('5. Affiliate Links') }}</h2>
-        <p>{{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase through our links at no extra cost to you.') }} {{ _('This means that if you click on a product link and purchase the item, we will receive an affiliate commission. We only recommend products we believe will add value to our readers.') }}</p>
-        
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('6. Revisions and Errata') }}</h2>
-        <p>{{ _('The materials appearing on') }} {{ config.get('brand', {}).get('name', 'Our Site') }}{{ _("'s Website may include technical, typographical, or photographic errors.") }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('will not promise that any of the materials in this Website are accurate, complete, or current.') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('may change the materials contained on its Website at any time without notice.') }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">5. Limitation of Liability</h2>
+        <p>In no event shall <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> or its operators be held liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials, or the purchase and deployment of any recommended products, even if we have been notified of the possibility of such damage.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">6. Links to Third-Party Sites</h2>
+        <p>We have not fully reviewed all of the websites linked to our platform and are not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by us. Use of any linked website is at the user's own risk.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">7. Governing Law</h2>
+        <p>Any claim relating to this website shall be governed by the laws of Germany and the European Union, without regard to its conflict of law provisions.</p>
+
+        {% else %}
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">1. Geltungsbereich und Akzeptanz</h2>
+        <p>Durch das Aufrufen und Nutzen dieser Website, erreichbar unter <a href="{{ config.get('seo', {}).get('domain', 'https://itbewertungen.de') }}" class="text-primary hover:underline">{{ config.get('seo', {}).get('domain', 'itbewertungen.de') | replace('https://', '') | replace('http://', '') }}</a>, erklären Sie sich mit diesen Nutzungsbedingungen einverstanden und übernehmen die Verantwortung für die Einhaltung der geltenden Gesetze. Wenn Sie mit Teilen dieser Bedingungen nicht einverstanden sind, ist Ihnen die Nutzung dieser Website untersagt.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">2. Urheberrecht & Nutzungslizenz</h2>
+        <p>Sämtliche auf dieser Website veröffentlichten Testberichte, originalen Texte, Benchmarks, Diagramme, Grafiken und Layout-Elemente sind geistiges Eigentum von <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> und durch das deutsche und internationale Urheberrecht geschützt.</p>
+        <p>Es wird die Erlaubnis erteilt, temporär eine Kopie der Materialien für den persönlichen, nicht-kommerziellen Gebrauch herunterzuladen. Unter dieser Lizenz ist es Ihnen untersagt:</p>
+        <ul class="list-disc pl-5 my-4">
+            <li>Die Inhalte zu kopieren, zu scrapen oder für eigene Webseiten oder Datenbanken zu verwenden;</li>
+            <li>Inhalte für kommerzielle Zwecke oder zur öffentlichen Präsentation zu nutzen;</li>
+            <li>Software oder Scripte auf der Seite zu dekompilieren oder zurückzuentwickeln;</li>
+            <li>Die Materialien an Dritte weiterzugeben oder auf anderen Servern zu spiegeln.</li>
+        </ul>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">3. Haftungsausschluss für Inhalte</h2>
+        <p>Alle Inhalte, Testberichte und Empfehlungen auf dieser Website werden ohne Mängelgewähr bereitgestellt. <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> gibt keine ausdrücklichen oder impliziten Garantien ab und schließt jegliche Gewährleistung aus, einschließlich, aber nicht beschränkt auf die Marktgängigkeit oder die Eignung für einen bestimmten Zweck.</p>
+        <p>Obwohl wir uns bemühen, Spezifikationen und Testergebnisse akkurat darzustellen, übernehmen wir keine Haftung für die Vollständigkeit oder Aktualität der Angaben. Technische Spezifikationen und Firmware können sich durch Hersteller-Updates jederzeit ändern.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">4. Affiliate-Links und Preisdiskrepanzen</h2>
+        <p>Unsere Webseite enthält Empfehlungen und Verweise auf externe Online-Shops (Affiliate-Links). Preise, Verfügbarkeit und Versandkonditionen werden ausschließlich durch die jeweiligen Partnershops festgelegt. **Wir haben keinen Einfluss auf Preisänderungen der Händler.**</p>
+        <p>Es gelten stets die Preise, die zum Zeitpunkt des Kaufs im Partnershop angezeigt werden. Wir übernehmen keine Haftung für falsche Preisangaben, Lieferengpässe oder unvollständige Produktbeschreibungen bei den verlinkten Händlern.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">5. Haftungsbeschränkung</h2>
+        <p>In keinem Fall haftet <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong> oder der Betreiber der Seite für Schäden jeglicher Art (einschließlich entgangener Gewinne, Datenverlust oder Betriebsunterbrechung), die aus der Nutzung der angebotenen Inhalte oder dem Kauf der empfohlenen Produkte resultieren, selbst wenn wir über die Möglichkeit solcher Schäden informiert wurden.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">6. Verlinkungen</h2>
+        <p>Wir haben nicht alle mit unserer Webseite verlinkten externen Internetseiten überprüft und übernehmen keine Verantwortung für deren Inhalte. Das Setzen eines Links bedeutet keine Billigung der externen Inhalte durch uns. Die Nutzung externer Links erfolgt auf eigenes Risiko des Nutzers.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">7. Anwendbares Recht</h2>
+        <p>Für alle Ansprüche im Zusammenhang mit dieser Website gilt das Recht der Bundesrepublik Deutschland unter Ausschluss seiner kollisionsrechtlichen Bestimmungen.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

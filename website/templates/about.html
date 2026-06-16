@@ -1,18 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('About Us') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}{% endblock %}
-{% block meta_description %}{{ _('Learn more about') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our mission.') }}{% endblock %}
+{% block title %}
+{% if current_language == 'en' %}About Us{% else %}Über uns{% endif %} - {{ config.get('brand', {}).get('name', 'ITBewertungen') }}
+{% endblock %}
+
+{% block meta_description %}
+{% if current_language == 'en' %}
+Learn more about {{ config.get('brand', {}).get('name', 'ITBewertungen') }}, our editorial independence, and our testing guidelines.
+{% else %}
+Erfahren Sie mehr über {{ config.get('brand', {}).get('name', 'ITBewertungen') }}, unsere redaktionelle Unabhängigkeit und unsere Testrichtlinien.
+{% endif %}
+{% endblock %}
 
 {% block schema %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "AboutPage",
-  "name": "{{ _('About Us') }} - {{ config.get('brand', {}).get('name', 'Our Site') }}",
-  "description": "{{ _('Learn more about') }} {{ config.get('brand', {}).get('name', 'Our Site') }} {{ _('and our mission.') }}",
+  "name": "{% if current_language == 'en' %}About Us{% else %}Über uns{% endif %} - {{ config.get('brand', {}).get('name', 'ITBewertungen') }}",
+  "description": "{% if current_language == 'en' %}Learn more about {{ config.get('brand', {}).get('name', 'ITBewertungen') }}, our editorial independence, and our testing guidelines.{% else %}Erfahren Sie mehr über {{ config.get('brand', {}).get('name', 'ITBewertungen') }}, unsere redaktionelle Unabhängigkeit und unsere Testrichtlinien.{% endif %}",
   "publisher": {
     "@type": "Organization",
-    "name": "{{ config.get('brand', {}).get('name', 'Our Site') }}"
+    "name": "{{ config.get('brand', {}).get('name', 'ITBewertungen') }}"
   }
 }
 </script>
@@ -22,38 +31,94 @@
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}/" },
-    { "@type": "ListItem", "position": 2, "name": "{{ _('About Us') }}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.about') }}" }
+    { "@type": "ListItem", "position": 2, "name": "{% if current_language == 'en' %}About Us{% else %}Über uns{% endif %}", "item": "{{ config.get('seo', {}).get('domain', '').rstrip('/') }}{{ url_for('views.about') }}" }
   ]
 }
 </script>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
+<div class="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8 bg-white min-h-[60vh]">
     <div class="mb-10 border-b border-gray-100 pb-8">
-        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">{{ _('About Us') }}</h1>
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-4">
+            {% if current_language == 'en' %}About {{ config.get('brand', {}).get('name', 'ITBewertungen') }}{% else %}Über {{ config.get('brand', {}).get('name', 'ITBewertungen') }}{% endif %}
+        </h1>
+        <p class="text-gray-500 text-lg">
+            {% if current_language == 'en' %}
+            Transparent, independent, and strictly data-driven reviews.
+            {% else %}
+            Transparente, unabhängige und streng datengetriebene Testberichte.
+            {% endif %}
+        </p>
     </div>
 
-    <div class="prose prose-blue prose-lg max-w-none text-gray-600">
-        <p>{{ _('Welcome to') }} <strong>{{ config.get('brand', {}).get('name', 'Our Site') }}</strong>.</p>
-        <p>{{ config.get('niche', {}).get('home_description', 'We provide expert insights and independent reviews.') }}</p>
+    <div class="prose prose-blue prose-lg max-w-none text-gray-650 leading-relaxed">
+        {% if current_language == 'en' %}
+        <p>Welcome to <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong>. We are a team of tech professionals, engineers, and hardware specialists who share a common goal: helping you make informed, confident buying decisions without the marketing fluff.</p>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Our Mission') }}</h2>
-        <p>{{ _('Our goal is to help you find the best') }} <strong>{{ config.get('niche', {}).get('category', 'products') }}</strong> {{ _('on the market. We understand that choosing the right product can be overwhelming, which is why we dedicate our time to thoroughly test and review each item we recommend.') }}</p>
+        <p>The tech market is flooded with sponsored reviews and superficial tests that barely scratch the surface. That is why we established this platform. We don't copy spec sheets; we purchase products, run benchmarks, and subject hardware to real-world stress tests.</p>
 
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Why Trust Us?') }}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-            {% for point in config.get('niche', {}).get('trust_points', []) %}
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                <span class="material-symbols-outlined text-3xl text-primary mb-3">{{ point.icon | default('verified') }}</span>
-                <h3 class="text-lg font-bold text-gray-900 mb-2">{{ point.title }}</h3>
-                <p class="text-sm text-gray-600">{{ point.text }}</p>
+        <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Our Principles</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 my-8">
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">verified</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">100% Self-Funded</h3>
+                <p class="text-sm text-gray-600">We buy our test units at retail prices. This ensures we receive the exact same quality as our readers.</p>
             </div>
-            {% endfor %}
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">science</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Lab Benchmarking</h3>
+                <p class="text-sm text-gray-600">We combine synthetic benchmarks with practical workload measurements to compare raw speed and efficiency.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">block</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">No Sponsored Rankings</h3>
+                <p class="text-sm text-gray-600">Manufacturers cannot buy their way into our top rankings. Editorial integrity is our highest priority.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">update</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Always Up-To-Date</h3>
+                <p class="text-sm text-gray-600">We keep monitoring price changes, firmware updates, and new releases to keep our guides accurate.</p>
+            </div>
         </div>
-        
-        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">{{ _('Our Independence') }}</h2>
-        <p>{{ config.get('affiliate', {}).get('disclosure', 'We earn a small commission if you purchase through our links at no extra cost to you.') }} {{ _('We are completely independent and our recommendations are purely based on our own lab testing and real-world usage. We never accept payment for favorable reviews.') }}</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">How We Are Funded</h2>
+        <p>To keep our tests fully independent and free of advertising banners, we use affiliate links. When you click one of our outbound links and make a purchase, we may receive a small commission from the merchant (such as Amazon) at no additional cost to you.</p>
+        <p>This affiliate commission helps fund our test lab, purchase new hardware, and pay our reviewers. We only recommend products that have proven their value during testing.</p>
+
+        {% else %}
+        <p>Willkommen bei <strong>{{ config.get('brand', {}).get('name', 'ITBewertungen') }}</strong>. Wir sind ein Team aus Tech-Spezialisten, Ingenieuren und Hardware-Enthusiasten mit einem gemeinsamen Ziel: Ihnen dabei zu helfen, fundierte und sichere Kaufentscheidungen ohne Marketing-Floskeln zu treffen.</p>
+
+        <p>Der Technologiemarkt ist überschwemmt mit gesponserten Bewertungen und oberflächlichen Berichten, die kaum ins Detail gehen. Genau deshalb haben wir diese Plattform ins Leben gerufen. Wir schreiben keine Datenblätter ab – wir kaufen die Produkte selbst, führen präzise Leistungsmessungen durch und setzen Hardware realen Belastungstests aus.</p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Unsere Prinzipien</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 my-8">
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">verified</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">100% Selbstgekauft</h3>
+                <p class="text-sm text-gray-600">Wir erwerben alle Testgeräte regulär im Einzelhandel. So stellen wir sicher, dass wir exakt die gleiche Qualität testen, die Sie auch erhalten.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">science</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Labor-Benchmarks</h3>
+                <p class="text-sm text-gray-600">Wir kombinieren synthetische Benchmarks mit praktischen Lastmessungen, um Rohleistung und Effizienz objektiv zu ermitteln.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">block</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Keine gekauften Rankings</h3>
+                <p class="text-sm text-gray-600">Hersteller können sich nicht in unsere Bestenlisten einkaufen. Unsere redaktionelle Integrität steht über allem.</p>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm">
+                <span class="material-symbols-outlined text-3xl text-primary mb-3">update</span>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Laufend Aktualisiert</h3>
+                <p class="text-sm text-gray-600">Wir beobachten Preisentwicklungen, Firmware-Updates und Produktänderungen fortlaufend, um unsere Empfehlungen aktuell zu halten.</p>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">Wie wir uns finanzieren</h2>
+        <p>Um unsere Tests vollkommen unabhängig zu halten und auf störende Werbebanner verzichten zu können, nutzen wir Affiliate-Links. Wenn Sie über einen unserer Links ein Produkt kaufen, erhalten wir eine kleine Provision vom Händler (z.B. Amazon). Für Sie entstehen dabei absolut **keine Mehrkosten**.</p>
+        <p>Diese Provisionen helfen uns, unser Testlabor zu finanzieren, neue Testgeräte anzuschaffen und unsere Redakteure fair zu bezahlen. Wir empfehlen grundsätzlich nur Produkte, die uns im Testlabor vollkommen überzeugt haben.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

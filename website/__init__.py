@@ -71,8 +71,8 @@ def create_app():
         if request.method == 'GET':
             path = request.path
             if path != '/' and path.endswith('/'):
-                # Avoid redirecting admin, static, or affiliate routes
-                if path.startswith(('/admin', '/static', '/go')):
+                # Avoid redirecting admin, static, affiliate, or /en/ routes
+                if path.startswith(('/admin', '/static', '/go')) or path == '/en/':
                     return
                 
                 # Keep query parameters
