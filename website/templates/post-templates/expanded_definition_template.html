@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {# ── SEO meta from structured data ─────────────────────────────────────── #}
-{% block title %}{{ post.meta_title if post and post.meta_title else data.get('headline', 'Definition') }} | {{ config.brand.name | default('') }}{% endblock %}
+{% block title %}{{ post.meta_title if post and post.meta_title else data.get('headline', 'Definition') }}{% endblock %}
 {% block meta_description %}{{ post.meta_description if post and post.meta_description else data.get('sub_head', '')[:155] }}{% endblock %}
 {% block meta_keywords %}{{ post.focus_keyword if post and post.focus_keyword else data.get('term_name', '') ~ ' Definition, ' ~ data.get('term_name', '') ~ ' erklärt, Was ist ' ~ data.get('term_name', '') }}{% endblock %}
 {% block og_type %}article{% endblock %}

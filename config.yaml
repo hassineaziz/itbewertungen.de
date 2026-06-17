@@ -10,8 +10,8 @@ niche:
   test_hours: "2000+"
   readers: "10.000+ monatlich"
 
-  home_title: "IT Bewertungen 2026 — Die besten Tech Produkte im großen Testvergleich"
-  home_description: "Wir testen Hardware, Software und IT-Produkte 2026 in über 2000 Stunden Praxis- und Laboranalysen. Finde die besten Empfehlungen für Performance, Preis und Zuverlässigkeit."
+  home_title: "IT Bewertungen 2026 — Die besten Tech Produkte im Testvergleich"
+  home_description: "Unabhängige Tests von Hardware, Software & IT-Produkten 2026. Finden Sie die besten Empfehlungen basierend auf unseren Laboranalysen."
 
   trust_points:
     - icon: "check_circle"
