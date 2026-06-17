@@ -615,6 +615,8 @@ def admin_links():
             slug = request.form.get('slug', '').strip()
             if slug.startswith('/go/'): slug = slug[4:]
             elif slug.startswith('go/'): slug = slug[3:]
+            slug = re.sub(r'[^\w\s-]', '', slug.lower())
+            slug = re.sub(r'[-\s]+', '-', slug).strip('-')
             dest = request.form.get('destination_url', '').strip()
             asin = request.form.get('asin', '').strip()
             if not dest.startswith(('http://', 'https://')):
@@ -660,6 +662,8 @@ def admin_links():
             slug    = request.form.get('slug', '').strip()
             if slug.startswith('/go/'): slug = slug[4:]
             elif slug.startswith('go/'): slug = slug[3:]
+            slug = re.sub(r'[^\w\s-]', '', slug.lower())
+            slug = re.sub(r'[-\s]+', '-', slug).strip('-')
             dest = request.form.get('destination_url', '').strip()
             asin = request.form.get('asin', '').strip()
             if not dest.startswith(('http://', 'https://')):
