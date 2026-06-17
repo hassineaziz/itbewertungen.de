@@ -13,12 +13,38 @@
   "@context": "https://schema.org",
   "@type": "Product",
   "name": {{ data.product_name | tojson }},
+  "image": {{ (data.get('image_url') or post.cover_image_url or (config.get('seo',{}).get('domain','') ~ '/static/favicon.png')) | tojson }},
   "description": {{ data.get('sub_head', '') | tojson }},
+  "brand": {
+    "@type": "Brand",
+    "name": {{ config.get('brand', {}).get('name', 'Brand') | tojson }}
+  },
   "offers": {
     "@type": "Offer",
-    "price": "{{ data.get('price', '') | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim }}",
+    {% set price_cleaned = data.get('price', '') | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim %}
+    "price": "{{ price_cleaned if price_cleaned else '0.00' }}",
     "priceCurrency": "EUR",
-    "availability": "https://schema.org/InStock"
+    "availability": "https://schema.org/InStock",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": 0,
+        "currency": "EUR"
+      },
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": "DE"
+      }
+    },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "DE",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+    }
   },
   "review": {
     "@type": "Review",

@@ -42,12 +42,38 @@
       "item": {
         "@type": "Product",
         "name": {{ p.name | tojson }},
-        {% if p.get('image_url') %}"image": {{ p.image_url | tojson }},{% endif %}
+        "image": {{ (p.get('image_url') or post.cover_image_url or (config.get('seo',{}).get('domain','') ~ '/static/favicon.png')) | tojson }},
         {% if p.get('description') %}"description": {{ p.description | tojson }},{% endif %}
+        "brand": {
+          "@type": "Brand",
+          "name": {{ config.get('brand', {}).get('name', 'Brand') | tojson }}
+        },
         "offers": {
           "@type": "Offer",
-          "price": "{{ p.price | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim }}",
-          "priceCurrency": "EUR"
+          {% set price_cleaned = p.price | replace('$','') | replace('€','') | replace('£','') | replace(',','.') | trim %}
+          "price": "{{ price_cleaned if price_cleaned else '0.00' }}",
+          "priceCurrency": "EUR",
+          "availability": "https://schema.org/InStock",
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": 0,
+              "currency": "EUR"
+            },
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "DE"
+            }
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": "DE",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+            "merchantReturnDays": 14,
+            "returnMethod": "https://schema.org/ReturnByMail",
+            "returnFees": "https://schema.org/FreeReturn"
+          }
         }{% if p.get('rating') %},
         "aggregateRating": {
           "@type": "AggregateRating",
