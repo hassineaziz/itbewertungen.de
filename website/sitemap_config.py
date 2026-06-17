@@ -69,3 +69,47 @@ def sitemap_xml():
         return Response(xml_str, mimetype='application/xml')
     except Exception as e:
         return f"Error generating sitemap: {str(e)}", 500
+
+@seo_bp.route('/llms.txt')
+def llms_txt():
+    from .models import BlogPost
+    from flask import url_for, current_app
+    
+    base_url = os.getenv('SITE_DOMAIN', request.url_root.rstrip('/'))
+    if not base_url.startswith('https://'):
+        base_url = base_url.replace('http://', 'https://')
+        
+    site_config = current_app.config.get('SITE_CONFIG', {})
+    site_name = site_config.get('brand', {}).get('name', 'ITBewertungen.de')
+    site_desc = site_config.get('niche', {}).get('home_description', '')
+    
+    markdown = []
+    markdown.append(f"# {site_name}")
+    markdown.append("")
+    if site_desc:
+        markdown.append(f"> {site_desc}")
+        markdown.append("")
+        
+    markdown.append("## Core Pages")
+    markdown.append("")
+    markdown.append(f"- [Home]({base_url}/): Hauptseite mit aktuellen Testsiegern und Empfehlungen.")
+    markdown.append(f"- [Reviews & Guides]({base_url}/blog): Alle Testberichte, Vergleiche und Ratgeber.")
+    markdown.append(f"- [Über Uns]({base_url}/ueber-uns): Informationen über unsere Testkriterien und Redaktion.")
+    markdown.append(f"- [Wie wir testen]({base_url}/how-we-test): Details über unsere standardisierten Labor- und Praxistests.")
+    markdown.append("")
+    
+    markdown.append("## Testberichte & Kaufberatung")
+    markdown.append("")
+    
+    try:
+        posts = BlogPost.query.filter_by(status='published').order_by(BlogPost.published_at.desc()).all()
+        for post in posts:
+            path = url_for('views.blog_post', slug=post.slug)
+            url = f"{base_url}{path}"
+            excerpt = post.excerpt or post.meta_description or ""
+            markdown.append(f"- [{post.title}]({url}): {excerpt}")
+    except Exception as e:
+        markdown.append(f"Error loading posts: {str(e)}")
+        
+    content = "\n".join(markdown)
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}

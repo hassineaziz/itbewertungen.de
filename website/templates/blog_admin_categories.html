@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Kategorien verwalten - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-8">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-serif font-bold text-gray-900 tracking-tight">Kategorien verwalten</h1>
+      <p class="text-gray-600 mt-1">Erstellen, bearbeiten und löschen Sie Blog-Kategorien. Beiträge werden automatisch aktualisiert.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a href="{{ url_for('views.blog_dashboard') }}" 
+         class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-lg flex items-center text-sm font-semibold shadow-sm transition-all duration-200">
+        Zurück zum CMS
+      </a>
+      <button onclick="document.getElementById('addCategoryModal').classList.remove('hidden')"
+         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center text-sm font-semibold shadow-sm transition-all duration-200">
+        + Neue Kategorie
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex justify-between items-center">
+      <h3 class="text-lg font-bold text-gray-900">Vorhandene Kategorien</h3>
+    </div>
+    
+    {% if categories %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Icon</th>
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategorie-Name</th>
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Slug</th>
+            <th class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for cat in categories %}
+          <tr class="hover:bg-gray-50/80 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="w-10 h-10 rounded-lg bg-gray-150 flex items-center justify-center text-gray-700 shadow-sm border border-gray-200">
+                <span class="material-symbols-outlined">{{ cat.icon or 'folder' }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="font-semibold text-gray-900 text-sm capitalize">{{ cat.name }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <code>{{ cat.slug }}</code>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex items-center justify-end space-x-3">
+                <button onclick="openEditModal(this)"
+                        data-id="{{ cat.id }}"
+                        data-name="{{ cat.name }}"
+                        data-slug="{{ cat.slug }}"
+                        data-icon="{{ cat.icon or '' }}"
+                        class="text-blue-600 hover:text-blue-900 font-semibold transition-colors duration-150">
+                  Bearbeiten
+                </button>
+                <form method="POST" action="{{ url_for('views.admin_categories') }}" class="inline" onsubmit="return confirm('Möchten Sie diese Kategorie wirklich löschen? Alle zugehörigen Blog-Beiträge werden als \'Kategorie-los\' markiert.');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <input type="hidden" name="action" value="delete" />
+                  <input type="hidden" name="category_id" value="{{ cat.id }}" />
+                  <button type="submit" class="text-red-600 hover:text-red-800 font-semibold transition-colors duration-150">
+                    Löschen
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16 px-4">
+      <span class="material-symbols-outlined text-gray-300 text-6xl">category</span>
+      <h3 class="mt-4 text-lg font-bold text-gray-900">Keine Kategorien</h3>
+      <p class="mt-2 text-gray-500 text-sm max-w-md mx-auto">Es wurden noch keine Kategorien erstellt. Erstellen Sie eine neue Kategorie, um sie Ihren Blog-Beiträgen zuzuordnen.</p>
+      <button onclick="document.getElementById('addCategoryModal').classList.remove('hidden')" class="mt-5 inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200">
+        + Neue Kategorie erstellen
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addCategoryModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity">
+  <div class="relative top-20 mx-auto p-8 border w-[500px] shadow-2xl rounded-2xl bg-white transition-transform duration-300">
+    <div class="flex justify-between items-center pb-4 border-b border-gray-150">
+      <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-600">category</span> Neue Kategorie
+      </h3>
+      <button onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl transition-colors">&times;</button>
+    </div>
+    
+    <form method="POST" action="{{ url_for('views.admin_categories') }}" class="mt-6 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" name="action" value="add" />
+      
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Kategorie-Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" required placeholder="z.B. Smart Home" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Slug (Optional)</label>
+        <input type="text" name="slug" placeholder="z.B. smart-home (wird auto-generiert falls leer)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Icon (Google Material Icon Name, optional)</label>
+        <input type="text" name="icon" placeholder="z.B. home, folder, hard_drive" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        <p class="text-[11px] text-gray-500 mt-1">Unterstützt Namen aus Google Material Symbols (z.B. <code>cable</code>, <code>laptop_mac</code>, <code>headphones</code>)</p>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-150 mt-6">
+        <button type="button" onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-semibold transition-colors">Abbrechen</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-colors">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editCategoryModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity">
+  <div class="relative top-20 mx-auto p-8 border w-[500px] shadow-2xl rounded-2xl bg-white transition-transform duration-300">
+    <div class="flex justify-between items-center pb-4 border-b border-gray-150">
+      <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <span class="material-symbols-outlined text-blue-600">edit_note</span> Kategorie bearbeiten
+      </h3>
+      <button onclick="document.getElementById('editCategoryModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl transition-colors">&times;</button>
+    </div>
+    
+    <form method="POST" action="{{ url_for('views.admin_categories') }}" class="mt-6 space-y-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" name="action" value="edit" />
+      <input type="hidden" name="category_id" id="edit_category_id" />
+      
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Kategorie-Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" id="edit_category_name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Slug</label>
+        <input type="text" name="slug" id="edit_category_slug" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-gray-700 mb-1">Icon (Google Material Icon Name)</label>
+        <input type="text" name="icon" id="edit_category_icon" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-gray-150 mt-6">
+        <button type="button" onclick="document.getElementById('editCategoryModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-semibold transition-colors">Abbrechen</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold transition-colors">Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditModal(btn) {
+    const id = btn.dataset.id;
+    const name = btn.dataset.name;
+    const slug = btn.dataset.slug;
+    const icon = btn.dataset.icon;
+
+    document.getElementById('edit_category_id').value = id;
+    document.getElementById('edit_category_name').value = name;
+    document.getElementById('edit_category_slug').value = slug;
+    document.getElementById('edit_category_icon').value = icon;
+
+    document.getElementById('editCategoryModal').classList.remove('hidden');
+}
+</script>
+{% endblock %}

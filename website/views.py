@@ -351,6 +351,13 @@ def admin_generate_ai():
             meta_description = generated_data.get("meta_description") or excerpt[:160]
             cover_image_url = generated_data.get("cover_image_url") or ""
             
+            # Resolve category_id by name
+            category_id = None
+            if category:
+                cat_obj = Category.query.filter_by(name=category).first()
+                if cat_obj:
+                    category_id = cat_obj.id
+
             # Create the post in DB
             post = BlogPost(
                 title=title,
@@ -359,6 +366,7 @@ def admin_generate_ai():
                 template=template_name,
                 status="draft", # default to draft for review
                 category=category,
+                category_id=category_id,
                 content_html="", # satisfy NOT NULL constraint
                 cover_image_url=cover_image_url,
                 meta_title=meta_title,
@@ -446,10 +454,18 @@ def blog_new():
         else:
             slug = generate_unique_slug(title)
 
+        # Resolve category_id by name
+        category_id = None
+        if category:
+            from .models import Category
+            cat_obj = Category.query.filter_by(name=category).first()
+            if cat_obj:
+                category_id = cat_obj.id
+
         post = BlogPost(
             title=title, slug=slug, excerpt=excerpt,
             content_html=content_html, cover_image_url=cover_image_url,
-            status=status, category=category,
+            status=status, category=category, category_id=category_id,
             meta_title=meta_title, meta_description=meta_description,
             focus_keyword=focus_keyword, tags=tags_list,
             featured_rank=int(featured_rank) if featured_rank and featured_rank.strip() else None,
@@ -469,8 +485,9 @@ def blog_new():
         flash('Blog post created!', 'success')
         return redirect(url_for('views.blog_dashboard'))
 
-    from .models import AffiliateLink
+    from .models import AffiliateLink, Category
     all_links = AffiliateLink.query.all()
+    categories = Category.query.order_by(Category.name.asc()).all()
     links_json = json.dumps([{
         "slug": l.slug,
         "product_title": l.product_title or l.slug,
@@ -482,7 +499,8 @@ def blog_new():
     return render_template('blog_admin_edit.html', post=None,
                            template_names=template_names,
                            schemas_json=json.dumps(load_schemas()),
-                           links_json=links_json)
+                           links_json=links_json,
+                           categories=categories)
 
 # ── Admin: Edit post ───────────────────────────────────────────────────────────
 
@@ -499,6 +517,12 @@ def blog_edit(post_id):
         post.meta_description = request.form.get('meta_description', '')
         post.focus_keyword    = request.form.get('focus_keyword', '')
         post.category         = request.form.get('category', '')
+        if post.category:
+            from .models import Category
+            cat_obj = Category.query.filter_by(name=post.category).first()
+            post.category_id = cat_obj.id if cat_obj else None
+        else:
+            post.category_id = None
         post.cover_image_url  = request.form.get('cover_image_url', '')
         post.price_from       = request.form.get('price_from', '')
         post.best_for_label   = request.form.get('best_for_label', '')
@@ -551,8 +575,9 @@ def blog_edit(post_id):
         flash('Blog post updated!', 'success')
         return redirect(url_for('views.blog_dashboard'))
 
-    from .models import AffiliateLink
+    from .models import AffiliateLink, Category
     all_links = AffiliateLink.query.all()
+    categories = Category.query.order_by(Category.name.asc()).all()
     links_json = json.dumps([{
         "slug": l.slug,
         "product_title": l.product_title or l.slug,
@@ -564,7 +589,8 @@ def blog_edit(post_id):
     return render_template('blog_admin_edit.html', post=post,
                            template_names=template_names,
                            schemas_json=json.dumps(load_schemas()),
-                           links_json=links_json)
+                           links_json=links_json,
+                           categories=categories)
 
 # ── Admin: Delete ──────────────────────────────────────────────────────────────
 
@@ -695,6 +721,100 @@ def admin_links():
         return redirect(url_for('views.admin_links'))
     links = AffiliateLink.query.order_by(AffiliateLink.id.desc()).all()
     return render_template('blog_admin_links.html', links=links)
+
+# ── Admin: Category Manager ────────────────────────────────────────────────────
+
+@views.route('/admin-cms/categories', methods=['GET', 'POST'])
+@admin_required
+def admin_categories():
+    from .models import Category, BlogPost
+    import re
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'add':
+            name = request.form.get('name', '').strip()
+            slug = request.form.get('slug', '').strip()
+            icon = request.form.get('icon', '').strip()
+            
+            if not name:
+                flash('Kategorie-Name ist erforderlich.', 'error')
+            else:
+                if not slug:
+                    slug = re.sub(r'[^\w\s-]', '', name.lower())
+                    slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+                else:
+                    slug = re.sub(r'[^\w\s-]', '', slug.lower())
+                    slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+                
+                existing = Category.query.filter_by(slug=slug).first()
+                if existing:
+                    flash(f'Slug "{slug}" existiert bereits!', 'error')
+                else:
+                    try:
+                        new_cat = Category(name=name, slug=slug, icon=icon if icon else None)
+                        db.session.add(new_cat)
+                        db.session.commit()
+                        flash(f'Kategorie "{name}" wurde erfolgreich erstellt!', 'success')
+                    except Exception:
+                        db.session.rollback()
+                        flash('Datenbank-Fehler beim Erstellen der Kategorie.', 'error')
+                        
+        elif action == 'edit':
+            cat_id = request.form.get('category_id')
+            name = request.form.get('name', '').strip()
+            slug = request.form.get('slug', '').strip()
+            icon = request.form.get('icon', '').strip()
+            
+            if not name or not cat_id:
+                flash('Ungültige Kategorie-Daten.', 'error')
+            else:
+                if not slug:
+                    slug = re.sub(r'[^\w\s-]', '', name.lower())
+                    slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+                else:
+                    slug = re.sub(r'[^\w\s-]', '', slug.lower())
+                    slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+                
+                category = db.session.get(Category, int(cat_id))
+                if category:
+                    conflict = Category.query.filter_by(slug=slug).first()
+                    if conflict and conflict.id != category.id:
+                        flash(f'Slug "{slug}" wird bereits von einer anderen Kategorie verwendet.', 'error')
+                    else:
+                        try:
+                            old_name = category.name
+                            category.name = name
+                            category.slug = slug
+                            category.icon = icon if icon else None
+                            
+                            if old_name != name:
+                                BlogPost.query.filter_by(category_id=category.id).update({BlogPost.category: name})
+                                
+                            db.session.commit()
+                            flash(f'Kategorie "{name}" wurde aktualisiert!', 'success')
+                        except Exception:
+                            db.session.rollback()
+                            flash('Datenbank-Fehler beim Aktualisieren der Kategorie.', 'error')
+                            
+        elif action == 'delete':
+            cat_id = request.form.get('category_id')
+            category = db.session.get(Category, int(cat_id))
+            if category:
+                try:
+                    BlogPost.query.filter_by(category_id=category.id).update({
+                        BlogPost.category: None,
+                        BlogPost.category_id: None
+                    })
+                    db.session.delete(category)
+                    db.session.commit()
+                    flash(f'Kategorie "{category.name}" gelöscht und alle Blog-Beiträge aktualisiert.', 'success')
+                except Exception:
+                    db.session.rollback()
+                    flash('Datenbank-Fehler beim Löschen der Kategorie.', 'error')
+        return redirect(url_for('views.admin_categories'))
+        
+    categories = Category.query.order_by(Category.name.asc()).all()
+    return render_template('blog_admin_categories.html', categories=categories)
 
 # ── Misc routes ────────────────────────────────────────────────────────────────
 
