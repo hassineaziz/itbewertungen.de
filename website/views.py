@@ -71,6 +71,32 @@ def logout():
 
 # ── Public pages ───────────────────────────────────────────────────────────────
 
+def resolve_post_price_from_affiliate(post):
+    if not post:
+        return
+    from .models import AffiliateLink
+    slug_clean = post.affiliate_slug or (post.structured_content.get('affiliate_slug') if post.structured_content else None)
+    
+    # If not set directly, check first pick's slug for listicles
+    if not slug_clean and post.structured_content:
+        for list_key in ['products', 'picks']:
+            if list_key in post.structured_content and isinstance(post.structured_content[list_key], list):
+                if len(post.structured_content[list_key]) > 0:
+                    first_item = post.structured_content[list_key][0]
+                    if isinstance(first_item, dict):
+                        slug_clean = first_item.get('affiliate_slug')
+                    break
+                    
+    if slug_clean:
+        if slug_clean.startswith('/go/'): slug_clean = slug_clean[4:]
+        elif slug_clean.startswith('go/'): slug_clean = slug_clean[3:]
+        link = AffiliateLink.query.filter(db.func.lower(AffiliateLink.slug) == db.func.lower(slug_clean)).first()
+        if link:
+            if link.current_price is not None:
+                post.price_from = f"{link.current_price:.2f} €".replace('.', ',').replace(',00', '')
+            if not post.cover_image_url and link.image_url:
+                post.cover_image_url = link.image_url
+
 @views.route('/')
 def home():
     from .models import Category
@@ -79,6 +105,15 @@ def home():
     runner_up_posts = BlogPost.query.filter(BlogPost.featured_rank.between(2, 5), BlogPost.status=='published').order_by(BlogPost.featured_rank.asc()).all()
     latest_posts    = BlogPost.query.filter_by(status='published').order_by(BlogPost.updated_at.desc()).limit(4).all()
     categories      = Category.query.limit(4).all()
+    
+    resolve_post_price_from_affiliate(featured_post)
+    for p in top_picks:
+        resolve_post_price_from_affiliate(p)
+    for p in runner_up_posts:
+        resolve_post_price_from_affiliate(p)
+    for p in latest_posts:
+        resolve_post_price_from_affiliate(p)
+        
     return render_template("landing.html",
                            featured_post=featured_post,
                            top_picks=top_picks,
@@ -105,6 +140,10 @@ def blog_index():
             db.cast(BlogPost.structured_content, db.String).ilike(f'%{q}%')
         )
     posts = query.order_by(BlogPost.published_at.desc()).paginate(page=page, per_page=12)
+    
+    for p in posts.items:
+        resolve_post_price_from_affiliate(p)
+        
     return render_template('blog_index.html', posts=posts, current_tag=tag, current_category=category, q=q)
 
 def resolve_affiliate_details_in_data(data):
@@ -118,7 +157,7 @@ def resolve_affiliate_details_in_data(data):
     if affiliate_slug:
         if affiliate_slug.startswith('/go/'): affiliate_slug = affiliate_slug[4:]
         elif affiliate_slug.startswith('go/'): affiliate_slug = affiliate_slug[3:]
-        link = AffiliateLink.query.filter_by(slug=affiliate_slug).first()
+        link = AffiliateLink.query.filter(db.func.lower(AffiliateLink.slug) == db.func.lower(affiliate_slug)).first()
         if link:
             if link.product_title:
                 data['product_name'] = link.product_title
@@ -130,25 +169,127 @@ def resolve_affiliate_details_in_data(data):
             if link.features_json:
                 data['specs'] = link.features_json
 
+    # We want to collect resolving info for all products in listicles
+    resolved_info_by_original_name = {}
+    resolved_info_by_index = {} # key: (list_key, index)
+
     # 2. Resolve lists of products / picks (e.g. for comparison or best-of listicles)
     for list_key in ['products', 'picks']:
         if list_key in data and isinstance(data[list_key], list):
-            for item in data[list_key]:
-                if isinstance(item, dict) and item.get('affiliate_slug'):
+            for idx, item in enumerate(data[list_key]):
+                if isinstance(item, dict):
+                    orig_name = item.get('name') or item.get('product_name')
                     item_slug = item.get('affiliate_slug')
-                    if item_slug.startswith('/go/'): item_slug = item_slug[4:]
-                    elif item_slug.startswith('go/'): item_slug = item_slug[3:]
-                    link = AffiliateLink.query.filter_by(slug=item_slug).first()
-                    if link:
-                        if link.product_title:
-                            item['name'] = link.product_title
-                            item['product_name'] = link.product_title
-                        if link.current_price is not None:
-                            item['price'] = f"{link.current_price:.2f} €".replace('.', ',').replace(',00', '')
-                        if link.image_url:
-                            item['image_url'] = link.image_url
-                        if link.features_json:
-                            item['specs'] = link.features_json
+                    
+                    info = {}
+                    if item_slug:
+                        clean_slug = item_slug
+                        if clean_slug.startswith('/go/'): clean_slug = clean_slug[4:]
+                        elif clean_slug.startswith('go/'): clean_slug = clean_slug[3:]
+                        link = AffiliateLink.query.filter(db.func.lower(AffiliateLink.slug) == db.func.lower(clean_slug)).first()
+                        if link:
+                            if link.product_title:
+                                item['name'] = link.product_title
+                                item['product_name'] = link.product_title
+                                info['name'] = link.product_title
+                            if link.current_price is not None:
+                                formatted_price = f"{link.current_price:.2f} €".replace('.', ',').replace(',00', '')
+                                item['price'] = formatted_price
+                                info['price'] = formatted_price
+                            if link.image_url:
+                                item['image_url'] = link.image_url
+                                info['image_url'] = link.image_url
+                            if link.features_json:
+                                item['specs'] = link.features_json
+                                info['specs'] = link.features_json
+                            info['link'] = link
+                    
+                    if info:
+                        if orig_name:
+                            resolved_info_by_original_name[orig_name.strip().lower()] = info
+                        resolved_info_by_index[(list_key, idx)] = info
+
+    # Helper to extract spec value from an array of key-value spec strings, matching getSpecValue JS logic
+    def get_spec_value_py(specs, header):
+        if not specs or not isinstance(specs, list):
+            return ""
+        header_lower = ''.join(c for c in header.lower() if c.isalnum())
+        keywords = [header_lower]
+        if "lesegeschwindigkeit" in header_lower:
+            keywords.extend(["leserate", "lesegeschwindigkeit", "readspeed", "speed", "lese"])
+        if "schnittstelle" in header_lower:
+            keywords.extend(["interface", "anschluss", "schnittstelle"])
+        if "schutzklasse" in header_lower:
+            keywords.extend(["ip", "schutzklasse", "waterproof", "staub", "wasser"])
+        if "verschlüsselung" in header_lower:
+            keywords.extend(["verschlüsselung", "encryption", "sicherheit", "aes"])
+            
+        for spec in specs:
+            if not isinstance(spec, str):
+                continue
+            colon_idx = spec.find(':')
+            if colon_idx == -1:
+                continue
+            spec_key = spec[:colon_idx].strip()
+            spec_val = spec[colon_idx + 1:].strip()
+            spec_key_lower = ''.join(c for c in spec_key.lower() if c.isalnum())
+            if (spec_key_lower == header_lower or 
+                spec_key_lower in header_lower or 
+                header_lower in spec_key_lower or
+                any(kw in spec_key_lower for kw in keywords)):
+                return spec_val
+        return ""
+
+    # 3. Resolve comparison table if present
+    comp_table = data.get('comparison_table')
+    if comp_table and isinstance(comp_table, dict) and 'rows' in comp_table and isinstance(comp_table['rows'], list):
+        headers = comp_table.get('headers', [])
+        model_col_idx = -1
+        price_col_idx = -1
+        
+        for col_idx, h in enumerate(headers):
+            h_lower = str(h).lower()
+            if any(w in h_lower for w in ['modell', 'product', 'name', 'geraet', 'gerät', 'computer', 'monitore', 'festplatte']):
+                model_col_idx = col_idx
+            elif 'preis' in h_lower or 'price' in h_lower:
+                price_col_idx = col_idx
+                
+        if model_col_idx == -1 and len(headers) > 0:
+            model_col_idx = 0
+        if price_col_idx == -1 and len(headers) > 0:
+            price_col_idx = len(headers) - 1
+
+        for row_idx, row in enumerate(comp_table['rows']):
+            if isinstance(row, list):
+                matched_info = None
+                
+                # Try to match by index first
+                for list_key in ['products', 'picks']:
+                    if list_key in data and isinstance(data[list_key], list):
+                        if len(data[list_key]) == len(comp_table['rows']):
+                            matched_info = resolved_info_by_index.get((list_key, row_idx))
+                            if matched_info:
+                                break
+                                
+                # Try to match by model name in model cell
+                if not matched_info and model_col_idx < len(row):
+                    row_model_name = str(row[model_col_idx]).strip().lower()
+                    matched_info = resolved_info_by_original_name.get(row_model_name)
+                    
+                if matched_info:
+                    if 'name' in matched_info and model_col_idx < len(row):
+                        row[model_col_idx] = matched_info['name']
+                    if 'price' in matched_info and price_col_idx < len(row):
+                        row[price_col_idx] = matched_info['price']
+                    
+                    specs = matched_info.get('specs')
+                    if specs:
+                        for col_idx, h in enumerate(headers):
+                            if col_idx == model_col_idx or col_idx == price_col_idx:
+                                continue
+                            spec_val = get_spec_value_py(specs, str(h))
+                            if spec_val and col_idx < len(row):
+                                row[col_idx] = spec_val
 
     return data
 
@@ -158,10 +299,13 @@ def blog_post(slug):
     if not post:
         abort(404)
 
+    resolve_post_price_from_affiliate(post)
     tmpl = post.template or 'standard'
     
     import copy
     data = copy.deepcopy(post.structured_content or {})
+    if 'affiliate_slug' not in data and post.affiliate_slug:
+        data['affiliate_slug'] = post.affiliate_slug
     data = resolve_affiliate_details_in_data(data)
 
     if tmpl == 'standard':

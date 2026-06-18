@@ -18,6 +18,9 @@ def itemlist_schema(top_picks, config):
     domain = config.get('seo', {}).get('domain', '').rstrip('/')
     brand_name = config.get('brand', {}).get('name', 'Brand')
     
+    from website.views import resolve_affiliate_details_in_data
+    import copy
+    
     for i, post in enumerate(top_picks):
         product_name = post.title
         author_name = "Redaktion"
@@ -26,7 +29,7 @@ def itemlist_schema(top_picks, config):
         rating_val = post.rating
 
         if post.structured_content and isinstance(post.structured_content, dict):
-            sc = post.structured_content
+            sc = resolve_affiliate_details_in_data(copy.deepcopy(post.structured_content))
             product_name = sc.get('product_name', product_name)
             author_name = sc.get('author_name', author_name)
             
