@@ -69,6 +69,12 @@ def itemlist_schema(top_picks, config):
                         "@type": "Brand",
                         "name": brand_name
                     },
+                    "aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": rating_str,
+                        "bestRating": "10",
+                        "ratingCount": 1
+                    },
                     "offers": {
                         "@type": "Offer",
                         "price": price_cleaned,

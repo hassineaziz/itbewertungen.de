@@ -61,6 +61,12 @@
       "returnFees": "https://schema.org/FreeReturn"
     }
   },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ data.get('rating', '10') }}",
+    "bestRating": "10",
+    "ratingCount": 1
+  },
   "review": {
     "@type": "Review",
     "reviewRating": {
