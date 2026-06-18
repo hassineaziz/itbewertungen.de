@@ -64,6 +64,7 @@ def itemlist_schema(top_picks, config):
                     "@type": "Product",
                     "name": product_name,
                     "image": final_image,
+                    "description": post.excerpt or post.meta_description or f"Ausführlicher Testbericht und Bewertung für {product_name}.",
                     "brand": {
                         "@type": "Brand",
                         "name": brand_name
@@ -83,6 +84,21 @@ def itemlist_schema(top_picks, config):
                             "shippingDestination": {
                                 "@type": "DefinedRegion",
                                 "addressCountry": "DE"
+                            },
+                            "deliveryTime": {
+                                "@type": "ShippingDeliveryTime",
+                                "handlingTime": {
+                                    "@type": "QuantitativeValue",
+                                    "minValue": 0,
+                                    "maxValue": 2,
+                                    "unitCode": "DAY"
+                                },
+                                "transitTime": {
+                                    "@type": "QuantitativeValue",
+                                    "minValue": 1,
+                                    "maxValue": 5,
+                                    "unitCode": "DAY"
+                                }
                             }
                         },
                         "hasMerchantReturnPolicy": {

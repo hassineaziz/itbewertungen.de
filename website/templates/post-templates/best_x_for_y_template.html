@@ -43,7 +43,7 @@
         "@type": "Product",
         "name": {{ p.name | tojson }},
         "image": {{ (p.get('image_url') or post.cover_image_url or (config.get('seo',{}).get('domain','') ~ '/static/favicon.png')) | tojson }},
-        {% if p.get('summary') %}"description": {{ p.summary | tojson }},{% endif %}
+        "description": {{ (p.summary or p.get('why_we_like_it', '') or ('Detaillierter Testbericht für ' ~ p.name)) | tojson }},
         {% if p.get('badge') %}"award": {{ p.badge | tojson }},{% endif %}
         "brand": {
           "@type": "Brand",
@@ -65,6 +65,21 @@
             "shippingDestination": {
               "@type": "DefinedRegion",
               "addressCountry": "DE"
+            },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 0,
+                "maxValue": 1,
+                "unitCode": "DAY"
+              },
+              "transitTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 1,
+                "maxValue": 3,
+                "unitCode": "DAY"
+              }
             }
           },
           "hasMerchantReturnPolicy": {
