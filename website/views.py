@@ -364,6 +364,116 @@ def api_schemas_list():
                for k, v in schemas.items()]
     return jsonify(result)
 
+@views.route('/admin/api/blog/revise', methods=['POST'])
+def api_blog_revise():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    req_data = request.get_json() or {}
+    template_name = req_data.get('template_name')
+    structured_content = req_data.get('structured_content')
+    instruction = req_data.get('instruction', '').strip()
+
+    if not template_name or not isinstance(structured_content, dict):
+        return jsonify({'error': 'Missing template_name or structured_content'}), 400
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({'error': 'GEMINI_API_KEY is not configured in the server environment.'}), 500
+
+    instruction_section = ""
+    if instruction:
+        instruction_section = f"\nUser Instruction:\nApply the following custom editing or formatting instructions: \"{instruction}\"\n"
+    else:
+        instruction_section = "\nAuto-Align mode:\nReview all copy fields and make sure they match the new order/specs/names of the products. Ensure the verdict/conclusion summarizes the actual winner correctly.\n"
+
+    structured_content_json = json.dumps(structured_content, ensure_ascii=False, indent=2)
+    
+    prompt = (
+        "You are an expert SEO copywriter editing a structured blog post in German.\n"
+        f"The post is built using the template: '{template_name}'.\n\n"
+        "Here is the current structured content of the blog post in JSON format:\n"
+        f"{structured_content_json}\n\n"
+        "The user has updated the structured properties (such as product rankings, prices, specifications, scores, or product listings).\n"
+        "Your task is to:\n"
+        "1. Review the content of all text-heavy copywriting fields (e.g., 'buying_guide', 'conclusion', 'verdict', product summaries/reviews, listicle descriptions, or verdict cells) and revise them so they are completely consistent with the updated product names, order, prices, and specifications.\n"
+        "2. Reorder reviews, lists, or comparison table rows if the rankings or products list have changed, to maintain perfect consistency.\n"
+        "3. Revise the copy to sound professional, engaging, and authoritative.\n"
+        f"{instruction_section}\n"
+        "OUTPUT FORMAT:\n"
+        "Return the updated structured content matching the EXACT same JSON keys and structure as the input JSON.\n"
+        "Do NOT include any extra keys.\n"
+        "Do NOT wrap the response in markdown code blocks like ```json ... ```. Just return the raw JSON object.\n"
+    )
+
+    models_to_try = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.5-pro",
+        "gemini-1.5-pro",
+        "gemini-pro-latest",
+        "gemini-flash-latest"
+    ]
+    
+    import requests
+    import time
+    
+    result_json = None
+    last_err = None
+    
+    for model_name in models_to_try:
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        }
+        
+        try:
+            response = requests.post(api_url, headers=headers, json=payload, timeout=90)
+            response.raise_for_status()
+            result_json = response.json()
+            break
+        except Exception as err:
+            last_err = err
+            time.sleep(1)
+            continue
+    else:
+        return jsonify({'error': f'Failed to contact Gemini API. Last error: {str(last_err)}'}), 502
+
+    try:
+        candidates = result_json.get("candidates", [])
+        if not candidates:
+            raise ValueError("No response candidates returned by the Gemini API model.")
+            
+        content_parts = candidates[0].get("content", {}).get("parts", [])
+        if not content_parts:
+            raise ValueError("Candidate response parts list is empty.")
+            
+        raw_text = content_parts[0].get("text", "").strip()
+        
+        if raw_text.startswith("```"):
+            lines = raw_text.splitlines()
+            if lines[0].startswith("```json") or lines[0].startswith("```"):
+                raw_text = "\n".join(lines[1:-1])
+        
+        parsed_data = json.loads(raw_text, strict=False)
+        return jsonify(parsed_data)
+    except Exception as e:
+        return jsonify({'error': f'Failed to parse LLM response as JSON: {str(e)}'}), 500
+
 def populate_derived_post_fields(post):
     if not post.template or post.template == 'standard':
         return
@@ -644,7 +754,8 @@ def blog_new():
                            template_names=template_names,
                            schemas_json=json.dumps(load_schemas()),
                            links_json=links_json,
-                           categories=categories)
+                           categories=categories,
+                           has_api_key=bool(os.getenv("GEMINI_API_KEY") or os.getenv("ANTHROPIC_API_KEY")))
 
 # ── Admin: Edit post ───────────────────────────────────────────────────────────
 
@@ -734,7 +845,8 @@ def blog_edit(post_id):
                            template_names=template_names,
                            schemas_json=json.dumps(load_schemas()),
                            links_json=links_json,
-                           categories=categories)
+                           categories=categories,
+                           has_api_key=bool(os.getenv("GEMINI_API_KEY") or os.getenv("ANTHROPIC_API_KEY")))
 
 # ── Admin: Delete ──────────────────────────────────────────────────────────────
 

@@ -172,6 +172,30 @@
         </div>
       </div>
 
+      <!-- KI-Assistent (Revise with AI) -->
+      {% if has_api_key %}
+      <div class="field-card" id="ki-assistant-card" {% if not post or post.template == 'standard' %}style="display:none"{% endif %}>
+        <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px] text-blue-600">psychology</span>
+          <span>KI-Assistent (Überarbeiten)</span>
+        </h3>
+        <p class="text-[11px] text-gray-500 mb-3 leading-relaxed">
+          Gleichen Sie den Text (intro, buying_guide, Fazit) an Änderungen in der Tabelle / Rangfolge an.
+        </p>
+        <div class="space-y-3">
+          <div>
+            <label class="field-label text-[11px] text-gray-600">Anweisungen (Optional)</label>
+            <textarea id="ai-revise-prompt" rows="3" class="field-input text-xs" 
+                      placeholder="z.B. Schreibstil lockerer machen, M4 Chip betonen, oder das Fazit an neue Rankings anpassen. Leer lassen für automatische Anpassung."></textarea>
+          </div>
+          <button type="button" id="ai-revise-btn" onclick="aiRevisePost()" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-2 rounded-lg text-xs border border-blue-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">magic_button</span>
+            <span id="ai-revise-btn-text">Mit KI überarbeiten</span>
+          </button>
+        </div>
+      </div>
+      {% endif %}
+
       <!-- SEO -->
       <div class="field-card">
         <h3 class="text-sm font-bold text-gray-900 mb-4">SEO</h3>
@@ -477,6 +501,11 @@ function selectTemplate(key, card) {
   document.getElementById('standard-content-card').style.display = isStandard ? '' : 'none';
   document.getElementById('structured-form-container').innerHTML  = '';
   toggleSidebarFields(key);
+
+  const kiCard = document.getElementById('ki-assistant-card');
+  if (kiCard) {
+    kiCard.style.display = isStandard ? 'none' : '';
+  }
 
   if (!isStandard && ALL_SCHEMAS[key]) {
     formData = Object.assign({}, EXISTING_DATA);  // keep existing data on template switch
@@ -1126,6 +1155,67 @@ function uploadImageToContent(fileInput, textareaId) {
     labelTextSpan.textContent = originalText;
     alert('Upload error: ' + err);
   });
+}
+
+async function aiRevisePost() {
+  if (currentTemplate === 'standard') {
+    alert('Die KI-Überarbeitung ist für das Standard-Template nicht verfügbar.');
+    return;
+  }
+
+  const btn = document.getElementById('ai-revise-btn');
+  const btnText = document.getElementById('ai-revise-btn-text');
+  const promptInput = document.getElementById('ai-revise-prompt');
+
+  if (!btn || !btnText) return;
+
+  const originalText = btnText.textContent;
+  const promptText = promptInput ? promptInput.value.trim() : '';
+
+  // Synchronise formData in memory with any input values currently entered on screen
+  syncJSON();
+
+  // Set loading state
+  btn.disabled = true;
+  btn.classList.add('opacity-50', 'cursor-not-allowed');
+  btnText.textContent = 'Überarbeite...';
+
+  try {
+    const response = await fetch('/admin/api/blog/revise', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({
+        template_name: currentTemplate,
+        structured_content: formData,
+        instruction: promptText
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error || `HTTP error ${response.status}`);
+    }
+
+    const revisedData = await response.json();
+    if (revisedData && typeof revisedData === 'object') {
+      formData = revisedData;
+      buildStructuredForm(ALL_SCHEMAS[currentTemplate].fields, formData);
+      syncJSON();
+      if (promptInput) promptInput.value = '';
+      alert('Erfolgreich mit KI überarbeitet! Sie können die Änderungen prüfen und dann den Beitrag speichern.');
+    } else {
+      throw new Error('Ungültige Antwort von der KI erhalten.');
+    }
+  } catch (err) {
+    alert('Fehler bei der KI-Überarbeitung: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    btnText.textContent = originalText;
+  }
 }
 
 // ── Init: render the form for the current template on page load ───────────────
