@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timezone
 from website import create_app, db
 from website.models import AffiliateLink
+from website.seo_utils import download_and_cache_image
 
 from dotenv import load_dotenv
 
@@ -119,7 +120,7 @@ def sync_all_links():
                 link.discount_percentage = data['discount_percentage']
                 
                 if data['image_url']:
-                    link.image_url = data['image_url']
+                    link.image_url = download_and_cache_image(data['image_url'], keyword=link.product_title)
                     
                 if data['features']:
                     link.features_json = data['features']

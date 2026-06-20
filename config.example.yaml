@@ -74,3 +74,19 @@ tracking:
   # Google Search Console HTML verification key (value of content attribute in the meta tag)
   google_search_console_id: ""
 
+entity_schema:
+  # The schema type can be "Organization" or "Person"
+  type: "Organization"
+  name: "SSDLab"
+  url: "https://ssdlab.com"
+  logo: "https://ssdlab.com/static/logo.png"
+  description: "Independent SSD reviews & testing lab."
+
+social:
+  # Social media links to show in footer and entity schema sameAs
+  twitter: "https://twitter.com/ssdlab"
+  linkedin: "https://www.linkedin.com/company/ssdlab"
+  facebook: ""
+  youtube: ""
+  instagram: ""
+

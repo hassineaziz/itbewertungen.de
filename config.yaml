@@ -61,3 +61,18 @@ email:
 tracking:
   google_analytics_id: "G-QLN391VCJN"
   google_search_console_id: ""
+
+entity_schema:
+  type: "Organization"
+  name: "ITBewertungen.de"
+  url: "https://itbewertungen.de"
+  logo: "https://itbewertungen.de/static/logo.png"
+  description: "Unabhängige IT-Tests & Hardware-Bewertungen"
+  sameAs: []
+
+social:
+  twitter: ""
+  linkedin: ""
+  facebook: ""
+  youtube: ""
+  instagram: ""

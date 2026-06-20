@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for, current_app, make_response, session, abort
 from .models import BlogPost
 from . import db, csrf
+from .seo_utils import download_and_cache_image, download_images_in_structured_content
 import os
 import re
 import json
@@ -475,6 +476,14 @@ def api_blog_revise():
         return jsonify({'error': f'Failed to parse LLM response as JSON: {str(e)}'}), 500
 
 def populate_derived_post_fields(post):
+    # Cache the cover image if it's an external URL
+    if post.cover_image_url:
+        post.cover_image_url = download_and_cache_image(post.cover_image_url, keyword=post.focus_keyword)
+
+    # Process and cache images in structured_content in-place
+    if post.structured_content:
+        post.structured_content = download_images_in_structured_content(post.structured_content, keyword=post.focus_keyword)
+
     if not post.template or post.template == 'standard':
         return
 
@@ -903,7 +912,7 @@ def admin_links():
                             asin=asin if asin else None,
                             product_title=title if title else None,
                             current_price=price,
-                            image_url=image if image else None,
+                            image_url=download_and_cache_image(image, keyword=title) if image else None,
                             features_json=[s.strip() for s in specs_text.split('\n') if s.strip()] if specs_text else None,
                             last_synced_at=datetime.now(timezone.utc) if (title or price_str or image or specs_text) else None
                         )
@@ -951,7 +960,7 @@ def admin_links():
                             link.asin = asin if asin else None
                             link.product_title = title if title else None
                             link.current_price = price
-                            link.image_url = image if image else None
+                            link.image_url = download_and_cache_image(image, keyword=title) if image else None
                             link.features_json = [s.strip() for s in specs_text.split('\n') if s.strip()] if specs_text else None
                             
                             if title or price_str or image or specs_text:
