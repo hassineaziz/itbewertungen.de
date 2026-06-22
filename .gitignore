@@ -93,8 +93,20 @@ htmlcov/
 *.crt
 *.cer
 
-# Node modules (if any frontend tooling)
+# Node modules / frontend tooling
 node_modules/
+package-lock.json
+
+# Vendor JS bundled with the editor (self-hosted TinyMCE)
+website/static/js/tinymce/
+
+# Database migrations (project-specific history, not part of the template)
+migrations/
+
+# Seed scripts with niche-specific content
+seed_*.py
+migrate_db.py
+reset_db.py
 
 # Virtual environments
 myenv/
