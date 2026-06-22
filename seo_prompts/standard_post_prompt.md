@@ -58,7 +58,7 @@ Return ONLY the raw JSON object matching the following structure. Do not wrap it
   "rating": [rating out of 10, e.g., 9.5],
   "price": "[Clean numeric price, e.g., 299.00]",
   "price_display": "[Human-readable German price representation, e.g., 299,00 €]",
-  "cover_image_url": "[A high-quality Unsplash image URL or placeholder]",
+  "cover_image_url": "",
   "image_alt_text": "[Keyword-optimized description of the cover image for Google Image Search]",
   "content_html": "[A detailed, 1500+ words long HTML string using <h2>, <h3>, <p>, <ul>, <li>, <strong>, etc. nested inside the prose div]"
 }

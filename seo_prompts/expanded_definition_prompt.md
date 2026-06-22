@@ -64,7 +64,7 @@ Return ONLY the raw JSON object matching this structure:
   "meta_title": "[SEO Meta Title: 50-60 characters, keyword near start]",
   "meta_description": "[SEO Meta Description: 150-160 characters, high CTR call-to-action]",
   "focus_keyword": "[The target focus keyword]",
-  "cover_image_url": "[High-res image URL, e.g. unsplash image]",
+  "cover_image_url": "",
   
   "structured_content": {
     "headline": "[Title containing focus keyword]",
