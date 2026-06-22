@@ -95,3 +95,17 @@ htmlcov/
 
 # Node modules (if any frontend tooling)
 node_modules/
+
+# Virtual environments
+myenv/
+venv/
+.venv/
+
+# Site-specific config (copy config.example.yaml → config.yaml to configure)
+config.yaml
+
+# Generated reports and internal audit files
+seo-report*.html
+FULL-AUDIT-REPORT.md
+ACTION-PLAN.md
+current_env_reqs.txt

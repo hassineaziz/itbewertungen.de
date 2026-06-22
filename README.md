@@ -1,170 +1,200 @@
-# Legacy Letter - Production Ready
+# Affiliate Blog CMS — Flask Template
 
-A Flask-based SaaS application for creating and scheduling legacy letters to be delivered after death verification.
+A production-ready, self-hosted affiliate marketing site built with Flask. Write and publish SEO-optimised blog posts, manage affiliate links with live Amazon price syncing, and generate AI-assisted content — all from a single lightweight CMS with no external dependency.
+
+---
 
 ## Features
 
-- 📧 Email-based letter delivery system
-- 🔐 Two-factor authentication (2FA)
-- 👥 Trusted contact management
-- 📁 Media attachments (images, videos, audio) via AWS S3
-- 📝 Rich text editor for letter composition
-- 🔔 Notification system
-- 📰 Blog functionality
-- 🔒 Death verification workflow
+### Public Site (`/blog`)
+- Full-text search across title, excerpt, and content
+- Tag filtering via JSON array queries (GIN-indexed for speed)
+- Reading time estimation on every post
+- RSS feed at `/blog/feed.xml`
+- Hreflang-ready bilingual routing (`/` for German, `/en/` for English)
+- Auto-generated XML sitemap
+
+### Admin CMS (`/admin-cms`)
+- Rich HTML editor (TinyMCE) for standard posts
+- Schema-driven post templates for affiliate content (see below)
+- Cover image upload directly to S3
+- `draft` / `published` status with `published_at` timestamp
+- SEO fields: `meta_title`, `meta_description`, `focus_keyword`
+- Export newsletter subscribers as CSV
+- One-click sitemap regeneration after publishing
+
+### Schema-Driven Post Templates
+Rather than a blank editor, each post type follows a structured schema stored in `schemas/templates.json`:
+
+| Template | Use Case |
+|---|---|
+| `product_review` | Single product deep-dive with pros/cons, rating, and structured data |
+| `affiliate_comparison` | Head-to-head comparison table (2+ products) |
+| `best_x_for_y` | "Best X for Y" listicle with ranked picks |
+| `affiliate_top_3` | Top-3 curated list with CTA buttons |
+| `expanded_definition` | Informational / SEO foundation post |
+| `standard` | Free-form rich text HTML |
+
+### Affiliate Link Engine
+- Central `AffiliateLink` table — one record per product, one `/go/<slug>` redirect
+- Click tracking on every redirect
+- Amazon PA-API integration: syncs live price, discount %, availability, and product images on demand
+- `sync_prices.py` script for scheduled bulk price refreshes
+- Price history stored as JSON for trend display
+
+### AI Post Generator
+- Gemini-powered article generator seeded with your affiliate product data
+- Dynamic prompt templates per post type (`seo_prompts/`)
+- Generates fully structured JSON matching the database schema — no manual copy-paste
+- AI revision endpoint for refining existing drafts
+
+### SEO & Structured Data
+- JSON-LD schemas: `Product`, `Review`, `ItemList`, `BlogPosting`, `BreadcrumbList`
+- Aggregate rating and price pulled live from the `AffiliateLink` table
+- Canonical tags, Open Graph, and Twitter Card meta on every page
+- `robots.txt` and sitemap auto-updated on publish
+
+---
 
 ## Tech Stack
 
-- **Backend**: Flask (Python)
-- **Database**: PostgreSQL
-- **Storage**: AWS S3
-- **Authentication**: Flask-Login, PyOTP
-- **Email**: Flask-Mail
-- **Media Processing**: Pillow, OpenCV, MoviePy
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12 / Flask |
+| Database | SQLite (dev) · PostgreSQL (prod) |
+| ORM / Migrations | SQLAlchemy + Alembic |
+| Frontend | Jinja2 templates + Tailwind CSS |
+| Rich Editor | TinyMCE (self-hosted) |
+| AI Generation | Google Gemini API |
+| Storage | AWS S3 (cover images) |
+| Price Sync | Amazon Product Advertising API |
+| i18n | Flask-Babel |
+| WSGI | Gunicorn + Nginx |
 
-## Production Setup
+---
 
-### Prerequisites
+## Getting Started
 
-- Python 3.8+
-- PostgreSQL database
-- AWS S3 bucket
-- SMTP email server
-
-### Environment Variables
-
-Create a `.env` file with the following variables:
-
-```bash
-# Flask
-SECRET_KEY=your-secret-key-here
-FLASK_ENV=production
-
-# Database
-DATABASE_URL=postgresql://user:password@host:port/database
-
-# AWS S3
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_REGION=your-region
-S3_BUCKET=your-bucket-name
-
-# Email
-MAIL_SERVER=smtp.your-provider.com
-MAIL_PORT=587
-MAIL_USERNAME=your-email@domain.com
-MAIL_PASSWORD=your-email-password
-
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
-
-### Installation
-
-1. Clone the repository
-2. Create a virtual environment:
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Set up the database:
-
-   ```bash
-   flask db upgrade
-   ```
-
-5. Run the application:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:8000 main:app
-   ```
-
-## Production Deployment
-
-### Using Gunicorn (Recommended)
+### 1. Clone and install
 
 ```bash
-gunicorn -w 4 -b 0.0.0.0:8000 --timeout 120 main:app
+git clone https://github.com/your-username/affiliate-blog-cms.git
+cd affiliate-blog-cms
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+npm install   # Tailwind build tooling
 ```
 
-### Using Docker (Optional)
-
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "main:app"]
-```
-
-## Scheduled Tasks
-
-The application includes scheduled tasks that should be run via cron:
-
-1. **Send Scheduled Letters**: `send_scheduled_letters.py`
-
-   - Run daily to check and send scheduled letters
-
-2. **Cleanup Expired Media**: `cleanup_expired_media.py`
-   - Run daily to clean up temporary media files
-
-3. **Send No-Letter, Draft, and Pricing Reminders**: `send_no_letter_reminders.py`
-   - Run daily to send reminders to:
-     - Users who created accounts but haven't written any letters
-     - Users who have draft letters but haven't finished them
-     - Users who have created letters (pricing/upsell reminders)
-   - Reminder schedule:
-     - **No letters/Drafts**: First reminder 2 days after signup/draft creation, then 7 days, then weekly
-     - **Pricing reminders**: Every 14 days after first letter creation (only for free plan users with letters)
-
-Example crontab (recommended: run every 15 minutes to ensure timely delivery):
+### 2. Configure
 
 ```bash
-# Send scheduled letters every 15 minutes (ensures letters scheduled for 8 PM UTC are sent on time)
-*/15 * * * * cd /path/to/app && /path/to/venv/bin/python send_scheduled_letters.py >> /var/log/app/cron.log 2>&1
-
-# Alternative: Hourly (still better than daily)
-# 0 * * * * cd /path/to/app && /path/to/venv/bin/python send_scheduled_letters.py >> /var/log/app/cron.log 2>&1
-
-# Cleanup expired media daily at 2 AM
-0 2 * * * cd /path/to/app && /path/to/venv/bin/python cleanup_expired_media.py >> /var/log/app/cleanup.log 2>&1
-
-# Send no-letter reminders daily at 9 AM
-0 9 * * * cd /path/to/app && /path/to/venv/bin/python send_no_letter_reminders.py >> /var/log/app/reminders.log 2>&1
+cp .env.example .env
+cp config.example.yaml config.yaml
 ```
 
-## Security Considerations
+Key `.env` values:
 
-- Always use HTTPS in production
-- Keep SECRET_KEY secure and random
-- Use environment variables for sensitive data
-- Enable 2FA for admin accounts
-- Regularly update dependencies
-- Monitor application logs
-- Set up database backups
-- Use AWS S3 bucket policies to restrict access
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | Flask session secret |
+| `ADMIN_PASSWORD` | Password for `/admin-cms` |
+| `SQLALCHEMY_DATABASE_URI` | SQLite or PostgreSQL connection string |
+| `GEMINI_API_KEY` | Google Gemini for AI post generation |
+| `AMAZON_CLIENT_ID` / `AMAZON_CLIENT_SECRET` | Amazon PA-API credentials |
+| `AMAZON_PARTNER_TAG` | Your Amazon Associates tag |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | S3 for cover image uploads |
 
-## Monitoring
+Key `config.yaml` values (see `config.example.yaml` for full reference):
 
-- Check application logs regularly
-- Monitor S3 storage usage
-- Track email delivery rates
-- Monitor database performance
-- Set up uptime monitoring
+```yaml
+brand:
+  name: "YourSite"
+  primary_color: "#2563eb"
 
-## Support
+niche:
+  category: "External SSDs"
+  home_title: "Best External SSDs 2026 — Lab Tested & Ranked"
 
-For issues or questions, please contact the development team.
+seo:
+  domain: "https://yourdomain.com"
+  lang: "en"
+```
+
+### 3. Initialise the database
+
+```bash
+flask db upgrade
+python seed_db.py        # optional: seed sample affiliate links
+```
+
+### 4. Run locally
+
+```bash
+python main.py
+# → http://localhost:5001
+# → http://localhost:5001/admin-cms  (enter ADMIN_PASSWORD)
+```
+
+### 5. Build Tailwind CSS
+
+```bash
+npx tailwindcss -i website/static/css/app.css -o website/static/css/app.build.css --watch
+```
+
+---
+
+## Project Structure
+
+```
+├── main.py                  # App entry point
+├── wsgi.py                  # Gunicorn entry point
+├── config.example.yaml      # Site config template
+├── schemas/templates.json   # Post template schemas
+├── seo_prompts/             # Per-template AI prompt files
+├── migrations/              # Alembic migrations
+├── sync_prices.py           # Amazon price sync script
+├── seed_db.py               # Dev seed script
+└── website/
+    ├── __init__.py          # App factory
+    ├── models.py            # SQLAlchemy models
+    ├── views.py             # All routes (public + admin)
+    ├── ai_generator.py      # Gemini AI article generator
+    ├── seo_utils.py         # Structured data + meta helpers
+    ├── auto_sitemap.py      # Sitemap generation
+    ├── templates/
+    │   ├── base.html
+    │   ├── landing.html
+    │   ├── blog_index.html
+    │   ├── blog_admin_*.html
+    │   └── post-templates/  # One template per content type
+    └── static/
+        ├── css/
+        └── js/tinymce/      # Self-hosted TinyMCE
+```
+
+---
+
+## Deployment (Production)
+
+```bash
+# Set environment
+export FLASK_ENV=production
+export SESSION_COOKIE_SECURE=true
+
+# Run with Gunicorn
+gunicorn wsgi:app -w 4 -b 0.0.0.0:8000
+```
+
+Serve behind Nginx with SSL. The app includes `ProxyFix` middleware for correct IP and HTTPS detection behind a reverse proxy.
+
+For scheduled price syncs, add a cron job:
+
+```cron
+0 */6 * * * /path/to/venv/bin/python /path/to/sync_prices.py
+```
+
+---
 
 ## License
 
-Proprietary - All rights reserved
+MIT
