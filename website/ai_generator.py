@@ -42,10 +42,17 @@ def generate_article(
                     elif isinstance(link.features_json, dict):
                         specs_list = "\n".join([f"- {k}: {v}" for k, v in link.features_json.items()])
                 
+                # Only pass external HTTP URLs to the AI — local /static/ paths
+                # only exist on the machine that downloaded them and would cause
+                # broken images if the AI echoes them as cover_image_url.
+                image_url_for_ai = link.image_url or ''
+                if image_url_for_ai.startswith('/static/'):
+                    image_url_for_ai = 'N/A'
+                
                 product_str += (
                     f"Product Name: {link.product_title or slug}\n"
                     f"Price: {link.current_price or 'N/A'}\n"
-                    f"Image URL: {link.image_url or 'N/A'}\n"
+                    f"Image URL: {image_url_for_ai or 'N/A'}\n"
                     f"Affiliate Slug: {slug}\n"
                     f"Specifications:\n{specs_list}\n"
                 )

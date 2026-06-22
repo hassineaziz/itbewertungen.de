@@ -484,6 +484,46 @@ def populate_derived_post_fields(post):
     if post.structured_content:
         post.structured_content = download_images_in_structured_content(post.structured_content, keyword=post.focus_keyword)
 
+    # ── Cover image fallback ────────────────────────────────────────────────────
+    # If cover_image_url is still empty or is a local path that doesn't exist on
+    # disk (e.g. AI echoed a path from another machine), auto-assign it from the
+    # first product's affiliate link image_url so the card always has a photo.
+    def _cover_is_missing(url):
+        if not url:
+            return True
+        if url.startswith('/static/'):
+            # Check if the file actually exists on this machine
+            import os
+            from flask import current_app
+            file_path = os.path.join(current_app.root_path, url.lstrip('/'))
+            return not os.path.exists(file_path)
+        return False
+
+    if _cover_is_missing(post.cover_image_url) and post.structured_content:
+        from .models import AffiliateLink
+        # Try to pull image from first product in structured_content
+        for list_key in ['products', 'picks']:
+            products = post.structured_content.get(list_key)
+            if products and isinstance(products, list) and len(products) > 0:
+                first = products[0]
+                if isinstance(first, dict):
+                    # First try the affiliate link's image_url (authoritative source)
+                    aff_slug = first.get('affiliate_slug', '')
+                    if aff_slug:
+                        clean_slug = aff_slug.lstrip('/go/').lstrip('go/')
+                        link = AffiliateLink.query.filter(
+                            db.func.lower(AffiliateLink.slug) == db.func.lower(clean_slug)
+                        ).first()
+                        if link and link.image_url:
+                            post.cover_image_url = link.image_url
+                            break
+                    # Fallback: use image_url stored in structured_content itself
+                    img = first.get('image_url', '')
+                    if img and not img.startswith('/static/'):
+                        post.cover_image_url = download_and_cache_image(img, keyword=post.focus_keyword)
+                        break
+                break
+
     if not post.template or post.template == 'standard':
         return
 
