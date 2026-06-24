@@ -407,6 +407,7 @@ def api_blog_revise():
         "Do NOT wrap the response in markdown code blocks like ```json ... ```. Just return the raw JSON object.\n"
     )
 
+    # Only real, stable model IDs — no aliases like "gemini-flash-latest"
     models_to_try = [
         "gemini-2.5-flash",
         "gemini-2.0-flash",
@@ -414,16 +415,14 @@ def api_blog_revise():
         "gemini-2.0-flash-lite",
         "gemini-2.5-pro",
         "gemini-1.5-pro",
-        "gemini-pro-latest",
-        "gemini-flash-latest"
     ]
-    
+
     import requests
     import time
-    
+
     result_json = None
     last_err = None
-    
+
     for model_name in models_to_try:
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
@@ -441,15 +440,38 @@ def api_blog_revise():
                 "responseMimeType": "application/json"
             }
         }
-        
+
         try:
             response = requests.post(api_url, headers=headers, json=payload, timeout=90)
+
+            # Auth / billing errors — no point retrying other models
+            if response.status_code in (400, 401, 403):
+                last_err = Exception(f"HTTP {response.status_code} – auth/billing error: {response.text[:200]}")
+                break
+
+            # Rate-limited: wait longer before trying next model
+            if response.status_code == 429:
+                last_err = Exception(f"HTTP 429 – rate limit on {model_name}")
+                time.sleep(8)
+                continue
+
+            # Transient server error: short pause then next model
+            if response.status_code in (500, 502, 503, 504):
+                last_err = Exception(f"HTTP {response.status_code} – server error on {model_name}")
+                time.sleep(3)
+                continue
+
             response.raise_for_status()
             result_json = response.json()
             break
+
+        except requests.exceptions.Timeout:
+            last_err = Exception(f"Timeout on {model_name}")
+            time.sleep(2)
+            continue
         except Exception as err:
             last_err = err
-            time.sleep(1)
+            time.sleep(2)
             continue
     else:
         return jsonify({'error': f'Failed to contact Gemini API. Last error: {str(last_err)}'}), 502
