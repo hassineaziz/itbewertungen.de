@@ -389,21 +389,35 @@ def api_blog_revise():
     else:
         instruction_section = "\nAuto-Align mode:\nReview all copy fields and make sure they match the new order/specs/names of the products. Ensure the verdict/conclusion summarizes the actual winner correctly.\n"
 
+    # Pull real published-post slugs from the DB so the AI can replace dead /blog/xxx links
+    # with valid /xxx links pointing to posts that actually exist on the site.
+    try:
+        live_posts = BlogPost.query.filter_by(status='published').order_by(BlogPost.published_at.desc()).limit(20).all()
+        live_links_str = "\n".join([f"- /{p.slug}  → {p.title}" for p in live_posts]) or "(no published posts available)"
+    except Exception:
+        live_links_str = "(could not load live posts)"
+
     structured_content_json = json.dumps(structured_content, ensure_ascii=False, indent=2)
-    
+
     prompt = (
         "You are an expert SEO copywriter editing a structured blog post in German.\n"
         f"The post is built using the template: '{template_name}'.\n\n"
         "Here is the current structured content of the blog post in JSON format:\n"
         f"{structured_content_json}\n\n"
+        "LIVE INTERNAL LINKS POOL (use ONLY these slugs for internal links — they are the only posts that actually exist on the site):\n"
+        f"{live_links_str}\n\n"
         f"{instruction_section}\n"
         "STRICT RULES — follow these exactly:\n"
-        "1. ONLY edit pure copywriting text fields: 'verdict', 'sub_head', 'buying_guide', 'conclusion', section 'body' texts, 'excerpt', FAQ 'answer' fields, and similar narrative text.\n"
+        "1. ONLY edit pure copywriting text fields: 'verdict', 'sub_head', 'buying_guide', 'conclusion', section 'body' texts, 'excerpt', FAQ 'answer' fields, 'methodology', 'mid_cta_text', and similar narrative text.\n"
         "2. Do NOT change, reorder, rename, add, or remove any JSON keys or structural fields.\n"
-        "3. Do NOT touch: 'slug', 'template', 'status', 'tags', 'category', 'meta_title', 'meta_description', 'focus_keyword', 'cover_image_url', 'image_url', 'affiliate_slug', 'price', 'price_display', 'rating', 'score_bars', 'specs', 'pros', 'cons', 'alternatives', 'competitors', 'author_name', 'author_bio', 'product_name', section 'title' fields, FAQ 'question' fields.\n"
-        "4. Keep the German tone conversational (du/wir), sentences under 15 words, no AI filler words (darüber hinaus, des Weiteren, zudem, folglich, somit, hinsichtlich, bezüglich, nichtsdestotrotz, insbesondere, schlussendlich).\n"
-        "5. Return the EXACT same JSON structure as the input — same keys, same nesting, same arrays.\n"
-        "6. Do NOT wrap the response in markdown code blocks. Return only the raw JSON object.\n"
+        "3. Do NOT touch: 'slug', 'template', 'status', 'tags', 'category', 'meta_title', 'meta_description', 'focus_keyword', 'cover_image_url', 'image_url', 'affiliate_slug', 'price', 'price_display', 'rating', 'score_bars', 'specs', 'pros', 'cons', 'alternatives', 'author_name', 'author_bio', 'product_name', section 'title' fields, FAQ 'question' fields.\n"
+        "4. INTERNAL LINK REPAIR (CRITICAL): Inside narrative text fields, find every markdown link of the form `](/blog/SOMETHING)` and rewrite it to `](/SOMETHING)`. Then verify each `/SOMETHING` slug exists in the LIVE INTERNAL LINKS POOL above — if it does NOT exist, replace it with a slug from the pool that fits the context, or remove the link entirely (keep the anchor text as plain words). NEVER leave a link pointing to a non-existent slug.\n"
+        "5. FAKE COMPETITOR CLEANUP (CRITICAL): If the 'competitors' field contains placeholder names like 'Konkurrenz-Modell A', 'Konkurrenz-Modell B', 'Kategorie-Durchschnitt', or any other obviously fake/generic placeholder, replace the entire 'competitors' field value with an empty array `[]`. Only keep entries that name REAL competing products. (This is the ONE exception to rule #3 for 'competitors'.)\n"
+        "6. Keep the German tone conversational (du/wir, NEVER Sie), sentences under 15 words, no AI filler words (darüber hinaus, des Weiteren, zudem, folglich, somit, hinsichtlich, bezüglich, nichtsdestotrotz, insbesondere, schlussendlich, entscheidend, wesentlich).\n"
+        "7. NEVER pad text to hit a word count. If a paragraph adds no information, shorten or remove it. Quality beats length.\n"
+        "8. E-E-A-T: where natural, keep hands-on phrases like 'Wir haben...', 'Im Test...', 'Nach X Wochen Nutzung...' — but never invent fake tests.\n"
+        "9. Return the EXACT same JSON structure as the input — same keys, same nesting, same arrays.\n"
+        "10. Do NOT wrap the response in markdown code blocks. Return only the raw JSON object.\n"
     )
 
     # Only real, stable model IDs — no aliases like "gemini-flash-latest"
