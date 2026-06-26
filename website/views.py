@@ -294,7 +294,7 @@ def resolve_affiliate_details_in_data(data):
 
     return data
 
-@views.route('/<slug>')
+@views.route('/<slug>', strict_slashes=False)
 def blog_post(slug):
     slug = slug.lower()
     post = BlogPost.query.filter_by(slug=slug, status='published').first()
@@ -1164,7 +1164,7 @@ def blog_feed():
     response.headers['Content-Type'] = 'application/xml'
     return response
 
-@views.route('/go/<slug>')
+@views.route('/go/<slug>', strict_slashes=False)
 def affiliate_redirect(slug):
     from .models import AffiliateLink
     link = AffiliateLink.query.filter_by(slug=slug.lower()).first()
