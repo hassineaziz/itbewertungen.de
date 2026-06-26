@@ -443,7 +443,7 @@
           {% if winner.get('affiliate_slug') %}
           <a href="{{ url_for('views.affiliate_redirect', slug=winner.affiliate_slug) }}"
              rel="nofollow noopener" target="_blank"
-             class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap flex-shrink-0">
+             class="inline-flex items-center gap-1.5 text-white text-[12px] font-bold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap flex-shrink-0 shadow-sm" style="background-color:#F59E0B">
             <span class="material-symbols-outlined text-[14px]">open_in_new</span>
             Preis prüfen
           </a>
