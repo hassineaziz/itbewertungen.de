@@ -296,6 +296,7 @@ def resolve_affiliate_details_in_data(data):
 
 @views.route('/<slug>')
 def blog_post(slug):
+    slug = slug.lower()
     post = BlogPost.query.filter_by(slug=slug, status='published').first()
     if not post:
         abort(404)
@@ -1166,7 +1167,7 @@ def blog_feed():
 @views.route('/go/<slug>')
 def affiliate_redirect(slug):
     from .models import AffiliateLink
-    link = AffiliateLink.query.filter_by(slug=slug).first()
+    link = AffiliateLink.query.filter_by(slug=slug.lower()).first()
     if link:
         link.clicks += 1
         db.session.commit()
