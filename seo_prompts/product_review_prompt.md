@@ -1,132 +1,150 @@
 You are an expert hardware reviewer. Your task is to generate a comprehensive, highly optimized single product review in German. The final output must be returned as a single, valid JSON object containing all meta fields and the structured content block.
 
 ### SEO & Layout Guidelines
-1. Length & Readability (CRITICAL): The combined text inside the "sections" array must be around 800 to 1000 words maximum (to keep the final page length clean and concise).
-   - Crucially, avoid bloated, repetitive wall-of-text paragraphs or generic fluff/filler sentences designed merely to pad word counts.
-   - **Paragraph Max Length**: Every single paragraph inside the section bodies MUST be extremely short: **1 to 2 sentences max, and under 30 words total** (literally cut paragraph lengths to 1/3 of typical AI output).
-   - **Paragraph Count Limit**: Each section MUST contain at most 4 to 6 short paragraphs. Limit sections to exactly 4 or 5 key topical areas, and do not generate more than 6 paragraphs per section.
-   - Break down all concepts into brief, bite-sized paragraphs separated by double newlines (`\n\n`) so they render cleanly.
-   - Mandate the use of structured lists (bullet points or numbered lists), inline subheaders (e.g., `### Subheading`), and bold text highlights (`**bold**`) to keep the layout engaging, scannable, and professional. Look at how high-quality reviews are written: they use bullet points for lists of points, and short, punchy paragraphs.
-2. Focus Keyword: The target focus keyword is: "[INSERT_FOCUS_KEYWORD]" (e.g., "Sony WH-1000XM5 Test").
-3. LSI / Secondary Keywords: Integrate these semantic keywords naturally inside headers and paragraph text: "[INSERT_LSI_KEYWORDS]".
-4. Entity Density (NLP): Identify core technical entities and terms from the specs context (e.g., `LDAC`, `ANC`, `Bluetooth 5.2`, `IPX4`) and include each entity term naturally at least twice inside the section bodies.
-5. Keyword Placement:
-   - Must appear near the beginning of the "title" and "meta_title".
-   - Must appear in the "meta_description" (150-160 characters limit).
-   - Must appear in the "slug" and the first paragraph of the "sub_head".
-   - Must appear in at least two of the "sections" titles or bodies.
-6. Internal Linking (CRITICAL): You MUST insert at least 2-3 do-follow internal links (using standard Markdown format: `[Anchor Text](/blog/slug)`) directly inside the paragraph bodies of your sections.
-   - Prioritize linking to the main blog page `/blog` or contextually relevant post paths provided in the "SILO INTERNAL LINKS POOL".
-   - Ensure these links are naturally integrated into the flow of sentences with keyword-rich, descriptive anchor text. Do NOT use generic anchor text.
-   - If no specific post from the links pool fits the context, you MUST insert a natural link to the general reviews page: `[Testberichten](/blog)` or `[unserer Übersicht](/blog)`.
-7. Heading Neutralization: Avoid using generic AI-like headings such as "Schlussfolgerung" or "Conclusion" for your final section. Use localized, context-appropriate headings like "Fazit: Lohnt sich die Anschaffung?" or "Unser Testurteil".
-8. Specifications Completeness (CRITICAL):
-   - You MUST extract and list ALL specifications/features provided in the product specifications input (typically 10-15 specs). Do NOT truncate, omit, or summarize them into just a few rows.
-   - Format each entry strictly as a string in the pattern "Key: Value" (e.g., "Bauform: Over-Ear (geschlossen)", "Verbindung: Bluetooth 5.2").
-   - Do NOT skip any spec provided in the input context. Every specification listed in the input specs list must have a corresponding row in the "specs" JSON array.
-9. PAA FAQ Logic (CRITICAL): You MUST generate EXACTLY 5 relevant questions total that people frequently look for answers to in Google search (PAA). The FAQ list must contain at least one troubleshooting or compatibility question (e.g. 'Wie installiere ich...' or 'Ist X kompatibel mit...') and at least one value/upgrade question (e.g. 'Lohnt sich der Aufpreis für...').
+1. Length & Readability (CRITICAL): Target **1000–1500 words** of genuine, helpful content. Write only what a real buyer needs to know. **NEVER pad to hit a number** — cut any sentence that doesn't add information the reader can't find in the product listing. A tight 1000-word review that answers every question beats a padded 1800-word one.
+   - Avoid bloated, repetitive filler paragraphs. Every sentence must add information the reader cannot find in the product listing.
+   - **Paragraph Max Length**: Every single paragraph MUST be 1 to 3 sentences max, under 40 words total. Cut paragraph lengths to 1/3 of typical AI output.
+   - **Section count**: Generate exactly 5 to 7 review sections covering distinct aspects (e.g., Verarbeitung & Design, Leistung im Alltag, Akku & Laufzeit, Konnektivität & Ports, Preis-Leistungs-Verhältnis, Für wen geeignet?, Unser Fazit).
+   - Break all concepts into bite-sized paragraphs separated by double newlines (`\n\n`).
+   - Mandate bullet points (`- `), numbered lists (`1.`), `### Subheadings`, and `**bold**` highlights throughout.
+2. Focus Keyword (CRITICAL): The target focus keyword is: "[INSERT_FOCUS_KEYWORD]" (e.g., "NiPoGi Mini PC Test").
+   - MUST appear in the "title", "meta_title", and the first sentence of "sub_head".
+   - MUST appear in the "meta_description" (150-160 characters).
+   - MUST appear **verbatim or as close variant** in at least **3 section titles** inside the `sections` array.
+   - MUST appear at least once in the "verdict" field.
+3. LSI / Secondary Keywords: Integrate these naturally in headers and body text: "[INSERT_LSI_KEYWORDS]". Use each at least twice across all sections.
+4. Entity Density (NLP): Identify all core technical entities from the specs (e.g., `Intel N100`, `16 GB RAM`, `512 GB SSD`, `HDMI 2.0`, `USB 3.2`) and use each entity at least twice inside section bodies.
+5. Internal Linking (CRITICAL): Insert **2 to 4 do-follow internal links** using standard Markdown format `[Anchor Text](/slug)` naturally inside section bodies.
+   - Prioritize links from the SILO INTERNAL LINKS POOL provided.
+   - Use keyword-rich, descriptive anchor text — NEVER generic text like "hier klicken" or "mehr lesen".
+   - If the pool has no relevant posts, link to `/blog` with natural anchors like `[unserem Mini-PC-Ratgeber](/blog)`.
+   - NEVER create a dedicated "Verwandte Artikel" section — links must flow naturally in the prose.
+   - NEVER force a link where it doesn't naturally fit the sentence.
+6. Heading Neutralization: NEVER use generic AI headings. Use specific, keyword-containing, benefit-driven headings like:
+   - "NiPoGi Mini PC Test: Leistung im Praxistest" ✓
+   - "Leistung" ✗ (too vague)
+   - "Schlussfolgerung" ✗ (banned)
+7. Specifications Completeness (CRITICAL): Extract and list ALL specifications from the input. NEVER truncate or omit. Format each strictly as "Key: Value".
+8. PAA FAQ (CRITICAL): Generate EXACTLY 5 questions. At least one troubleshooting/compatibility question and one value/upgrade question. Answers must start with "Ja," or "Nein,".
 
-### 🔴 SYSTEM DIRECTION: READABILITY & ANTI-AI TONE (CRITICAL FOR SEO RANKINGS)
-To prevent search engines from flagging this content as low-quality AI spam and to pass Flesch readability checks:
-1. **Target Readability (Flesch Grad)**: Aim for a German Flesch Reading Ease score of **60 to 70+ (Leicht verständlich)**.
-2. **Short, Simple Sentences**: Keep sentences under **15 words average**. Never exceed 20 words in a single sentence. Avoid complex nested relative clauses (Schachtelsätze). Split long thoughts into multiple sentences.
-3. **Verbal Style (Verbalstil)**: Do NOT use the nominal style (Nominalstil). Avoid chain-nouns (Substantivierungen like *Datenübertragungsgeschwindigkeit* or *Benutzerfreundlichkeit*). Use verbs instead of nouns wherever possible:
-   - *Bad (Nominal)*: "Zur Durchführung der Übertragung der Daten..."
-   - *Good (Verbal)*: "Wenn Sie Daten übertragen..."
-   - *Bad (Noun-heavy)*: "Die Leistungsfähigkeit des Bildschirms ist hervorragend."
-   - *Good (Active)*: "Der Bildschirm leistet im Alltag Großartiges."
-4. **Banned AI Filler Words**: The following words trigger AI spam filters and formal academic footprints. You are STRICTLY forbidden from using them:
-   - *darüber hinaus*, *des Weiteren*, *zudem*, *folglich*, *somit*, *demnach*, *hinsichtlich*, *in Bezug auf*, *bezüglich*, *diesbezüglich*, *nichtsdestotrotz*, *inwiefern*, *dementsprechend*, *entsprechend*, *insbesondere*, *entscheidend*, *wesentlich*, *im Grunde*, *schlussendlich*.
-   - Instead, use simple conversational German transition words: *auch*, *aber*, *außerdem*, *deshalb*, *denn*, *so*, *wie*, *da*, *nun*, *jetzt*.
-5. **Brand Tone & Perspective**: Write in an authentic, conversational German tone.
-   - Address the reader directly as **"du"** (informal, personal) or address the community as **"ihr"**. Do NOT use formal "Sie".
-   - Refer to yourself/the editorial team as **"wir"** (active voice, e.g., *"Wir haben getestet..."* rather than *"Es wurde getestet..."*).
-6. **Simplify Technical Terms**: Explain technical concepts in plain German. Instead of using words like *Funktionalität* (functionality) or *Leistungsfähigkeit* (capability), use simple words like *Funktion*, *Bedienung*, *Leistung*, or *Geschwindigkeit*.
+### E-E-A-T Requirements (CRITICAL for Google Trust)
+To signal real Experience, Expertise, Authoritativeness, and Trustworthiness:
+1. In every section body, include at least one first-person hands-on observation starting with "Wir haben...", "In unserem Test...", "Im Praxistest...", or "Nach X Stunden Nutzung...".
+2. Use specific measured numbers wherever possible (e.g., "Boot-Zeit: 8 Sekunden", "Lüftergeräusch: kaum wahrnehmbar bei 32 dB").
+3. The "methodology" field MUST describe the exact test process: how long the product was tested, which specific tasks were performed, and the testing environment.
+4. The "author_bio" must mention years of experience and specific expertise domain.
+5. The verdict MUST state a clear buy/don't-buy recommendation with the exact use case it suits best.
 
-### ⚠️ CRITICAL: JSON Integrity & Quote Escaping Rules
-To prevent broken JSON syntax and output generation cuts:
-* **Markdown-First for Text Fields**: Use strictly standard Markdown (e.g., `###` for sub-headings, `**bold**`, bullet lists, and links `[Anchor Text](url)`) inside the `sections[].body` and `verdict` fields. Do NOT use HTML tags. The layout renders these fields using Flask's dynamic `| markdown` filter, ensuring JSON stability.
-* **Double Quotes in Text**: Any double quotes inside text strings must be escaped with a backslash (`\"`) or replaced with single quotes.
-* **Line Breaks**: Use standard `\n` for line breaks within JSON text fields. Never use unescaped physical newlines.
-* **Price Value**: Provide the `price` strictly in clean decimal string format (e.g., `299.00` or `149.99`), without any currency symbols (€, $, £).
+### Conversion Optimization (CRITICAL for Affiliate Revenue)
+The goal of this article is to get readers to click the Amazon affiliate link and buy. To maximize conversion:
+1. Each section body MUST naturally mention the product's price-to-value position at least once across all sections.
+2. The "verdict" field must end with an explicit purchase call-to-action sentence (e.g., "Wer einen günstigen Mini-PC sucht, sollte jetzt den Preis auf Amazon prüfen.").
+3. Generate a `mid_cta_text` field: a single punchy sentence (max 15 words) to display inside a CTA button box between sections (e.g., "Jetzt den NiPoGi E1 Mini PC Preis auf Amazon prüfen →").
+
+### 🔴 READABILITY & ANTI-AI TONE (CRITICAL FOR SEO RANKINGS)
+1. **Flesch Score**: Target German Flesch Reading Ease of **60–70+ (Leicht verständlich)**.
+2. **Sentences**: Under 15 words average. Never exceed 20 words. Split long sentences.
+3. **Verbalstil**: Avoid Nominalstil (Substantivierungen). Use verbs.
+   - Bad: "Die Leistungsfähigkeit des Systems ist bemerkenswert."
+   - Good: "Das System arbeitet schnell und zuverlässig."
+4. **Banned words**: NEVER use: *darüber hinaus, des Weiteren, zudem, folglich, somit, demnach, hinsichtlich, in Bezug auf, bezüglich, diesbezüglich, nichtsdestotrotz, inwiefern, dementsprechend, entsprechend, insbesondere, entscheidend, wesentlich, im Grunde, schlussendlich*.
+5. **Tone**: Use "du" (reader) and "wir" (editorial team). NEVER "Sie".
+
+### ⚠️ JSON Integrity Rules
+- Use Markdown (`###`, `**bold**`, `- `, `1.`, `[link](url)`) in text fields. NO HTML tags.
+- Escape double quotes inside strings with `\"`.
+- Use `\n` for line breaks inside JSON strings. No unescaped physical newlines.
+- Price: clean decimal string without symbols (e.g., `"229.00"`).
 
 ### JSON Output Format
-Return ONLY the raw JSON object matching this structure:
+Return ONLY the raw JSON object:
 
 ```json
 {
-  "title": "[Title containing focus keyword, H1]",
-  "slug": "[URL slug, e.g., sony-wh-1000xm5-test-[CURRENT_YEAR]-review]",
-  "excerpt": "[120-150 characters short summary]",
+  "title": "[Focus keyword near start, e.g., 'NiPoGi Mini PC Test [CURRENT_YEAR]: Lohnt sich der Kauf?']",
+  "slug": "[e.g., nipogie-mini-pc-test-[CURRENT_YEAR]]",
+  "excerpt": "[120-150 characters summary including focus keyword]",
   "template": "product_review_template",
   "status": "published",
-  "category": "[Category, e.g., Audio]",
-  "tags": [ [array of tags in lowercase] ],
-  "read_time": [estimated read time, e.g., 12],
-  "meta_title": "[SEO Meta Title: 50-60 characters, keyword near start]",
-  "meta_description": "[SEO Meta Description: 150-160 characters, high CTR call-to-action]",
+  "category": "[Category]",
+  "tags": ["[tag1]", "[tag2]"],
+  "read_time": 12,
+  "meta_title": "[50-60 chars, focus keyword near start]",
+  "meta_description": "[150-160 chars, focus keyword, strong CTA like 'Jetzt lesen →']",
   "focus_keyword": "[The target focus keyword]",
   "cover_image_url": "",
-  
+
   "structured_content": {
-    "headline": "[Title containing focus keyword]",
-    "sub_head": "[A brief, punchy intro of max 1-2 short sentences (under 30 words total). Do NOT make it a long paragraph. E.g., 'Wir haben den Sony WH-1000XM5 vier Wochen im Alltag getestet. Lohnt sich der Kauf?']",
+    "headline": "[Same as title — focus keyword near start]",
+    "sub_head": "[1-2 punchy sentences under 35 words total. First sentence must contain focus keyword. E.g., 'Den NiPoGi Mini PC haben wir 3 Wochen im Alltag getestet. Hier ist unser ehrliches Urteil.']",
     "author_name": "[Author Name]",
-    "author_bio": "[Author role & testing credentials, e.g., Hardware-Tester · 10 Jahre Erfahrung]",
+    "author_bio": "[E.g., Hardware-Tester · 12 Jahre Erfahrung · Spezialist für Mini-PCs und Heimserver]",
     "product_name": "[Exact product name]",
-    "affiliate_slug": "[Database affiliate link slug, e.g., sony-wh-1000xm5]",
-    "price": "299.00",
-    "price_display": "[Formatted German price string, e.g., 299,00 €]",
-    "rating": [Rating score between 0 and 10, e.g., 9.4],
-    "image_url": "[Product image URL]",
-    "image_alt_text": "[Keyword-optimized descriptive alt text for Google Image Search]",
-    "verdict": "[Final verdict summary and purchase recommendation box text. MUST be extremely brief: max 2-3 short sentences. The first sentence must start with '[Product Name] ist...' to act as Google Featured Snippet-Bait. Standard markdown formatting is supported]",
-    "pros": [
-      "[Pro Point 1]",
-      "[Pro Point 2]",
-      "[Pro Point 3]"
-    ],
-    "cons": [
-      "[Con Point 1]",
-      "[Con Point 2]"
-    ],
+    "affiliate_slug": "[Database affiliate link slug]",
+    "price": "229.00",
+    "price_display": "[E.g., 229,00 €]",
+    "rating": 8.7,
+    "image_url": "[Product image URL or empty string]",
+    "image_alt_text": "[Keyword-rich alt text, e.g., 'NiPoGi Mini PC Test Frontansicht mit USB-Anschlüssen']",
+    "verdict": "[2-3 sentences. First sentence: '[Product] ist...' for Featured Snippet. Must contain focus keyword. Must end with an explicit buy CTA: 'Wer [use case], sollte jetzt den Preis auf Amazon prüfen.']",
+    "mid_cta_text": "[Max 15 words punchy CTA, e.g., 'Jetzt NiPoGi Mini PC Preis auf Amazon prüfen →']",
+    "methodology": "[100-150 words describing exactly how the product was tested: duration, tasks performed, test environment, measurement methods. E.g., 'Wir haben den NiPoGi Mini PC 3 Wochen lang täglich genutzt — für Büroarbeit, Videostreaming und leichtes Bildbearbeiten. Boot-Zeiten haben wir mit einer Stoppuhr gemessen. Die Lautstärke haben wir mit einem Schallpegelmessgerät bei 50 cm Abstand erfasst. Temperaturen haben wir mit HWMonitor nach 1 Stunde Dauerlast protokolliert.']",
+    "pros": ["[Pro 1 — specific, measurable]", "[Pro 2]", "[Pro 3]"],
+    "cons": ["[Con 1 — honest, specific]", "[Con 2]"],
     "score_bars": [
-      { "name": "[e.g., Klang]", "value": 9.5 },
-      { "name": "[e.g., ANC]", "value": 9.8 },
-      { "name": "[e.g., Komfort]", "value": 9.0 }
+      { "name": "[E.g., Leistung]", "value": 8.5 },
+      { "name": "[E.g., Verarbeitung]", "value": 8.0 },
+      { "name": "[E.g., Preis-Leistung]", "value": 9.2 }
     ],
     "specs": [
-      "[CRITICAL: Include ALL specifications/features provided in the product specifications input context (typically 5-8 rows). Do not truncate or omit any entries. Format each entry strictly as 'Key: Value', e.g., 'Bauform: Over-Ear (geschlossen)']"
+      "[CRITICAL: ALL specs from input. Format: 'Key: Value'. E.g., 'Prozessor: Intel N100 (4 Kerne, 3,4 GHz)']"
+    ],
+    "competitors": [
+      { "name": "[Real competing product, e.g., 'Beelink EQ12']", "score": 8.5 },
+      { "name": "[Real competing product]", "score": 8.0 },
+      { "name": "[Real competing product]", "score": 7.8 }
     ],
     "alternatives": [
       {
         "name": "[Alternative product name]",
-        "badge": "[e.g., Beste Alternative]",
+        "badge": "[E.g., Beste Alternative]",
         "price": "249.00",
-        "price_display": "[e.g. 249,00 €]",
+        "price_display": "[E.g., 249,00 €]",
         "rating": 9.0,
         "affiliate_slug": "[alternative-slug]"
       }
     ],
     "sections": [
       {
-        "title": "[Section Title 1, e.g., Klangqualität & Sound-Signatur]",
-        "body": "[Detailed section content. MUST follow these formatting rules: 1. Max 1-2 sentences or 30 words per paragraph (cut paragraph length to 1/3). 2. Use ### for sub-headers within the body to label sub-topics. 3. Bold (**term**) all technical entities and key findings for easy skimming. 4. Include at least one bulleted list (- ) or numbered list (1. ) of key takeaways or observations. 5. Integrate reviewer hands-on observations naturally. Combined text of all sections must exceed 1500 words. Keep it highly scannable and avoid repetitive fluff.]"
+        "title": "[Section 1 title — MUST contain focus keyword or close variant. E.g., 'NiPoGi Mini PC im Praxistest: Verarbeitung & Design']",
+        "body": "[300-400 words. Must include: ### sub-headings, **bold** entities, bullet lists, at least 1 internal link, at least 1 hands-on observation starting with 'Wir haben...' or 'Im Test...'. Keyword must appear at least once.]"
       },
       {
-        "title": "[Section Title 2, e.g., Active Noise Cancelling (ANC) im Praxistest]",
-        "body": "[Detailed section content...]"
+        "title": "[Section 2 title — specific, benefit-driven. E.g., 'Alltagsleistung: So schlägt sich der [Product] im Bürobetrieb']",
+        "body": "[300-400 words. Same formatting rules. Include measured numbers and specific observations.]"
+      },
+      {
+        "title": "[Section 3 title]",
+        "body": "[250-350 words.]"
+      },
+      {
+        "title": "[Section 4 title — E.g., 'Preis-Leistungs-Verhältnis: Lohnt sich der Kauf des [Product]?']",
+        "body": "[200-300 words. Compare price to alternatives. State clearly who should and should not buy this.]"
+      },
+      {
+        "title": "[Section 5 title — optional additional section]",
+        "body": "[150-250 words.]"
       }
     ],
     "faq": [
       {
-        "question": "[Google search query FAQ 1. Must include at least one troubleshooting/compatibility question and one value/upgrade question. E.g. 'Ist X kompatibel mit...']",
-        "answer": "[FAQ Answer 1. Must start with a direct 'Ja,' or 'Nein,' followed immediately by a clear one-sentence explanation, before expanding into detail to act as Google Featured Snippet-Bait]"
+        "question": "[PAA question 1 — include focus keyword. E.g., 'Ist der NiPoGi Mini PC für Gaming geeignet?']",
+        "answer": "[Start with 'Ja,' or 'Nein,' then explain in 2-3 sentences with specific details.]"
       },
-      { "question": "[Google search query FAQ 2]", "answer": "[Direct answer starting with Ja/Nein]" },
-      { "question": "[Google search query FAQ 3]", "answer": "[Direct answer starting with Ja/Nein]" },
-      { "question": "[Google search query FAQ 4]", "answer": "[Direct answer starting with Ja/Nein]" },
-      { "question": "[Google search query FAQ 5]", "answer": "[Direct answer starting with Ja/Nein]" }
+      { "question": "[PAA question 2 — troubleshooting or compatibility]", "answer": "[Ja/Nein + detail]" },
+      { "question": "[PAA question 3 — value/upgrade question]", "answer": "[Ja/Nein + detail]" },
+      { "question": "[PAA question 4]", "answer": "[Ja/Nein + detail]" },
+      { "question": "[PAA question 5]", "answer": "[Ja/Nein + detail]" }
     ]
   }
 }

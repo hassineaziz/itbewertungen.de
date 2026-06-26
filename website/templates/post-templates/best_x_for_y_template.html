@@ -312,7 +312,7 @@
               {{ p.get('price', '') }}
             </div>
             <div class="text-[11px] text-gray-500 mb-4 text-center">
-              Pricing subject to change
+              Preisänderungen vorbehalten
             </div>
             {% if p.get('affiliate_slug') %}
             <a href="{{ url_for('views.affiliate_redirect', slug=p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
@@ -327,7 +327,7 @@
 
             {% if p.get('specs') %}
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
-              Quick Overview
+              Kurzübersicht
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
               {% for spec in p.specs[:2] %}
@@ -343,7 +343,7 @@
             </ul>
 
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
-              Key Features
+              Wichtige Merkmale
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
               {% for spec in p.specs[2:] %}
@@ -359,29 +359,29 @@
             </ul>
             {% else %}
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
-              Quick Overview
+              Kurzübersicht
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
               {% for pro in p.get('pros', [])[:2] %}
-              <li><strong>Highlight:</strong> {{ pro }}</li>
+              <li><strong>Vorteil:</strong> {{ pro }}</li>
               {% endfor %}
             </ul>
 
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
-              Key Features
+              Wichtige Merkmale
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
               {% for pro in p.get('pros', [])[2:4] %}
-              <li><strong>Feature:</strong> {{ pro }}</li>
+              <li><strong>Merkmal:</strong> {{ pro }}</li>
               {% endfor %}
               {% for con in p.get('cons', [])[:1] %}
-              <li class="text-gray-500"><strong>Note:</strong> {{ con }}</li>
+              <li class="text-gray-500"><strong>Hinweis:</strong> {{ con }}</li>
               {% endfor %}
             </ul>
             {% endif %}
 
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
-              Verdict
+              Unser Urteil
             </h4>
             <div class="text-[13px] text-gray-700 leading-relaxed m-0 markdown-content">
               {{ p.get('summary', '') | markdown }}
@@ -391,10 +391,26 @@
         {% endfor %}
         {% endif %}
 
+        {# Mid-content CTA #}
+        {% if data.get('mid_cta_text') and data.get('products') %}
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p class="text-[13px] font-semibold text-gray-900">{{ data.mid_cta_text }}</p>
+          {% set winner = data.products[0] %}
+          {% if winner.get('affiliate_slug') %}
+          <a href="{{ url_for('views.affiliate_redirect', slug=winner.affiliate_slug) }}"
+             rel="nofollow noopener" target="_blank"
+             class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap flex-shrink-0">
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            Preis prüfen
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+
         {# Performance Benchmarks #}
-        <h2 id="benchmarks" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Performance Benchmarks & How We Test</h2>
+        <h2 id="benchmarks" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Testwertungen im Überblick</h2>
         <p class="text-[15px] text-gray-700 leading-relaxed mb-6">
-          Our team tests each product in controlled environment conditions. We analyze direct latency, response consistency, material durability, and build quality under real stress. Below is our benchmark rating overview for each recommendation.
+          Wir testen jedes Produkt unter gleichen Bedingungen — Alltagsnutzung, Dauerlasttest und Verarbeitungsqualität. Hier sind unsere Gesamtwertungen im Überblick.
         </p>
 
         <div class="w-full mb-12 mt-6">
@@ -416,50 +432,51 @@
 
         {# Buying Guide #}
         {% if data.get('buying_guide') %}
-        <h2 id="buying-guide" class="text-2xl font-bold text-gray-900 mb-6 mt-16">Buying Guide: What Matters When Choosing</h2>
-        <div class="prose prose-blue max-w-none text-gray-700 text-[15px] leading-relaxed mb-16 markdown-content">
-          {{ data.buying_guide | markdown }}
-        </div>
+        <section id="kaufratgeber" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Kaufberatung</div>
+          <h2 id="buying-guide" class="text-2xl font-bold text-gray-900 mb-4">Kaufratgeber: Worauf du achten solltest</h2>
+          <div class="text-[14px] text-gray-700 leading-relaxed markdown-content">{{ data.buying_guide | markdown }}</div>
+        </section>
         {% endif %}
 
-        {# Use Case Recommendations (Best for X and Best for Y) #}
-        <h2 id="who-should-buy" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Which Option is Right For You?</h2>
+        {# Für wen geeignet? #}
+        <h2 id="who-should-buy" class="text-2xl font-bold text-gray-900 mb-6 mt-12">Für wen ist welches Modell geeignet?</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {% set premium_p = data.get('products', [{}])[0] %}
           {% set budget_p = data.get('products', [{}])[-1] %}
-          
+
           {% if premium_p %}
           <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col h-full">
             <h3 class="text-[16px] font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">military_tech</span> Für maximale Performance
+              <span class="material-symbols-outlined text-primary">military_tech</span> Für maximale Leistung
             </h3>
             <p class="text-[13px] text-gray-600 mb-4 leading-relaxed">
-              Wenn Sie keine Kompromisse eingehen wollen und das absolute Spitzenprodukt für anspruchsvolle Szenarien suchen, ist das die beste Option.
+              Du willst keine Kompromisse eingehen und das beste Modell im Test? Dann ist das unsere klare Empfehlung.
             </p>
             <div class="mt-auto">
               <div class="text-[13px] font-bold text-primary mb-3">Empfehlung: {{ premium_p.name }}</div>
               {% if premium_p.get('affiliate_slug') %}
               <a href="{{ url_for('views.affiliate_redirect', slug=premium_p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
-                Jetzt kaufen
+                Preis auf Amazon prüfen
               </a>
               {% endif %}
             </div>
           </div>
           {% endif %}
 
-          {% if budget_p %}
+          {% if budget_p and budget_p != premium_p %}
           <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col h-full">
             <h3 class="text-[16px] font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span class="material-symbols-outlined text-green-600">savings</span> Für Preis-Leistungs-Bewusste
+              <span class="material-symbols-outlined text-green-600">savings</span> Bestes Preis-Leistungs-Verhältnis
             </h3>
             <p class="text-[13px] text-gray-600 mb-4 leading-relaxed">
-              Wenn Sie ein begrenztes Budget haben oder das Produkt nur gelegentlich nutzen, bietet dieses Modell die beste Leistung fürs Geld.
+              Du brauchst solide Leistung ohne Aufpreis? Dieses Modell bietet das beste Preis-Leistungs-Verhältnis im Test.
             </p>
             <div class="mt-auto">
               <div class="text-[13px] font-bold text-green-600 mb-3">Empfehlung: {{ budget_p.name }}</div>
               {% if budget_p.get('affiliate_slug') %}
               <a href="{{ url_for('views.affiliate_redirect', slug=budget_p.affiliate_slug) }}" rel="nofollow noopener" target="_blank" class="btn-amazon w-full">
-                Auf Amazon prüfen
+                Preis auf Amazon prüfen
               </a>
               {% endif %}
             </div>
@@ -477,7 +494,7 @@
 
         {# Spec Comparison Table #}
         {% if data.get('comparison_table') %}
-        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Spec Comparison Table</h3>
+        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Vergleichstabelle</h3>
         <div class="overflow-x-auto mb-12 border border-gray-200 rounded-xl">
           <table class="w-full text-left border-collapse min-w-[600px] text-[13px]">
             <thead>
@@ -488,7 +505,7 @@
                   {% endfor %}
                 {% else %}
                   <th class="py-3 px-4 font-bold text-gray-900">Modell</th>
-                  <th class="py-3 px-4 font-bold text-gray-900">Badge / Eignung</th>
+                  <th class="py-3 px-4 font-bold text-gray-900">Eignung</th>
                   <th class="py-3 px-4 font-bold text-gray-900">Bewertung</th>
                   <th class="py-3 px-4 font-bold text-gray-900">Preis</th>
                 {% endif %}
@@ -519,7 +536,7 @@
           </table>
         </div>
         {% else %}
-        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Spec Comparison Table</h3>
+        <h3 id="table-comparison" class="text-xl font-bold text-gray-900 mb-6 mt-12">Vergleichstabelle</h3>
         <div class="overflow-x-auto mb-12 border border-gray-200 rounded-xl">
           <table class="w-full text-left border-collapse min-w-[600px] text-[13px]">
             <thead>
@@ -534,7 +551,7 @@
               {% for p in data.get('products', []) %}
               <tr class="hover:bg-gray-50">
                 <td class="py-3 px-4 font-semibold text-gray-900">{{ p.name }}</td>
-                <td class="py-3 px-4">{{ p.get('badge', 'Standard Pick') }}</td>
+                <td class="py-3 px-4">{{ p.get('badge', 'Empfehlung') }}</td>
                 <td class="py-3 px-4 text-green-600 font-bold">{{ p.get('rating', '') }} / 10</td>
                 <td class="py-3 px-4 text-green-600 font-semibold">{{ p.get('price', '') }}</td>
               </tr>
@@ -547,7 +564,7 @@
 
         {# FAQ #}
         {% if data.get('faq') and data.faq | length > 0 %}
-        <h2 id="faq" class="text-2xl font-bold text-gray-900 mb-6 mt-16">Frequently Asked Questions</h2>
+        <h2 id="faq" class="text-2xl font-bold text-gray-900 mb-6 mt-16">Häufig gestellte Fragen</h2>
         <div class="space-y-0">
           {% for item in data.faq %}
           <div class="border-b border-gray-200 py-4">
@@ -588,13 +605,13 @@
           {% endif %}
 
           <div class="bg-primary/5 rounded-2xl border border-primary/20 p-6 text-center shadow-sm">
-            <h3 class="font-serif font-bold text-xl text-gray-900 mb-2">Get the Best Deals</h3>
-            <p class="text-sm text-gray-600 mb-6">Join 10,000+ readers getting exclusive discounts and buying guides.</p>
+            <h3 class="font-serif font-bold text-xl text-gray-900 mb-2">Kauftipps per E-Mail</h3>
+            <p class="text-sm text-gray-600 mb-6">Über 10.000 Leser erhalten unsere Testberichte und exklusiven Kauftipps direkt ins Postfach.</p>
             <form action="{{ url_for('views.subscribe') }}" method="POST" class="space-y-3">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-              <input type="email" name="email" placeholder="Your email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm" required>
+              <input type="email" name="email" placeholder="Deine E-Mail-Adresse" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary text-sm" required>
               <button type="submit" class="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-3 rounded-lg transition-colors shadow-sm text-sm">
-                Subscribe Now
+                Jetzt anmelden
               </button>
             </form>
             <p class="text-[11px] text-gray-400 mt-4 text-center">No spam. Unsubscribe anytime.</p>

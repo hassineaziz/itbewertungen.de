@@ -376,6 +376,32 @@
     </div>
   </div>
 
+  {# ══ E-E-A-T TRUST BAR ═══════════════════════════════════════════════════ #}
+  <div class="bg-blue-50 border-b border-blue-100 px-8 lg:px-12 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-blue-800">
+    <span class="flex items-center gap-1.5 font-semibold">
+      <span class="material-symbols-outlined text-[13px] text-blue-600">verified</span>
+      Unabhängig getestet
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[13px] text-blue-600">schedule</span>
+      Aktualisiert: {{ current_date }}
+    </span>
+    {% if data.get('author_name') %}
+    <span class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[13px] text-blue-600">person</span>
+      Autor: {{ data.author_name }}{% if data.get('author_bio') %} · {{ data.author_bio }}{% endif %}
+    </span>
+    {% endif %}
+    <span class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[13px] text-blue-600">science</span>
+      Echter Praxistest
+    </span>
+    <span class="ml-auto text-blue-600 flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[13px]">link</span>
+      Wir erhalten eine Provision — ohne Mehrkosten für dich
+    </span>
+  </div>
+
   {# ══ THREE-COLUMN BODY ══════════════════════════════════════════════════════ #}
   <div id="review-main" class="p-6 lg:p-10">
     <div class="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)_280px] gap-8">
@@ -418,6 +444,22 @@
           <h2 class="text-xl font-bold text-gray-900 mb-4">{{ sec.title }}</h2>
           <div class="text-[14px] text-gray-700 leading-relaxed markdown-content">{{ sec.body | markdown }}</div>
         </section>
+
+        {# Mid-content CTA after section 2 #}
+        {% if loop.index == 2 and data.get('affiliate_slug') %}
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            <div class="text-[11px] font-semibold text-amber-700 uppercase tracking-wider mb-0.5">Affiliate-Hinweis</div>
+            <p class="text-[13px] font-semibold text-gray-900">{{ data.get('mid_cta_text', 'Jetzt aktuellen Preis auf Amazon prüfen →') }}</p>
+          </div>
+          <a href="{{ url_for('views.affiliate_redirect', slug=data.affiliate_slug) }}"
+             rel="nofollow noopener" target="_blank"
+             class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-bold px-5 py-2.5 rounded-lg transition-colors whitespace-nowrap flex-shrink-0">
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            Preis prüfen
+          </a>
+        </div>
+        {% endif %}
 
         {# Visual 1: Pros vs Cons after Section 1 #}
         {% if loop.index == 1 and (data.get('pros') or data.get('cons')) %}
@@ -463,66 +505,58 @@
         </section>
         {% endif %}
 
-        {# Visual 2: Visual Benchmark & Leistungsvergleich Section after Section 2 #}
-        {% if loop.index == 2 and data.get('rating') %}
+        {# Visual 2: Competitor benchmark — only rendered when AI supplied real competitor data #}
+        {% if loop.index == 2 and data.get('competitors') and data.competitors | length > 0 %}
         <section id="benchmark-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
           <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Benchmark</div>
           <h2 class="text-xl font-bold text-gray-900 mb-6">Leistungsvergleich im Marktsegment</h2>
-          
           <div class="bg-gray-50 border border-gray-100 rounded-xl p-6">
             <div class="space-y-4">
-              
-              {% if post.category and (post.category|lower == 'audio' or 'audio' in post.category|lower or 'kopf' in post.category|lower or 'head' in post.category|lower or 'sony' in data.get('product_name', '')|lower) %}
-                {# Audio Competitors #}
-                {% set competitors = [
-                  {'name': data.get('product_name', 'Sony WH-1000XM5'), 'score': data.rating|float, 'current': true},
-                  {'name': 'Bose QuietComfort Ultra', 'score': 9.2, 'current': false},
-                  {'name': 'Sennheiser Momentum 4', 'score': 9.0, 'current': false},
-                  {'name': 'Apple AirPods Max', 'score': 8.8, 'current': false}
-                ] %}
-              {% elif post.category and (post.category|lower == 'storage' or 'ssd' in post.category|lower or 'samsung' in data.get('product_name', '')|lower) %}
-                {# Storage Competitors #}
-                {% set competitors = [
-                  {'name': data.get('product_name', 'Samsung T9 SSD'), 'score': data.rating|float, 'current': true},
-                  {'name': 'Crucial X10 Pro', 'score': 9.2, 'current': false},
-                  {'name': 'SanDisk Extreme V2', 'score': 8.8, 'current': false},
-                  {'name': 'WD Black P40', 'score': 8.5, 'current': false}
-                ] %}
-              {% else %}
-                {# Generic Competitors #}
-                {% set competitors = [
-                  {'name': data.get('product_name', 'Aktuelles Produkt'), 'score': data.rating|float, 'current': true},
-                  {'name': 'Konkurrenz-Modell A', 'score': 8.5, 'current': false},
-                  {'name': 'Konkurrenz-Modell B', 'score': 8.0, 'current': false},
-                  {'name': 'Kategorie-Durchschnitt', 'score': 7.5, 'current': false}
-                ] %}
-              {% endif %}
-
-              {# Sort competitors by score descending #}
-              {% for comp in competitors | sort(attribute='score', reverse=true) %}
-                {% set bar_pct = ((comp.score / 10) * 100) | round | int %}
-                <div>
-                  <div class="flex justify-between items-center mb-1">
-                    <span class="text-[12px] font-medium {% if comp.current %}text-primary font-bold{% else %}text-gray-700{% endif %}">
-                      {{ comp.name }} {% if comp.current %}<span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal ml-1">Dieses Produkt</span>{% endif %}
-                    </span>
-                    <span class="text-[12px] font-bold {% if comp.current %}text-primary{% else %}text-gray-900{% endif %}">{{ comp.score }} / 10</span>
-                  </div>
-                  <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full {% if comp.current %}bg-primary{% else %}bg-gray-400{% endif %}" style="width: {{ bar_pct }}%"></div>
-                  </div>
+              {# Main product row first #}
+              {% set main_pct = ((data.rating | float) / 10 * 100) | round | int %}
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[12px] font-bold text-primary">
+                    {{ data.get('product_name', '') }}
+                    <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-normal ml-1">Dieses Produkt</span>
+                  </span>
+                  <span class="text-[12px] font-bold text-primary">{{ data.rating }} / 10</span>
                 </div>
+                <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-primary" style="width: {{ main_pct }}%"></div>
+                </div>
+              </div>
+              {# Competitor rows #}
+              {% for comp in data.competitors %}
+              {% set bar_pct = ((comp.score | float) / 10 * 100) | round | int %}
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[12px] font-medium text-gray-700">{{ comp.name }}</span>
+                  <span class="text-[12px] font-bold text-gray-900">{{ comp.score }} / 10</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full bg-gray-400" style="width: {{ bar_pct }}%"></div>
+                </div>
+              </div>
               {% endfor %}
-              
-            </div>
-            <div class="mt-4 text-[11px] text-gray-500 leading-relaxed text-center">
-              * Die Ergebnisse basieren auf unseren standardisierten Labormessungen und Praxistests unter identischen Umweltbedingungen.
             </div>
           </div>
         </section>
         {% endif %}
 
         {% endfor %}
+        {% endif %}
+
+        {# Testmethodik #}
+        {% if data.get('methodology') %}
+        <section id="methodik-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
+          <div class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">Transparenz</div>
+          <h2 class="text-xl font-bold text-gray-900 mb-4">So haben wir getestet</h2>
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 flex gap-4">
+            <span class="material-symbols-outlined text-primary text-[24px] flex-shrink-0 mt-0.5">science</span>
+            <div class="text-[13px] text-gray-700 leading-relaxed">{{ data.methodology }}</div>
+          </div>
+        </section>
         {% endif %}
 
         {# Verdict / Conclusion #}

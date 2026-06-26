@@ -100,12 +100,12 @@ def generate_article(
     seen_slugs = set()
     
     for p in same_category_posts:
-        internal_links_list.append(f"- [Category Match] {p.title} (URL path: /blog/{p.slug})")
+        internal_links_list.append(f"- [Category Match] {p.title} (URL path: /{p.slug})")
         seen_slugs.add(p.slug)
-        
+
     for p in sitewide_posts:
         if p.slug not in seen_slugs:
-            internal_links_list.append(f"- [Site-wide Match] {p.title} (URL path: /blog/{p.slug})")
+            internal_links_list.append(f"- [Site-wide Match] {p.title} (URL path: /{p.slug})")
             
     internal_links_str = "\n".join(internal_links_list) if internal_links_list else "No existing published articles on the site."
 
