@@ -16,6 +16,12 @@
         "placeholder": "Wir haben 14 Laufwerke getestet...",
         "rows": 4
       },
+      "intro": {
+        "type": "textarea",
+        "label": "Intro Bridge (keyword-rich, between hero and comparison, max 80 words)",
+        "rows": 3,
+        "placeholder": "Wir haben beide Modelle direkt gegeneinander getestet und zeigen dir, welches sich für welchen Einsatz wirklich lohnt."
+      },
       "author_name": {
         "type": "text",
         "label": "Author Name",
@@ -26,6 +32,11 @@
         "type": "text",
         "label": "Author Bio / Role",
         "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "mid_cta_text": {
+        "type": "text",
+        "label": "Mid-Content CTA Text (10–15 words)",
+        "placeholder": "Jetzt die Preise beider Modelle direkt auf Amazon vergleichen →"
       },
       "products": {
         "type": "array",
@@ -184,6 +195,12 @@
         "rows": 4,
         "placeholder": "Wir haben das Gerät 3 Wochen lang ausgiebig getestet..."
       },
+      "intro": {
+        "type": "textarea",
+        "label": "Intro Bridge (keyword-rich, between hero and review body, max 80 words)",
+        "rows": 3,
+        "placeholder": "Das Gerät haben wir zwei Wochen im Alltag getestet. Hier erfährst du, wie schnell, leise und sparsam es wirklich arbeitet."
+      },
       "author_name": {
         "type": "text",
         "label": "Author Name",
@@ -194,6 +211,11 @@
         "type": "text",
         "label": "Author Bio / Role",
         "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "mid_cta_text": {
+        "type": "text",
+        "label": "Mid-Content CTA Text (max 15 words)",
+        "placeholder": "Jetzt den aktuellen Preis auf Amazon prüfen →"
       },
       "affiliate_slug": {
         "type": "text",
@@ -268,6 +290,12 @@
         "label": "Technical Specs (Label: Value format)",
         "addLabel": "Add Spec",
         "placeholder": "Schnittstelle: USB 3.2 Gen 2×2"
+      },
+      "methodology": {
+        "type": "textarea",
+        "label": "Testmethodik (\"So haben wir getestet\", 100–150 words)",
+        "rows": 4,
+        "placeholder": "Wir haben das Gerät 2 Wochen lang täglich genutzt — für Büroarbeit, Videostreaming und Bildbearbeitung. Boot-Zeiten mit Stoppuhr, Lautstärke mit Schallpegelmessgerät gemessen..."
       },
       "alternatives": {
         "type": "array",
@@ -367,6 +395,12 @@
         "rows": 4,
         "placeholder": "Wir haben 12 Espressomaschinen getestet..."
       },
+      "intro": {
+        "type": "textarea",
+        "label": "Intro Bridge (keyword-rich, between hero and reviews, max 80 words)",
+        "rows": 3,
+        "placeholder": "Die besten Mini-PCs bieten viel Leistung auf kleinem Raum. Wir haben die Top-Modelle getestet und zeigen dir, welches Gerät sich wirklich lohnt."
+      },
       "author_name": {
         "type": "text",
         "label": "Author Name",
@@ -377,6 +411,11 @@
         "type": "text",
         "label": "Author Bio / Role",
         "placeholder": "Hardware-Tester · 8 Jahre Erfahrung"
+      },
+      "mid_cta_text": {
+        "type": "text",
+        "label": "Mid-Content CTA Text (10–15 words)",
+        "placeholder": "Jetzt die besten Modelle direkt auf Amazon vergleichen →"
       },
       "products": {
         "type": "array",
@@ -520,6 +559,12 @@
         "placeholder": "Ein Solid-State-Drive (SSD) ist ein elektronisches Speichermedium...",
         "rows": 4
       },
+      "intro": {
+        "type": "textarea",
+        "label": "Intro Bridge (between callout and Q&A, max 60 words)",
+        "placeholder": "Eine SSD ist heute in fast jedem modernen PC verbaut. Wir erklären, wie sie funktioniert und worauf du beim Kauf achten solltest.",
+        "rows": 3
+      },
       "author_name": {
         "type": "text",
         "label": "Author Name",
@@ -552,12 +597,6 @@
         "label": "Key Takeaways (Bullet points)",
         "addLabel": "Add Takeaway",
         "placeholder": "SSDs nutzen Flash-Speicher und haben keine beweglichen Teile."
-      },
-      "outline": {
-        "type": "list",
-        "label": "What you'll learn (TOC outline list)",
-        "addLabel": "Add Point",
-        "placeholder": "Warum SSDs schneller sind als HDDs"
       },
       "qa_sections": {
         "type": "array",
@@ -631,6 +670,16 @@
         "label": "Final Thoughts / Summary",
         "placeholder": "Zusammenfassung des Themas...",
         "rows": 5
+      },
+      "cta_label": {
+        "type": "text",
+        "label": "CTA Button Label (commercial page)",
+        "placeholder": "Die besten SSDs 2025 im Vergleich ansehen"
+      },
+      "cta_url": {
+        "type": "text",
+        "label": "CTA Button URL (internal path)",
+        "placeholder": "/ssd-vergleich"
       }
     }
   }

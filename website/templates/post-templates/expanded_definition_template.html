@@ -26,7 +26,12 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": ["h1", "#definition-callout"]
+  },
   "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  {% if word_count %}"wordCount": {{ word_count }},{% endif %}
   "description": {{ (post.meta_description or post.excerpt or data.get('sub_head', '')) | tojson }},
   {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
   "author": {
@@ -126,6 +131,74 @@
     .markdown-content a:hover {
       opacity: 0.85;
     }
+    /* ── Rich content visuals inside section bodies ───────────────────────── */
+    .markdown-content h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 1.5rem 0 0.6rem;
+    }
+    .markdown-content ul,
+    .markdown-content ol {
+      margin: 0.75rem 0;
+      padding-left: 1.25rem;
+    }
+    .markdown-content ul { list-style: none; padding-left: 0; }
+    .markdown-content ul li {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .markdown-content ul li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--color-primary);
+      font-weight: 800;
+    }
+    .markdown-content ol { list-style: decimal; }
+    .markdown-content ol li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+    .markdown-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 13px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .markdown-content thead th {
+      background: color-mix(in srgb, var(--color-primary) 10%, white);
+      color: var(--color-primary);
+      font-weight: 800;
+      text-align: left;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid #d1d5db;
+    }
+    .markdown-content tbody td {
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid #f1f1f1;
+      vertical-align: top;
+    }
+    .markdown-content tbody tr:nth-child(even) { background: #f9fafb; }
+    .markdown-content tbody tr:last-child td { border-bottom: 0; }
+    .markdown-content blockquote {
+      margin: 1.25rem 0;
+      padding: 0.9rem 1.1rem;
+      background: #fefce8;
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 12px 12px 0;
+      color: #4b5563;
+    }
+    .markdown-content blockquote p { margin: 0; }
+    .markdown-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      margin: 1.25rem 0;
+      border: 1px solid #e5e7eb;
+    }
+    .markdown-content p { margin: 0 0 0.85rem; }
     #sticky-definition-bar {
       position: sticky;
       top: 0;
@@ -151,8 +224,10 @@
       90%  { transform: translateY(1px); }
       100% { transform: translateY(0); }
     }
-    .shake-once {
-      animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    @media (prefers-reduced-motion: no-preference) {
+      .shake-once {
+        animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+      }
     }
   </style>
 
@@ -209,6 +284,12 @@
             <span class="material-symbols-outlined text-[11px]">schedule</span>
             {{ post.read_time if post else '5' }} Min. Lesezeit
           </span>
+          {% if word_count %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-3 py-1 text-gray-500 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">notes</span>
+            {{ word_count }} Wörter
+          </span>
+          {% endif %}
         </div>
       </div>
 
@@ -289,22 +370,11 @@
           </div>
         </section>
 
-        {# "What You'll Learn" Mini outline box #}
-        {% if data.get('outline') %}
-        <section id="outline-summary" class="mb-10 p-5 border border-gray-200 rounded-xl bg-white shadow-sm scroll-mt-24">
-          <h2 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[16px] text-gray-500 font-bold">checklist</span>
-            Was du in diesem Ratgeber lernst:
-          </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[12px] text-gray-600">
-            {% for item in data.outline %}
-            <div class="flex items-center gap-2">
-              <span class="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-              <span class="truncate">{{ item }}</span>
-            </div>
-            {% endfor %}
-          </div>
-        </section>
+        {# Intro bridge paragraph (keyword-rich, links callout to Q&A) #}
+        {% if data.get('intro') %}
+        <div class="mb-10 text-[15px] sm:text-base text-gray-700 leading-relaxed markdown-content">
+          {{ data.intro | markdown }}
+        </div>
         {% endif %}
 
         {# Q&A Article Content Sections #}
@@ -357,6 +427,18 @@
             </div>
           </div>
         </section>
+        {% endif %}
+
+        {# Commercial CTA button (below verdict) #}
+        {% if data.get('cta_label') and data.get('cta_url') %}
+        <div class="mt-8 text-center">
+          <a href="{{ data.cta_url }}"
+             class="inline-flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white font-bold text-[15px] px-7 py-4 rounded-xl shadow-sm transition-all">
+            <span class="material-symbols-outlined text-[20px]">emoji_events</span>
+            {{ data.cta_label }}
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+        </div>
         {% endif %}
 
       </main>
@@ -441,14 +523,19 @@
   // ── ToC builder ────────────────────────────────────────────────────────────
   const toc = document.getElementById('toc');
   if (toc) {
-    document.querySelectorAll('#definition-main main h2').forEach(function (el, i) {
+    document.querySelectorAll('#definition-main main h2, #definition-main main .markdown-content h3').forEach(function (el, i) {
       if (!el.id) el.id = 'sec-' + i;
+      const isSub = el.tagName.toLowerCase() === 'h3';
       const a = document.createElement('a');
       a.href = '#' + el.id;
       a.textContent = el.textContent.trim();
-      a.className = 'block text-[11px] text-gray-600 hover:text-primary py-1.5 border-b border-gray-100 last:border-0 flex items-center gap-1.5 truncate';
+      a.className = isSub
+        ? 'block text-[10px] text-gray-500 hover:text-primary py-1 pl-3.5 flex items-center gap-1.5 truncate'
+        : 'block text-[11px] text-gray-600 hover:text-primary py-1.5 border-b border-gray-100 last:border-0 flex items-center gap-1.5 truncate';
       const dot = document.createElement('span');
-      dot.className = 'w-1.5 h-1.5 rounded-full bg-gray-200 flex-shrink-0';
+      dot.className = isSub
+        ? 'w-1 h-1 rounded-full bg-gray-300 flex-shrink-0'
+        : 'w-1.5 h-1.5 rounded-full bg-gray-200 flex-shrink-0';
       a.prepend(dot);
       toc.appendChild(a);
     });

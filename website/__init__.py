@@ -179,7 +179,7 @@ def create_app():
         from markupsafe import Markup
         if not text:
             return ""
-        return Markup(markdown.markdown(text))
+        return Markup(markdown.markdown(text, extensions=['extra', 'sane_lists']))
 
     @app.template_filter('optimize_amazon_image')
     def optimize_amazon_image(url, size):

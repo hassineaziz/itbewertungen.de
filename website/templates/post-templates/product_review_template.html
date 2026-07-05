@@ -86,7 +86,12 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": ["h1", "#verdict-section"]
+  },
   "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  {% if word_count %}"wordCount": {{ word_count }},{% endif %}
   "description": {{ data.get('sub_head', '') | tojson }},
   {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
   "author": {
@@ -157,6 +162,70 @@
     .markdown-content a:hover {
       color: #1d4ed8;
     }
+    /* ── Rich content visuals inside section bodies ─────────────────────────── */
+    .markdown-content p { margin: 0 0 0.85rem; }
+    .markdown-content h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #111827;
+      margin: 1.5rem 0 0.6rem;
+    }
+    .markdown-content ol { margin: 0.75rem 0; padding-left: 1.25rem; list-style: decimal; }
+    .markdown-content ol li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+    .markdown-content ul { margin: 0.75rem 0; padding-left: 0; list-style: none; }
+    .markdown-content ul li {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .markdown-content ul li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #2563eb;
+      font-weight: 800;
+    }
+    .markdown-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.25rem 0;
+      font-size: 13px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .markdown-content thead th {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 800;
+      text-align: left;
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid #dbeafe;
+    }
+    .markdown-content tbody td {
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid #f1f1f1;
+      vertical-align: top;
+    }
+    .markdown-content tbody tr:nth-child(even) { background: #f9fafb; }
+    .markdown-content tbody tr:last-child td { border-bottom: 0; }
+    .markdown-content blockquote {
+      margin: 1.25rem 0;
+      padding: 0.9rem 1.1rem;
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      border-radius: 0 12px 12px 0;
+      color: #334155;
+      font-style: normal;
+    }
+    .markdown-content blockquote p { margin: 0; }
+    .markdown-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      margin: 1.25rem 0;
+      border: 1px solid #e5e7eb;
+    }
     #sticky-review-bar {
       position: sticky;
       top: 0;
@@ -182,8 +251,10 @@
       90%  { transform: translateY(1px); }
       100% { transform: translateY(0); }
     }
-    .shake-once {
-      animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    @media (prefers-reduced-motion: no-preference) {
+      .shake-once {
+        animation: page-shake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+      }
     }
   </style>
   <div id="sticky-review-bar"
@@ -246,6 +317,12 @@
             <span class="material-symbols-outlined text-[11px]">schedule</span>
             {{ post.read_time if post else '8' }} Min. Lesezeit
           </span>
+          {% if word_count %}
+          <span class="text-[10px] border border-gray-200 rounded-full px-2.5 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
+            <span class="material-symbols-outlined text-[11px]">notes</span>
+            {{ word_count }} Wörter
+          </span>
+          {% endif %}
           <span class="text-[10px] border border-gray-200 rounded-full px-2.5 py-1 text-gray-600 flex items-center gap-1 bg-gray-50">
             <span class="material-symbols-outlined text-[11px]">calendar_today</span>
             {{ current_date }}
@@ -415,6 +492,13 @@
       {# Centre: Main Review Body #}
       <main class="min-w-0">
 
+        {# Intro bridge paragraph (keyword-rich, links hero to review body) #}
+        {% if data.get('intro') %}
+        <div class="mb-10 text-[14px] text-gray-700 leading-relaxed markdown-content">
+          {{ data.intro | markdown }}
+        </div>
+        {% endif %}
+
         {# Specs table #}
         {% if data.get('specs') %}
         <section id="spec-section" class="mb-10 pb-10 border-b border-gray-100 scroll-mt-24">
@@ -550,7 +634,7 @@
           <h2 class="text-xl font-bold text-gray-900 mb-4">So haben wir getestet</h2>
           <div class="bg-gray-50 border border-gray-200 rounded-xl p-5 flex gap-4">
             <span class="material-symbols-outlined text-primary text-[24px] flex-shrink-0 mt-0.5">science</span>
-            <div class="text-[13px] text-gray-700 leading-relaxed">{{ data.methodology }}</div>
+            <div class="text-[13px] text-gray-700 leading-relaxed markdown-inline-p">{{ data.methodology | markdown }}</div>
           </div>
         </section>
         {% endif %}

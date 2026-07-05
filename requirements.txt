@@ -23,3 +23,4 @@ whitenoise==6.6.0
 PyYAML==6.0.2
 python-amazon-paapi==6.3.0
 flask_babel
+json_repair==0.30.0

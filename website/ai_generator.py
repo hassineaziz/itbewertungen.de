@@ -7,6 +7,63 @@ from website.models import AffiliateLink, BlogPost
 
 logger = logging.getLogger(__name__)
 
+
+def parse_llm_json(raw_text):
+    """Robustly parse JSON returned by an LLM.
+
+    LLMs frequently emit *almost* valid JSON — stray unescaped double quotes
+    inside long markdown strings, trailing commas, or surrounding prose/fences.
+    This tries increasingly tolerant strategies before giving up.
+    """
+    if raw_text is None:
+        raise ValueError("Empty LLM response.")
+
+    text = raw_text.strip()
+
+    # Strip ```json ... ``` (or plain ```) code fences.
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+
+    # Trim any leading/trailing prose around the outermost JSON object.
+    first = text.find("{")
+    last = text.rfind("}")
+    if first != -1 and last != -1 and last > first:
+        text = text[first:last + 1]
+
+    # 1) Standard parse (strict=False tolerates literal newlines in strings).
+    try:
+        return json.loads(text, strict=False)
+    except json.JSONDecodeError:
+        pass
+
+    # 2) Remove trailing commas before } or ] then retry.
+    import re
+    no_trailing = re.sub(r",(\s*[}\]])", r"\1", text)
+    try:
+        return json.loads(no_trailing, strict=False)
+    except json.JSONDecodeError:
+        pass
+
+    # 3) Last resort: json_repair (purpose-built for LLM output). Optional dep.
+    try:
+        from json_repair import repair_json
+        repaired = repair_json(text, return_objects=True)
+        if isinstance(repaired, (dict, list)) and repaired:
+            return repaired
+    except ImportError:
+        logger.warning("json_repair not installed — cannot repair malformed LLM JSON. Run: pip install json_repair")
+    except Exception as e:
+        logger.warning(f"json_repair failed to fix LLM output: {e}")
+
+    # Give up — re-raise a clean decode error for the caller to surface.
+    return json.loads(text, strict=False)
+
+
 def generate_article(
     focus_keyword,
     secondary_keywords,
@@ -291,14 +348,8 @@ def generate_article(
             raise ValueError("Candidate response parts list is empty.")
             
         raw_text = content_parts[0].get("text", "").strip()
-        
-        # Clean any accidental markdown code fencing ```json ... ```
-        if raw_text.startswith("```"):
-            lines = raw_text.splitlines()
-            if lines[0].startswith("```json") or lines[0].startswith("```"):
-                raw_text = "\n".join(lines[1:-1])
-        
-        parsed_data = json.loads(raw_text, strict=False)
+
+        parsed_data = parse_llm_json(raw_text)
         return parsed_data
         
     except json.JSONDecodeError as jde:

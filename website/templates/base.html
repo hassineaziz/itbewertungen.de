@@ -55,8 +55,6 @@
         }}{% endblock %}</title>
     <meta name="description"
         content="{% block meta_description %}{{ config.get('niche', {}).get('home_description', '') }}{% endblock %}" />
-    <meta name="keywords"
-        content="{% block meta_keywords %}{% if post and post.focus_keyword %}{{ post.focus_keyword }}{% else %}{{ config.get('niche', {}).get('category', '') }}{% endif %}{% endblock %}" />
     {%- set _domain = config.get('seo', {}).get('domain', '').rstrip('/') %}
     {#- Derive language-specific paths from the current request path #}
     {%- if request.path.startswith('/en') %}
@@ -114,11 +112,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Fonts (Loaded Asynchronously to Prevent Render Blocking) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap" media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@400,0..1&display=swap">
     </noscript>
     
     <!-- Inline Compiled Tailwind CSS (Eliminates Render Blocking Network Request) -->
@@ -279,11 +275,18 @@
                 </div>
 
                 <div class="flex items-center gap-4">
+                    {% if request.endpoint %}
+                    {% set view_args = request.view_args if request.view_args else {} %}
+                    {% set lang_en_url = url_for(request.endpoint, force_lang='en', **view_args) %}
+                    {% set lang_de_url = url_for(request.endpoint, force_lang='de', **view_args) %}
+                    {% else %}
+                    {% set lang_en_url = url_for('views.home', force_lang='en') %}
+                    {% set lang_de_url = url_for('views.home', force_lang='de') %}
+                    {% endif %}
                     <div class="flex bg-gray-100 rounded-md p-0.5 text-[11px] font-bold">
-                        {% set view_args = request.view_args if request.view_args else {} %}
-                        <a href="{{ url_for(request.endpoint, force_lang='en', **view_args) }}"
+                        <a href="{{ lang_en_url }}"
                             class="px-2 py-1 rounded-sm {% if current_language == 'en' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-700 hover:text-gray-950{% endif %}">EN</a>
-                        <a href="{{ url_for(request.endpoint, force_lang='de', **view_args) }}"
+                        <a href="{{ lang_de_url }}"
                             class="px-2 py-1 rounded-sm {% if current_language == 'de' %}bg-white text-gray-900 shadow-sm{% else %}text-gray-700 hover:text-gray-950{% endif %}">DE</a>
                     </div>
                     <form action="{{ url_for('views.blog_index') }}" method="GET" class="hidden lg:block">

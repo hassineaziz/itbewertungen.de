@@ -107,7 +107,12 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": ["h1", "#top-picks-reviewed"]
+  },
   "headline": {{ data.get('headline', post.title if post else '') | tojson }},
+  {% if word_count %}"wordCount": {{ word_count }},{% endif %}
   "description": {{ data.get('sub_head', '') | tojson }},
   {% if post and post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
   "author": {
@@ -151,6 +156,70 @@
   .markdown-content a:hover {
     color: #1d4ed8;
   }
+  /* ── Rich content visuals inside descriptions & buying guide ────────────── */
+  .markdown-content p { margin: 0 0 0.85rem; }
+  .markdown-content h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 1.5rem 0 0.6rem;
+  }
+  .markdown-content ol { margin: 0.75rem 0; padding-left: 1.25rem; list-style: decimal; }
+  .markdown-content ol li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+  .markdown-content ul { margin: 0.75rem 0; padding-left: 0; list-style: none; }
+  .markdown-content ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .markdown-content ul li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #2563eb;
+    font-weight: 800;
+  }
+  .markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 13px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .markdown-content thead th {
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 800;
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid #dbeafe;
+  }
+  .markdown-content tbody td {
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid #f1f1f1;
+    vertical-align: top;
+  }
+  .markdown-content tbody tr:nth-child(even) { background: #f9fafb; }
+  .markdown-content tbody tr:last-child td { border-bottom: 0; }
+  .markdown-content blockquote {
+    margin: 1.25rem 0;
+    padding: 0.9rem 1.1rem;
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    border-radius: 0 12px 12px 0;
+    color: #334155;
+    font-style: normal;
+  }
+  .markdown-content blockquote p { margin: 0; }
+  .markdown-content img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    margin: 1.25rem 0;
+    border: 1px solid #e5e7eb;
+  }
 </style>
 <article class="max-w-[2200px] mx-auto bg-white">
 
@@ -191,6 +260,12 @@
           <span class="material-symbols-outlined text-[12px]">schedule</span>
           {{ post.read_time if post else '12' }} Min. Lesezeit
         </span>
+        {% if word_count %}
+        <span class="text-[11px] bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[12px]">notes</span>
+          {{ word_count }} Wörter
+        </span>
+        {% endif %}
         <span class="text-[11px] bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-gray-600 flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[12px]">calendar_today</span>
           {{ current_date }}
@@ -333,7 +408,14 @@
 
       {# Center: Main Content #}
       <div class="min-w-0" id="seo-content">
-        
+
+        {# Intro bridge paragraph (keyword-rich, links hero to comparison) #}
+        {% if data.get('intro') %}
+        <div class="mb-10 text-[15px] text-gray-700 leading-relaxed markdown-content">
+          {{ data.intro | markdown }}
+        </div>
+        {% endif %}
+
         <h2 id="top-picks-reviewed" class="text-2xl font-bold text-gray-900 mb-8 mt-12">Unsere Top-{{ data.get('products', [])|length }} im ausführlichen Test</h2>
 
         {# One-by-One Product Reviews #}

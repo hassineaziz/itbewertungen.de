@@ -316,6 +316,7 @@ def blog_post(slug):
         template_file = f'post-templates/{tmpl}.html'
         try:
             return render_template(template_file, post=post, data=data,
+                                   word_count=_count_post_words(post),
                                    current_date=datetime.now().strftime('%d. %B %Y'))
         except Exception as e:
             current_app.logger.error(f"Failed to render template {template_file}: {e}")
@@ -408,9 +409,9 @@ def api_blog_revise():
         f"{live_links_str}\n\n"
         f"{instruction_section}\n"
         "STRICT RULES — follow these exactly:\n"
-        "1. ONLY edit pure copywriting text fields: 'verdict', 'sub_head', 'buying_guide', 'conclusion', section 'body' texts, 'excerpt', FAQ 'answer' fields, 'methodology', 'mid_cta_text', and similar narrative text.\n"
+        "1. ONLY edit pure copywriting text fields: 'verdict', 'sub_head', 'intro', 'buying_guide', 'conclusion', section 'body' texts, qa_sections[].answer, 'excerpt', FAQ 'answer' fields, 'methodology', 'mid_cta_text', and similar narrative text.\n"
         "2. Do NOT change, reorder, rename, add, or remove any JSON keys or structural fields.\n"
-        "3. Do NOT touch: 'slug', 'template', 'status', 'tags', 'category', 'meta_title', 'meta_description', 'focus_keyword', 'cover_image_url', 'image_url', 'affiliate_slug', 'price', 'price_display', 'rating', 'score_bars', 'specs', 'pros', 'cons', 'alternatives', 'author_name', 'author_bio', 'product_name', section 'title' fields, FAQ 'question' fields.\n"
+        "3. Do NOT touch: 'slug', 'template', 'status', 'tags', 'category', 'meta_title', 'meta_description', 'focus_keyword', 'cover_image_url', 'image_url', 'affiliate_slug', 'price', 'price_display', 'rating', 'score_bars', 'specs', 'pros', 'cons', 'alternatives', 'author_name', 'author_bio', 'product_name', 'cta_label', 'cta_url', section 'title' fields, qa_sections[].question (H2 headings — preserve verbatim, never empty or omit), FAQ 'question' fields.\n"
         "4. INTERNAL LINK REPAIR (CRITICAL): Inside narrative text fields, find every markdown link of the form `](/blog/SOMETHING)` and rewrite it to `](/SOMETHING)`. Then verify each `/SOMETHING` slug exists in the LIVE INTERNAL LINKS POOL above — if it does NOT exist, replace it with a slug from the pool that fits the context, or remove the link entirely (keep the anchor text as plain words). NEVER leave a link pointing to a non-existent slug.\n"
         "5. FAKE COMPETITOR CLEANUP (CRITICAL): If the 'competitors' field contains placeholder names like 'Konkurrenz-Modell A', 'Konkurrenz-Modell B', 'Kategorie-Durchschnitt', or any other obviously fake/generic placeholder, replace the entire 'competitors' field value with an empty array `[]`. Only keep entries that name REAL competing products. (This is the ONE exception to rule #3 for 'competitors'.)\n"
         "6. Keep the German tone conversational (du/wir, NEVER Sie), sentences under 15 words, no AI filler words (darüber hinaus, des Weiteren, zudem, folglich, somit, hinsichtlich, bezüglich, nichtsdestotrotz, insbesondere, schlussendlich, entscheidend, wesentlich).\n"
@@ -499,16 +500,44 @@ def api_blog_revise():
             raise ValueError("Candidate response parts list is empty.")
             
         raw_text = content_parts[0].get("text", "").strip()
-        
-        if raw_text.startswith("```"):
-            lines = raw_text.splitlines()
-            if lines[0].startswith("```json") or lines[0].startswith("```"):
-                raw_text = "\n".join(lines[1:-1])
-        
-        parsed_data = json.loads(raw_text, strict=False)
+
+        from website.ai_generator import parse_llm_json
+        parsed_data = parse_llm_json(raw_text)
         return jsonify(parsed_data)
     except Exception as e:
         return jsonify({'error': f'Failed to parse LLM response as JSON: {str(e)}'}), 500
+
+
+def _count_post_words(post):
+    """Count words across a post's real text (content_html + all structured_content strings)."""
+    import re
+
+    def _walk(node, acc):
+        if isinstance(node, str):
+            acc.append(node)
+        elif isinstance(node, dict):
+            for v in node.values():
+                _walk(v, acc)
+        elif isinstance(node, list):
+            for v in node:
+                _walk(v, acc)
+
+    chunks = []
+    if post.content_html:
+        chunks.append(post.content_html)
+    if post.structured_content:
+        _walk(post.structured_content, chunks)
+
+    text = " ".join(chunks)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"[#*_>`\[\]()|-]", " ", text)
+    return len(text.split())
+
+
+def _compute_read_time(post):
+    """Estimate reading time in minutes from the post's real text (~200 wpm)."""
+    return max(1, round(_count_post_words(post) / 200))
+
 
 def populate_derived_post_fields(post):
     # Cache the cover image if it's an external URL
@@ -518,6 +547,9 @@ def populate_derived_post_fields(post):
     # Process and cache images in structured_content in-place
     if post.structured_content:
         post.structured_content = download_images_in_structured_content(post.structured_content, keyword=post.focus_keyword)
+
+    # Compute read_time from actual content (~200 wpm) instead of trusting AI/form input
+    post.read_time = _compute_read_time(post)
 
     # ── Cover image fallback ────────────────────────────────────────────────────
     # If cover_image_url is still empty or is a local path that doesn't exist on
