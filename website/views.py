@@ -664,38 +664,17 @@ def admin_generate_ai():
         category = request.form.get('category', '').strip()
         template_name = request.form.get('template', 'standard')
         core_product_slugs = request.form.getlist('core_product_slugs')
-        
-        # Collect per-product overrides (EEAT & Specs)
-        product_overrides = {}
-        for slug in core_product_slugs:
-            enable_eeat = request.form.get(f'enable_eeat_{slug}') == 'on'
-            
-            slider_data = None
-            if enable_eeat:
-                slider_data = {
-                    'Preis-Leistung': float(request.form.get(f'score_value_{slug}', '0.5')),
-                    'Verarbeitung & Material': float(request.form.get(f'score_build_{slug}', '0.5')),
-                    'Handhabung & Installation': float(request.form.get(f'score_usability_{slug}', '0.5')),
-                    'Alltagstauglichkeit': float(request.form.get(f'score_expectation_{slug}', '0.5'))
-                }
-                
-            product_overrides[slug] = {
-                'slider_data': slider_data,
-                'quick_notes': request.form.get(f'quick_notes_{slug}', '').strip(),
-                'raw_source_info': request.form.get(f'raw_source_info_{slug}', '').strip()
-            }
-            
-        # Global fallback if no products are checked
+
+        # Free-text context for articles with no DB product selected (e.g.
+        # term definitions). EEAT scores/notes/specs for actual products now
+        # live on the AffiliateLink record itself (see admin_links) and are
+        # pulled automatically inside generate_article().
+        global_context = ""
         if not core_product_slugs:
             global_quick_notes = request.form.get('global_quick_notes', '').strip()
             global_raw_source = request.form.get('global_raw_source_info', '').strip()
-            if global_quick_notes or global_raw_source:
-                product_overrides['global_custom'] = {
-                    'slider_data': None,
-                    'quick_notes': global_quick_notes,
-                    'raw_source_info': global_raw_source
-                }
-        
+            global_context = "\n".join(filter(None, [global_quick_notes, global_raw_source]))
+
         if not focus_keyword:
             flash("Fokus-Keyword ist erforderlich.", "danger")
             return redirect(url_for('views.admin_generate_ai'))
@@ -708,7 +687,7 @@ def admin_generate_ai():
                 category=category,
                 template_name=template_name,
                 core_product_slugs=core_product_slugs,
-                product_overrides=product_overrides
+                global_context=global_context
             )
             
             # 2. Check and fallback if model generated JSON has missing or misnamed fields
@@ -981,6 +960,19 @@ def blog_delete(post_id):
 @admin_required
 def admin_links():
     from .models import AffiliateLink
+
+    def _parse_eeat_form():
+        enabled = request.form.get('eeat_enabled') == 'on'
+        return {
+            'eeat_enabled': enabled,
+            'eeat_value_score': float(request.form.get('score_value', '0.5')) if enabled else None,
+            'eeat_build_score': float(request.form.get('score_build', '0.5')) if enabled else None,
+            'eeat_usability_score': float(request.form.get('score_usability', '0.5')) if enabled else None,
+            'eeat_expectation_score': float(request.form.get('score_expectation', '0.5')) if enabled else None,
+            'review_notes': request.form.get('review_notes', '').strip() or None,
+            'raw_source_info': request.form.get('raw_source_info', '').strip() or None,
+        }
+
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'add':
@@ -1014,14 +1006,15 @@ def admin_links():
                                 pass
                         
                         new_link = AffiliateLink(
-                            slug=slug, 
-                            destination_url=dest, 
+                            slug=slug,
+                            destination_url=dest,
                             asin=asin if asin else None,
                             product_title=title if title else None,
                             current_price=price,
                             image_url=download_and_cache_image(image, keyword=title) if image else None,
                             features_json=[s.strip() for s in specs_text.split('\n') if s.strip()] if specs_text else None,
-                            last_synced_at=datetime.now(timezone.utc) if (title or price_str or image or specs_text) else None
+                            last_synced_at=datetime.now(timezone.utc) if (title or price_str or image or specs_text) else None,
+                            **_parse_eeat_form()
                         )
                         db.session.add(new_link)
                         db.session.commit()
@@ -1069,10 +1062,13 @@ def admin_links():
                             link.current_price = price
                             link.image_url = download_and_cache_image(image, keyword=title) if image else None
                             link.features_json = [s.strip() for s in specs_text.split('\n') if s.strip()] if specs_text else None
-                            
+
+                            for field, value in _parse_eeat_form().items():
+                                setattr(link, field, value)
+
                             if title or price_str or image or specs_text:
                                 link.last_synced_at = datetime.now(timezone.utc)
-                            
+
                             db.session.commit()
                             flash(f'Redirect /go/{slug} updated!', 'success')
                         except Exception:

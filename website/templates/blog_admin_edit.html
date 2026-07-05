@@ -1023,8 +1023,29 @@ function buildField(key, schema, data) {
 }
 
 // ── Sync form data → hidden JSON field ───────────────────────────────────────
+// "list" fields (pros/cons/specs) always keep a blank input row so the user has
+// somewhere to type the first entry. If that row is never filled in, we must not
+// let the blank string leak into the saved JSON (it renders as an empty bullet
+// on the live page). Prune it from a clone right before serializing — the clone
+// keeps the empty input visible in the live form untouched.
+function pruneEmptyListEntries(data, schemaFields) {
+  if (!data || !schemaFields) return;
+  Object.entries(schemaFields).forEach(([key, schema]) => {
+    const s = typeof schema === 'string' ? { type: schema } : schema;
+    if (!(key in data)) return;
+    if (s.type === 'list' && Array.isArray(data[key])) {
+      data[key] = data[key].filter(v => typeof v !== 'string' || v.trim() !== '');
+    } else if (s.type === 'array' && Array.isArray(data[key])) {
+      data[key].forEach(item => pruneEmptyListEntries(item, s.fields));
+    }
+  });
+}
+
 function syncJSON() {
-  document.getElementById('structured_content_json').value = JSON.stringify(formData);
+  const clone = JSON.parse(JSON.stringify(formData));
+  const schema = ALL_SCHEMAS[currentTemplate];
+  if (schema && schema.fields) pruneEmptyListEntries(clone, schema.fields);
+  document.getElementById('structured_content_json').value = JSON.stringify(clone);
 }
 
 // ── Tiny createElement helper ─────────────────────────────────────────────────

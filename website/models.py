@@ -26,6 +26,16 @@ class AffiliateLink(db.Model):
     price_history = db.Column(db.JSON, nullable=True)
     last_synced_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
+    # Persisted E-E-A-T review data — set once per product, reused by every
+    # AI-generated article that references this affiliate link.
+    eeat_enabled = db.Column(db.Boolean, default=False)
+    eeat_value_score = db.Column(db.Float, nullable=True)
+    eeat_build_score = db.Column(db.Float, nullable=True)
+    eeat_usability_score = db.Column(db.Float, nullable=True)
+    eeat_expectation_score = db.Column(db.Float, nullable=True)
+    review_notes = db.Column(db.Text, nullable=True)
+    raw_source_info = db.Column(db.Text, nullable=True)
+
 class BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(200), unique=True, nullable=False)

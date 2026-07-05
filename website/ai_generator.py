@@ -70,26 +70,31 @@ def generate_article(
     category,
     template_name,
     core_product_slugs,
-    product_overrides=None
+    global_context=None
 ):
     """
     Constructs the dynamic SEO prompt and coordinates the REST call to Gemini LLM.
     Returns the parsed JSON response matching the database post format.
+
+    EEAT scores, reviewer notes, and raw source info are read directly off each
+    selected AffiliateLink — they're entered once when the product link is
+    created/edited (see admin_links) and reused for every article that
+    references it, rather than being re-entered per generation.
     """
-    
+
     # 1. Verify API Key
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is not configured in the server environment (.env file).")
 
-    # 2. Resolve Core Product Specs from Database & Form Overrides
+    # 2. Resolve Core Product Specs + persisted EEAT/notes from Database
     core_products_context = []
+    core_links = []
     if core_product_slugs:
         for slug in core_product_slugs:
             link = AffiliateLink.query.filter_by(slug=slug).first()
-            override = product_overrides.get(slug, {}) if product_overrides else {}
-            raw_source = override.get('raw_source_info', '')
-            
+            core_links.append(link)
+
             product_str = ""
             if link:
                 specs_list = ""
@@ -98,14 +103,14 @@ def generate_article(
                         specs_list = "\n".join([f"- {f}" for f in link.features_json])
                     elif isinstance(link.features_json, dict):
                         specs_list = "\n".join([f"- {k}: {v}" for k, v in link.features_json.items()])
-                
+
                 # Only pass external HTTP URLs to the AI — local /static/ paths
                 # only exist on the machine that downloaded them and would cause
                 # broken images if the AI echoes them as cover_image_url.
                 image_url_for_ai = link.image_url or ''
                 if image_url_for_ai.startswith('/static/'):
                     image_url_for_ai = 'N/A'
-                
+
                 product_str += (
                     f"Product Name: {link.product_title or slug}\n"
                     f"Price: {link.current_price or 'N/A'}\n"
@@ -113,21 +118,18 @@ def generate_article(
                     f"Affiliate Slug: {slug}\n"
                     f"Specifications:\n{specs_list}\n"
                 )
+                if link.raw_source_info:
+                    product_str += f"Additional Raw Copied Info / Specs:\n{link.raw_source_info}\n"
             else:
                 product_str += f"Product Name: {slug}\nAffiliate Slug: {slug}\n"
-                
-            if raw_source:
-                product_str += f"Additional Raw Copied Info / Specs:\n{raw_source}\n"
-                
+
             core_products_context.append(product_str)
-    
+
     product_specs_context_str = "\n\n---\n\n".join(core_products_context)
-    
-    # Handle global fallback specs if present
-    if product_overrides and 'global_custom' in product_overrides:
-        global_raw = product_overrides['global_custom'].get('raw_source_info')
-        if global_raw:
-            product_specs_context_str += f"\n\nAdditional Raw Copied Info / Specs:\n{global_raw}\n"
+
+    # Handle free-text context for articles with no DB product selected
+    if global_context:
+        product_specs_context_str += f"\n\nAdditional Raw Copied Info / Specs:\n{global_context}\n"
 
     # 3. Resolve Alternatives in Niche (Same Category Link Resolution)
     # Fetch up to 10 active affiliate links in database that aren't the main selection
@@ -167,30 +169,31 @@ def generate_article(
     internal_links_str = "\n".join(internal_links_list) if internal_links_list else "No existing published articles on the site."
 
     # 5. Format Sliders / Quick Notes for Hands-on EEAT Steering
+    # Sourced from the persisted fields on each AffiliateLink (set once in the
+    # Links manager), not re-entered per generation.
     steering_instructions = ""
-    
-    has_steering_data = False
-    if product_overrides:
-        for slug, override in product_overrides.items():
-            sliders = override.get('slider_data')
-            quick_notes = override.get('quick_notes')
-            if sliders or quick_notes:
-                has_steering_data = True
-                break
-                
-    if has_steering_data:
+
+    steerable_links = [
+        link for link in core_links
+        if link and (link.eeat_enabled or link.review_notes)
+    ]
+
+    if steerable_links:
         steering_instructions += "The reviewer provided the following hands-on assessment metrics for specific products to steer the review sentiment:\n"
-        for slug, override in product_overrides.items():
-            sliders = override.get('slider_data')
-            quick_notes = override.get('quick_notes')
-            if sliders or quick_notes:
-                steering_instructions += f"\n### Product: {slug}\n"
-                if sliders:
-                    for k, v in sliders.items():
-                        steering_instructions += f"- {k}: {v} / 1.0 (Higher means positive/outstanding, lower means critical/poor)\n"
-                if quick_notes:
-                    steering_instructions += f"- Reviewer Quick Notes: \"{quick_notes}\"\n"
-                    
+        for link in steerable_links:
+            steering_instructions += f"\n### Product: {link.slug}\n"
+            if link.eeat_enabled:
+                slider_data = {
+                    'Preis-Leistung': link.eeat_value_score if link.eeat_value_score is not None else 0.5,
+                    'Verarbeitung & Material': link.eeat_build_score if link.eeat_build_score is not None else 0.5,
+                    'Handhabung & Installation': link.eeat_usability_score if link.eeat_usability_score is not None else 0.5,
+                    'Alltagstauglichkeit': link.eeat_expectation_score if link.eeat_expectation_score is not None else 0.5,
+                }
+                for k, v in slider_data.items():
+                    steering_instructions += f"- {k}: {v} / 1.0 (Higher means positive/outstanding, lower means critical/poor)\n"
+            if link.review_notes:
+                steering_instructions += f"- Reviewer Quick Notes: \"{link.review_notes}\"\n"
+
         steering_instructions += (
             "\nCRITICAL: Weave these observations directly into the product summaries, pros/cons, "
             "and verdict sections using authentic first-person German test phrases (e.g. 'In unserem Praxistest...', "

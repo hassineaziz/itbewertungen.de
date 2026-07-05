@@ -84,8 +84,11 @@
         <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-[160px] overflow-y-auto space-y-2">
           {% if affiliate_links %}
             {% for link in affiliate_links %}
-            <label class="product-item flex items-center space-x-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer" 
-                   data-title="{{ (link.product_title or '') | lower }} {{ link.slug | lower }}">
+            <label class="product-item flex items-center space-x-3 text-sm text-gray-700 hover:text-gray-900 cursor-pointer"
+                   data-title="{{ (link.product_title or '') | lower }} {{ link.slug | lower }}"
+                   data-eeat-enabled="{{ '1' if link.eeat_enabled else '' }}"
+                   data-review-notes="{{ (link.review_notes or '') | e }}"
+                   data-specs-count="{{ link.features_json | length if link.features_json else 0 }}">
               <input type="checkbox" name="core_product_slugs" value="{{ link.slug }}" class="rounded text-primary focus:ring-primary h-4 w-4">
               <span>{{ link.product_title or link.slug }} <span class="text-xs text-gray-400">({{ link.slug }} - {{ link.current_price or 'Ohne Preis' }})</span></span>
             </label>
@@ -94,90 +97,34 @@
             <p class="text-sm text-gray-500 py-2">Keine Affiliate-Links in der Datenbank gefunden. Erstellen Sie zuerst Links im Manager.</p>
           {% endif %}
         </div>
-        <p class="text-xs text-gray-500">Wir laden automatisch die Preise, Bilder und Spezifikationen dieser Produkte für die KI-Generierung.</p>
+        <p class="text-xs text-gray-500">Wir laden automatisch Preise, Bilder, Spezifikationen und die gespeicherten E-E-A-T-Testerfahrungen dieser Produkte für die KI-Generierung.</p>
       </div>
 
-      <!-- Dynamic Per-Product EEAT & Specs -->
+      <!-- Read-only preview of the persisted E-E-A-T data per selected product -->
       <div class="border border-gray-200 rounded-xl overflow-hidden" id="products-eeat-wrapper">
         <div class="w-full px-6 py-4 bg-gray-50 flex justify-between items-center text-sm font-bold text-gray-900 border-b border-gray-200">
           <span class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-xl">military_tech</span>
-            Produktspezifische Daten & Testerfahrungen (E-E-A-T)
+            Gespeicherte Testerfahrungen (E-E-A-T)
           </span>
+          <a href="{{ url_for('views.admin_links') }}" target="_blank" class="text-xs font-semibold text-primary hover:underline">In Link-Manager bearbeiten →</a>
         </div>
-        
-        <div id="dynamic-overrides-container" class="bg-white">
+
+        <div id="eeat-preview-container" class="bg-white">
           <div class="p-6 text-sm text-gray-500 text-center italic" id="empty-overrides-msg">
-            Wählen Sie oben Produkte aus dem Datenbank-Bestand aus, um hier spezifische Testerfahrungen und Zusatzdaten (Specs) pro Produkt zu hinterlegen.
+            Wählen Sie oben Produkte aus, um die für sie hinterlegten Testerfahrungen hier einzusehen. Änderungen nehmen Sie im Link-Manager vor — sie gelten dann automatisch für jede zukünftige Generierung.
           </div>
         </div>
       </div>
 
-      <!-- Hidden template for product override blocks -->
-      <template id="product-override-template">
-        <div class="p-6 border-b border-gray-100 last:border-0 override-block" data-slug="{SLUG}">
-          <h3 class="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">inventory_2</span>
-            {TITLE}
-          </h3>
-          
-          <div class="space-y-6">
-            <!-- EEAT Toggle -->
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="enable_eeat_{SLUG}" class="eeat-toggle rounded text-primary focus:ring-primary h-4 w-4" onchange="document.getElementById('eeat-sliders-{SLUG}').classList.toggle('hidden', !this.checked)">
-              <span class="text-sm font-bold text-gray-900">E-E-A-T Bewertungsscores für dieses Produkt aktivieren</span>
-            </label>
-
-            <!-- Sliders -->
-            <div id="eeat-sliders-{SLUG}" class="space-y-4 hidden border-l-2 border-primary pl-4">
-              <h4 class="text-[13px] font-bold text-gray-700 uppercase tracking-wider">Eigene Bewertungsscores (0.0 bis 1.0)</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-1">
-                  <div class="flex justify-between text-xs font-semibold text-gray-700">
-                    <span>Preis-Leistung (Value)</span>
-                    <span id="val-display-{SLUG}">0.5</span>
-                  </div>
-                  <input type="range" name="score_value_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('val-display-{SLUG}').textContent=this.value">
-                </div>
-                <div class="space-y-1">
-                  <div class="flex justify-between text-xs font-semibold text-gray-700">
-                    <span>Verarbeitung & Material</span>
-                    <span id="build-display-{SLUG}">0.5</span>
-                  </div>
-                  <input type="range" name="score_build_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('build-display-{SLUG}').textContent=this.value">
-                </div>
-                <div class="space-y-1">
-                  <div class="flex justify-between text-xs font-semibold text-gray-700">
-                    <span>Handhabung & Installation</span>
-                    <span id="usability-display-{SLUG}">0.5</span>
-                  </div>
-                  <input type="range" name="score_usability_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('usability-display-{SLUG}').textContent=this.value">
-                </div>
-                <div class="space-y-1">
-                  <div class="flex justify-between text-xs font-semibold text-gray-700">
-                    <span>Alltagstauglichkeit</span>
-                    <span id="expectation-display-{SLUG}">0.5</span>
-                  </div>
-                  <input type="range" name="score_expectation_{SLUG}" min="0" max="1" step="0.1" value="0.5" class="w-full accent-primary" oninput="document.getElementById('expectation-display-{SLUG}').textContent=this.value">
-                </div>
-              </div>
-            </div>
-
-            <!-- Notes -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Eigene Notizen / Testerkenntnisse</label>
-              <textarea name="quick_notes_{SLUG}" rows="2"
-                        placeholder="Hands-on Erfahrungen spezifisch für {TITLE}..."
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
-            </div>
-
-            <!-- Raw Specs -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Zusätzliche Produktdaten / Herstellerinfos (Optional)</label>
-              <textarea name="raw_source_info_{SLUG}" rows="3"
-                        placeholder="Spezifikationen, Datenblätter oder Kopien von Herstellerseiten für {TITLE}..."
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary shadow-sm bg-white"></textarea>
-            </div>
+      <!-- Hidden template for the read-only per-product preview -->
+      <template id="product-preview-template">
+        <div class="p-4 border-b border-gray-100 last:border-0 preview-block flex items-start gap-3" data-slug="{SLUG}">
+          <span class="material-symbols-outlined text-gray-400 mt-0.5">inventory_2</span>
+          <div class="text-sm">
+            <span class="font-bold text-gray-900">{TITLE}</span>
+            <span class="preview-status ml-2"></span>
+            <p class="preview-notes text-gray-600 mt-1"></p>
           </div>
         </div>
       </template>
@@ -231,11 +178,11 @@
 </div>
 
 <script>
-  // Dynamic Per-Product EEAT Logic
-  const container = document.getElementById('dynamic-overrides-container');
+  // Read-only Per-Product EEAT Preview
+  const container = document.getElementById('eeat-preview-container');
   const emptyMsg = document.getElementById('empty-overrides-msg');
   const fallbackBlock = document.getElementById('global-fallback-block');
-  const template = document.getElementById('product-override-template').innerHTML;
+  const template = document.getElementById('product-preview-template').innerHTML;
   const productCheckboxes = document.querySelectorAll('input[name="core_product_slugs"]');
 
   // New fields for template styling
@@ -318,22 +265,40 @@
       fallbackBlock.style.display = 'none';
     }
 
-    // Add missing blocks
+    // Add missing preview blocks
     checkedBoxes.forEach(cb => {
       const slug = cb.value;
-      const titleSpan = cb.closest('.product-item').querySelector('span').innerText.split('(')[0].trim();
-      
-      // If block doesn't exist, create it
-      if (!document.querySelector(`.override-block[data-slug="${slug}"]`)) {
+      const productItem = cb.closest('.product-item');
+      const titleSpan = productItem.querySelector('span').innerText.split('(')[0].trim();
+
+      if (!document.querySelector(`.preview-block[data-slug="${slug}"]`)) {
         const html = template
           .replace(/{SLUG}/g, slug)
           .replace(/{TITLE}/g, titleSpan);
         container.insertAdjacentHTML('beforeend', html);
+
+        const block = container.querySelector(`.preview-block[data-slug="${slug}"]`);
+        const eeatEnabled = productItem.dataset.eeatEnabled === '1';
+        const notes = productItem.dataset.reviewNotes || '';
+        const specsCount = parseInt(productItem.dataset.specsCount || '0', 10);
+
+        const statusEl = block.querySelector('.preview-status');
+        if (eeatEnabled || notes || specsCount > 0) {
+          const parts = [];
+          if (eeatEnabled) parts.push('E-E-A-T Scores aktiv');
+          if (specsCount > 0) parts.push(`${specsCount} Specs`);
+          statusEl.innerHTML = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-100">${parts.join(' · ')}</span>`;
+        } else {
+          statusEl.innerHTML = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">Keine Testdaten hinterlegt</span>`;
+        }
+
+        const notesEl = block.querySelector('.preview-notes');
+        notesEl.textContent = notes ? `"${notes}"` : '';
       }
     });
 
     // Remove unchecked blocks
-    const existingBlocks = document.querySelectorAll('.override-block');
+    const existingBlocks = document.querySelectorAll('.preview-block');
     existingBlocks.forEach(block => {
       const slug = block.getAttribute('data-slug');
       if (!checkedBoxes.find(cb => cb.value === slug)) {

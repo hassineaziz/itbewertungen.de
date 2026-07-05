@@ -260,6 +260,8 @@
     <div class="p-6 lg:p-10 flex flex-col gap-4 bg-gray-50">
       {% set winner = data.get('products', [{}])[0] %}
       {% if winner %}
+      {% set winner_pros = (winner.get('pros') or []) | map('trim') | select | list %}
+      {% set winner_cons = (winner.get('cons') or []) | map('trim') | select | list %}
       <div class="bg-white border-2 border-primary rounded-xl p-5 relative shadow-sm">
         <span class="absolute -top-3 left-4 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider uppercase">
           {{ winner.get('badge', 'BEST OVERALL') }}
@@ -287,18 +289,18 @@
         </div>
 
         <div class="grid grid-cols-2 gap-3 mb-4">
-          {% if winner.get('pros') %}
+          {% if winner_pros %}
           <div class="bg-gray-50 rounded-lg p-3">
             <div class="text-[11px] font-bold uppercase tracking-wider text-green-600 mb-2">Vorteile</div>
-            {% for pro in winner.pros[:3] %}
+            {% for pro in winner_pros[:3] %}
             <div class="text-[12px] text-gray-600 flex gap-1.5 mb-1"><span class="text-green-600 text-[14px] leading-none">✓</span> {{ pro }}</div>
             {% endfor %}
           </div>
           {% endif %}
-          {% if winner.get('cons') %}
+          {% if winner_cons %}
           <div class="bg-gray-50 rounded-lg p-3">
             <div class="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-2">Nachteile</div>
-            {% for con in winner.cons[:2] %}
+            {% for con in winner_cons[:2] %}
             <div class="text-[12px] text-gray-600 flex gap-1.5 mb-1"><span class="text-red-500 text-[14px] leading-none">✗</span> {{ con }}</div>
             {% endfor %}
           </div>
@@ -351,11 +353,13 @@
           </div>
           <h3 class="text-[15px] font-bold text-gray-900 mb-1">{{ p.get('name', '') }}</h3>
           <div class="text-[20px] font-bold text-primary mb-4">{{ p.get('price', '') }}</div>
+          {% set item_pros = (p.get('pros') or []) | map('trim') | select | list %}
+          {% set item_cons = (p.get('cons') or []) | map('trim') | select | list %}
           <div class="space-y-2 mb-6">
-            {% for pro in p.get('pros', [])[:3] %}
+            {% for pro in item_pros[:3] %}
             <div class="text-[12px] text-gray-600 flex gap-2"><span class="text-green-600 font-bold">✓</span> {{ pro }}</div>
             {% endfor %}
-            {% for con in p.get('cons', [])[:1] %}
+            {% for con in item_cons[:1] %}
             <div class="text-[12px] text-gray-600 flex gap-2"><span class="text-red-500 font-bold">✗</span> {{ con }}</div>
             {% endfor %}
           </div>
@@ -460,11 +464,13 @@
               {% endfor %}
             </ul>
             {% else %}
+            {% set review_pros = (p.get('pros') or []) | map('trim') | select | list %}
+            {% set review_cons = (p.get('cons') or []) | map('trim') | select | list %}
             <h4 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">
               Kurzübersicht
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
-              {% for pro in p.get('pros', [])[:2] %}
+              {% for pro in review_pros[:2] %}
               <li><strong>Vorteil:</strong> {{ pro }}</li>
               {% endfor %}
             </ul>
@@ -473,10 +479,10 @@
               Wichtige Merkmale
             </h4>
             <ul class="text-[13px] text-gray-700 space-y-1.5 mb-5 list-disc pl-4 marker:text-primary">
-              {% for pro in p.get('pros', [])[2:4] %}
+              {% for pro in review_pros[2:4] %}
               <li><strong>Merkmal:</strong> {{ pro }}</li>
               {% endfor %}
-              {% for con in p.get('cons', [])[:1] %}
+              {% for con in review_cons[:1] %}
               <li class="text-gray-500"><strong>Hinweis:</strong> {{ con }}</li>
               {% endfor %}
             </ul>
